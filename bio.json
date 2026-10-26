@@ -1,0 +1,109 @@
+{
+  "name": "Justin Griffiths",
+  "location": "New Paltz, NY",
+  "headline": "GM at Pedal Performance. Sr. Director of Enablement at Pearmill. I build agent systems for marketing teams.",
+  "bio": {
+    "short": "GM, Pedal Performance · Sr. Director of Enablement, Pearmill · I build agent systems for marketing teams. New Paltz, NY.",
+    "medium": "I'm the GM of Pedal Performance, an AI-native performance marketing agency for medical, DTC and growing businesses, and Sr. Director of Enablement at Pearmill, the growth agency behind it. Most of my work is building the agent systems that let a small team do a big team's job: Claude Code skills that encode judgment, ad-platform data pipelines reconciled to the P&L, and client portals. Every lesson becomes a rule, and every rule gets a check.",
+    "long": "I'm the GM of Pedal Performance, an AI-native performance marketing agency for medical, DTC and growing businesses, and Sr. Director of Enablement at Pearmill, the growth agency behind it ($500M+ in ad spend managed). Most of my work is building the agent systems that let a small team do a big team's job: Claude Code skills that encode judgment, ad-platform data pipelines reconciled to the P&L, and client portals. Every lesson becomes a rule, and every rule gets a check. Outside client work I run a self-hosted research newsdesk that collects sources on topics I want to understand better. I live in New Paltz, NY."
+  },
+  "work": [
+    {
+      "name": "Pedal Performance",
+      "role": "GM",
+      "url": "https://pedal-performance.com",
+      "summary": "AI-native performance marketing for medical, DTC and growing businesses."
+    },
+    {
+      "name": "Pearmill",
+      "role": "Sr. Director of Enablement",
+      "url": "https://pearmill.com",
+      "summary": "Multi-disciplinary performance marketing. $500M+ in ad spend managed."
+    }
+  ],
+  "links": [
+    { "label": "Email", "value": "hi@justingriffiths.com", "url": "mailto:hi@justingriffiths.com" },
+    { "label": "Book a call", "value": "cal.com/justin-griffiths", "url": "https://cal.com/justin-griffiths" },
+    { "label": "GitHub", "value": "justincgriffiths", "url": "https://github.com/justincgriffiths" },
+    { "label": "LinkedIn", "value": "in/justincgriffiths", "url": "https://www.linkedin.com/in/justincgriffiths/" },
+    { "label": "Research", "value": "justingriffiths.info", "url": "https://justingriffiths.info" }
+  ],
+  "people": [
+    {
+      "group": "Thinkers",
+      "entries": [
+        {
+          "name": "Ralph Ellison",
+          "work": "Going to the Territory",
+          "url": "https://openlibrary.org/works/OL495474W",
+          "why": "Essays on how American culture is made, and who gets to say what it is.",
+          "draft": true
+        },
+        {
+          "name": "Wendell Berry",
+          "work": "What Are People For?",
+          "url": "https://openlibrary.org/works/OL14862072W",
+          "why": "A blunt question I keep asking about every piece of automation I build.",
+          "draft": true
+        }
+      ]
+    },
+    {
+      "group": "Creators",
+      "entries": [
+        {
+          "name": "Josh Doss",
+          "work": "Doss Discourse",
+          "url": "https://www.youtube.com/@DossDiscourse",
+          "why": "Long-form geopolitics I actually finish.",
+          "draft": true
+        },
+        {
+          "name": "PolisPandit",
+          "url": "https://www.youtube.com/@PolisPandit",
+          "why": "A Wall Street lawyer's deep dives where law, politics, finance and tech meet.",
+          "draft": true
+        },
+        {
+          "name": "Brian Balfour",
+          "work": "Reforge",
+          "url": "https://brianbalfour.com",
+          "why": "Growth loops and the Four Fits, which shaped how I think about acquisition.",
+          "draft": true
+        }
+      ]
+    }
+  ],
+  "built_on": [
+    {
+      "group": "How I work",
+      "entries": [
+        {
+          "name": "Second brain",
+          "what": "A Markdown knowledge vault that agents maintain.",
+          "credit": { "text": "Pattern from Andrej Karpathy's LLM-wiki gist", "url": "https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" }
+        },
+        {
+          "name": "Agent skills",
+          "what": "Claude Code skills, hooks and MCP servers that encode judgment.",
+          "url": "https://github.com/justincgriffiths/agent-tools",
+          "credit": { "text": "Heavily borrowed from Matt Pocock's skills", "url": "https://github.com/mattpocock/skills" }
+        },
+        {
+          "name": "Mycroft",
+          "what": "My personal agent for orchestration, brain upkeep and scheduled jobs. Runs on Hermes, locally."
+        }
+      ]
+    },
+    {
+      "group": "Infrastructure",
+      "entries": [
+        { "name": "Home lab", "what": "A NAS and a Mac mini on Tailscale, published through Cloudflare Tunnel." },
+        { "name": "Web", "what": "Next.js, Cloudflare Workers." },
+        { "name": "Data", "what": "Ad-platform ETL, then dbt, then Supabase, reconciled to the P&L." },
+        { "name": "Local models", "what": "Ollama." }
+      ]
+    }
+  ],
+  "working_to": ["Futurescapes", "Empyreal Ambient"]
+}
