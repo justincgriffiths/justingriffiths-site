@@ -88,5 +88,109 @@
         }
       ]
     }
-  ]
+  ],
+  "dossier": {
+    "cover": {
+      "portrait": {
+        "type": "image",
+        "placeholder": true,
+        "alt": "Portrait of Justin Griffiths",
+        "caption": "Justin Griffiths."
+      },
+      "lede": "headline",
+      "facts": [
+        {
+          "label": "Positions",
+          "from": "work"
+        },
+        {
+          "label": "Location",
+          "from": "location"
+        },
+        {
+          "label": "Contact",
+          "from": "links.0"
+        }
+      ]
+    },
+    "sections": [
+      {
+        "id": "profile",
+        "title": "Profile",
+        "blocks": [
+          {
+            "type": "prose",
+            "from": "bio.long"
+          },
+          {
+            "type": "exhibits",
+            "items": [
+              {
+                "type": "image",
+                "placeholder": true,
+                "alt": "Photo of Justin Griffiths",
+                "caption": "Photo pending approval."
+              },
+              {
+                "type": "image",
+                "placeholder": true,
+                "alt": "Photo of Justin Griffiths",
+                "caption": "Photo pending approval."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "work",
+        "title": "Work",
+        "blocks": [
+          {
+            "type": "entries",
+            "from": "work"
+          },
+          {
+            "type": "logos",
+            "items": [
+              {
+                "name": "Pedal Performance",
+                "url": "https://pedal-performance.com",
+                "placeholder": true
+              },
+              {
+                "name": "Pearmill",
+                "url": "https://pearmill.com",
+                "placeholder": true
+              },
+              {
+                "name": "Blossom tutoring",
+                "url": "https://justingriffiths.com/blossom-tutoring",
+                "placeholder": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "influences",
+        "title": "People I learn from",
+        "blocks": [
+          {
+            "type": "groups",
+            "from": "people"
+          }
+        ]
+      },
+      {
+        "id": "contact",
+        "title": "Contact",
+        "blocks": [
+          {
+            "type": "facts",
+            "from": "links"
+          }
+        ]
+      }
+    ]
+  }
 }
