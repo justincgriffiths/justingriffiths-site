@@ -22,11 +22,36 @@
     }
   ],
   "links": [
-    { "label": "Email", "value": "hi@justingriffiths.com", "url": "mailto:hi@justingriffiths.com" },
-    { "label": "Book a call", "value": "cal.com/justin-griffiths", "url": "https://cal.com/justin-griffiths" },
-    { "label": "GitHub", "value": "justincgriffiths", "url": "https://github.com/justincgriffiths" },
-    { "label": "LinkedIn", "value": "in/justincgriffiths", "url": "https://www.linkedin.com/in/justincgriffiths/" },
-    { "label": "Research", "value": "justingriffiths.info", "url": "https://justingriffiths.info" }
+    {
+      "label": "Email",
+      "value": "hi@justingriffiths.com",
+      "url": "mailto:hi@justingriffiths.com"
+    },
+    {
+      "label": "Book a call",
+      "value": "cal.com/justin-griffiths",
+      "url": "https://cal.com/justin-griffiths"
+    },
+    {
+      "label": "GitHub",
+      "value": "justincgriffiths",
+      "url": "https://github.com/justincgriffiths"
+    },
+    {
+      "label": "LinkedIn",
+      "value": "in/justincgriffiths",
+      "url": "https://www.linkedin.com/in/justincgriffiths/"
+    },
+    {
+      "label": "Research",
+      "value": "justingriffiths.info",
+      "url": "https://justingriffiths.info"
+    },
+    {
+      "label": "Tutoring",
+      "value": "Blossom tutoring",
+      "url": "https://justingriffiths.com/blossom-tutoring"
+    }
   ],
   "people": [
     {
@@ -35,16 +60,12 @@
         {
           "name": "Ralph Ellison",
           "work": "Going to the Territory",
-          "url": "https://openlibrary.org/works/OL495474W",
-          "why": "Essays on how American culture is made, and who gets to say what it is.",
-          "draft": true
+          "url": "https://openlibrary.org/works/OL495474W"
         },
         {
           "name": "Wendell Berry",
           "work": "What Are People For?",
-          "url": "https://openlibrary.org/works/OL14862072W",
-          "why": "A blunt question I keep asking about every piece of automation I build.",
-          "draft": true
+          "url": "https://openlibrary.org/works/OL14862072W"
         }
       ]
     },
@@ -54,56 +75,22 @@
         {
           "name": "Josh Doss",
           "work": "Doss Discourse",
-          "url": "https://www.youtube.com/@DossDiscourse",
-          "why": "Long-form geopolitics I actually finish.",
-          "draft": true
+          "url": "https://www.youtube.com/@DossDiscourse"
         },
         {
           "name": "PolisPandit",
-          "url": "https://www.youtube.com/@PolisPandit",
-          "why": "A Wall Street lawyer's deep dives where law, politics, finance and tech meet.",
-          "draft": true
+          "url": "https://www.youtube.com/@PolisPandit"
         },
         {
           "name": "Brian Balfour",
           "work": "Reforge",
-          "url": "https://brianbalfour.com",
-          "why": "Growth loops and the Four Fits, which shaped how I think about acquisition.",
-          "draft": true
+          "url": "https://brianbalfour.com"
         }
       ]
     }
   ],
-  "built_on": [
-    {
-      "group": "How I work",
-      "entries": [
-        {
-          "name": "Second brain",
-          "what": "A Markdown knowledge vault that agents maintain.",
-          "credit": { "text": "Pattern from Andrej Karpathy's LLM-wiki gist", "url": "https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" }
-        },
-        {
-          "name": "Agent skills",
-          "what": "Claude Code skills, hooks and MCP servers that encode judgment.",
-          "url": "https://github.com/justincgriffiths/agent-tools",
-          "credit": { "text": "Heavily borrowed from Matt Pocock's skills", "url": "https://github.com/mattpocock/skills" }
-        },
-        {
-          "name": "Mycroft",
-          "what": "My personal agent for orchestration, brain upkeep and scheduled jobs. Runs on Hermes, locally."
-        }
-      ]
-    },
-    {
-      "group": "Infrastructure",
-      "entries": [
-        { "name": "Home lab", "what": "A NAS and a Mac mini on Tailscale, published through Cloudflare Tunnel." },
-        { "name": "Web", "what": "Next.js, Cloudflare Workers." },
-        { "name": "Data", "what": "Ad-platform ETL, then dbt, then Supabase, reconciled to the P&L." },
-        { "name": "Local models", "what": "Ollama." }
-      ]
-    }
-  ],
-  "working_to": ["Futurescapes", "Empyreal Ambient"]
+  "working_to": [
+    "Futurescapes",
+    "Empyreal Ambient"
+  ]
 }

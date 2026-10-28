@@ -39,7 +39,6 @@ const people = bio.people
           (p) => `
         <li class="row">
           <div class="row-head">${a(p.url, esc(p.name), "name")}${p.work ? `<cite>${esc(p.work)}</cite>` : ""}</div>
-          <p class="note">${esc(p.why)}</p>
         </li>`
         )
         .join("")}
@@ -47,24 +46,9 @@ const people = bio.people
   )
   .join("");
 
-const builtOn = bio.built_on
-  .map(
-    (g) => `
-      <h3 class="group">${esc(g.group)}</h3>
-      <ul class="rows">${g.entries
-        .map(
-          (e) => `
-        <li class="row">
-          <div class="row-head">${e.url ? a(e.url, esc(e.name), "name") : `<span class="name">${esc(e.name)}</span>`}</div>
-          <p class="note">${esc(e.what)}${e.credit ? ` <span class="credit">${a(e.credit.url, esc(e.credit.text))}.</span>` : ""}</p>
-        </li>`
-        )
-        .join("")}
-      </ul>`
-  )
-  .join("");
-
-const updated = new Date().toISOString().slice(0, 10);
+const now = new Date();
+const updated = now.toISOString().slice(0, 10);
+const dateline = now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "America/New_York" });
 
 const html = `<!doctype html>
 <html lang="en">
@@ -78,11 +62,11 @@ const html = `<!doctype html>
   <meta property="og:description" content="${esc(bio.headline)}">
   <meta property="og:url" content="https://justingriffiths.com/">
   <meta property="og:type" content="profile">
-  <meta name="color-scheme" content="light dark">
+  <meta name="color-scheme" content="light">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
   <script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Person",
@@ -90,31 +74,39 @@ const html = `<!doctype html>
     url: "https://justingriffiths.com",
     jobTitle: bio.work.map((w) => `${w.role}, ${w.name}`),
     homeLocation: bio.location,
-    sameAs: bio.links.filter((l) => l.url.startsWith("https://")).map((l) => l.url),
+    sameAs: bio.links.filter((l) => l.url.startsWith("https://") && !l.url.includes("justingriffiths.com")).map((l) => l.url),
   }).replace(/</g, "\\u003c")}</script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <div class="page">
     <header class="masthead">
-      <p class="kicker">${esc(bio.location)}</p>
-      <h1>${esc(bio.name)}</h1>
-      <p class="headline">${esc(bio.headline)}</p>
+      <h1 class="nameplate">${esc(bio.name)}</h1>
+      <div class="dateline">
+        <span>${esc(bio.location)}</span>
+        <span>${esc(dateline)}</span>
+        <span>justingriffiths.com</span>
+      </div>
     </header>
 
-    <main class="sections">${section(1, "Work", `<ul class="rows">${work}</ul>`)}${section(
+    <article class="lede">
+      <h2 class="headline">${esc(bio.headline)}</h2>
+      <p class="story"><span class="drop">${esc(bio.bio.medium.slice(0, 1))}</span>${esc(bio.bio.medium.slice(1))}</p>
+    </article>
+
+    <main class="columns">${section(1, "Work", `<ul class="rows">${work}</ul>`)}${section(
       2,
-      "Elsewhere",
-      `<ul class="links">${links}</ul>`
-    )}${section(3, "People I learn from", people)}${section(4, "Built on", builtOn)}${section(
-      5,
-      "Working to",
-      `<p class="note">${bio.working_to.map(esc).join(" · ")}</p>`
-    )}
+      "People I learn from",
+      people
+    )}${section(3, "Elsewhere", `<ul class="links">${links}</ul>`)}${
+      bio.working_to && bio.working_to.length
+        ? section(4, "Working to", `<p class="note">${bio.working_to.map(esc).join(" &middot; ")}</p>`)
+        : ""
+    }
     </main>
 
     <footer class="footer">
-      <p>Generated from ${a(`${REPO}/blob/main/bio.json`, "bio.json")}, the same text I use on every profile. Updated ${updated}.</p>
+      <p>Set from ${a(`${REPO}/blob/main/bio.json`, "bio.json")}, the same text I use on every profile. Updated ${updated}.</p>
     </footer>
   </div>
 </body>
