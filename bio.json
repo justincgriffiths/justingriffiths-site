@@ -91,12 +91,6 @@
   ],
   "dossier": {
     "cover": {
-      "portrait": {
-        "type": "image",
-        "placeholder": true,
-        "alt": "Portrait of Justin Griffiths",
-        "caption": "Justin Griffiths."
-      },
       "lede": "headline",
       "facts": [
         {
@@ -121,23 +115,6 @@
           {
             "type": "prose",
             "from": "bio.long"
-          },
-          {
-            "type": "exhibits",
-            "items": [
-              {
-                "type": "image",
-                "placeholder": true,
-                "alt": "Photo of Justin Griffiths",
-                "caption": "Photo pending approval."
-              },
-              {
-                "type": "image",
-                "placeholder": true,
-                "alt": "Photo of Justin Griffiths",
-                "caption": "Photo pending approval."
-              }
-            ]
           }
         ]
       },
