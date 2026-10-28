@@ -8,7 +8,7 @@ The one-page hub at **justingriffiths.com**. A Cloudflare Worker serves it from 
 
 | Path | What |
 |---|---|
-| `bio.json` | Canonical text: headline, `bio.short` / `medium` / `long`, work, links (incl. Blossom tutoring), people, working-to |
+| `bio.json` | Canonical text: headline, `bio.short` / `medium` / `long`, work, links (incl. Blossom tutoring), people |
 | `build.mjs` | Renders `dist/index.html` from `bio.json`, no dependencies |
 | `public/` | CSS, favicon, robots.txt, copied into `dist/` |
 | `src/worker.js` | Serves the hub, 301s `www` to the apex, and 301s every other path to the same path on justingriffiths.info |
