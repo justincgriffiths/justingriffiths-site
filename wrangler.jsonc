@@ -9,10 +9,8 @@
     "run_worker_first": true
   },
   "build": { "command": "node build.mjs" },
-  // Custom domains take over the apex and www. Deploy only after the research
-  // site answers on justingriffiths.info (see README, "Cutover").
-  "routes": [
-    { "pattern": "justingriffiths.com", "custom_domain": true },
-    { "pattern": "www.justingriffiths.com", "custom_domain": true }
-  ]
+  // No custom domains yet, so a deploy lands on workers.dev only and can't take
+  // over the live site. At cutover (README) add routes for justingriffiths.com and
+  // www.justingriffiths.com with "custom_domain": true.
+  "workers_dev": true
 }
