@@ -9,6 +9,8 @@
     "run_worker_first": true
   },
   "build": { "command": "node build.mjs" },
+  // /learn/... is forwarded to the Blossom Tutoring course Worker (see src/worker.js).
+  "services": [{ "binding": "BLOSSOM", "service": "blossom" }],
   // Deploying this config claims justingriffiths.com and www (Workers custom domains,
   // which also create the DNS records). Do not deploy it until justingriffiths.info is
   // verified live and the apex's old tunnel CNAME has been freed. See README, Cutover.
