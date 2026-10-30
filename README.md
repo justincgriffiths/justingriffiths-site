@@ -63,12 +63,14 @@ npx wrangler dev          # http://localhost:8787
 
 ## Cutover
 
-Merges to `main` deploy to workers.dev through the Cloudflare Git integration, which never touches the live domain. Adding the custom domains is the cutover, and from then on every non-hub path redirects to justingriffiths.info. So the order is:
+`wrangler.jsonc` carries the `justingriffiths.com` and `www` custom-domain routes, so **deploying it is the cutover**: it claims both domains, and from then on every non-hub path redirects to justingriffiths.info. The hub is also live on workers.dev (`justingriffiths-site.jg-personal.workers.dev`) from an earlier deploy of the no-routes config. Order:
 
-1. **Research answers on justingriffiths.info.** Add the tunnel ingress for `justingriffiths.info` to `web:3000` in basecamp, and confirm that `/research`, `/research/articles` and `/login` load there. Then retire the Vercel project and archive `justincgriffiths/justingriffiths-info`.
-2. **Free the apex.** Remove the tunnel's public-hostname route for `justingriffiths.com`, and its DNS record, in the Cloudflare dashboard.
-3. **Deploy.** Add the `justingriffiths.com` and `www` custom-domain routes to `wrangler.jsonc` and merge. Cloudflare builds and deploys from `main`.
+1. **Research answers on justingriffiths.info.** The `.info` tunnel ingress already exists in the personal-web tunnel (to `web:3000`). Confirm `/research`, `/research/articles` and `/login` load on `.info`. Then retire the Vercel project and archive `justincgriffiths/justingriffiths-info`.
+2. **Free the apex.** Remove the personal-web tunnel's public-hostname route for `justingriffiths.com`, and the proxied CNAME for the apex (and `www`) in Cloudflare DNS. A custom domain will not attach over an existing CNAME.
+3. **Deploy.** `CLOUDFLARE_ACCOUNT_ID=6d4a918dd966be7c05f23b2e154b3d1d npx wrangler deploy` from `main`. Mycroft runs this; it can also be triggered through the deploy webhook at hooks.mycroft.tech.
 4. **Verify.**
    - `curl -sI https://justingriffiths.com/` returns 200.
    - `curl -sI https://www.justingriffiths.com/` returns a 301 to the apex.
    - `curl -sI https://justingriffiths.com/research/articles` returns a 301 to .info.
+
+Rollback: remove the two `routes` entries and redeploy, then restore the tunnel route and CNAME.
