@@ -209,3 +209,6 @@ for (const f of ["style.css", "favicon.svg", "robots.txt"]) {
   if (existsSync(src)) copyFileSync(src, new URL(`./dist/${f}`, import.meta.url));
 }
 console.log(`built dist/index.html (${html.length} bytes, ${dossier.sections.length} sections, ${exhibitCount} exhibits)`);
+
+// The Marketing 101 lesson at /marketing-101/ (see build-marketing.mjs).
+await import("./build-marketing.mjs");

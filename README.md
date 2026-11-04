@@ -11,6 +11,7 @@ The one-page hub at **justingriffiths.com**. A Cloudflare Worker serves it from 
 | `bio.json` | Canonical text: headline, `bio.short` / `medium` / `long`, work, links (incl. Blossom tutoring), people |
 | `build.mjs` | Renders `dist/index.html` from `bio.json`, no dependencies. Fails the build on an unknown block type or a `from` path that does not resolve |
 | `public/` | CSS, favicon, robots.txt, copied into `dist/` |
+| `content/marketing-101/` | The Marketing 101 lesson at `/marketing-101/`: `src/` (Claude Doc export), `rewrite/` (ChatGPT's second-person copy, what ships), `diagrams/` (JSX + rendered SVG), `page.css` (Pedal night lane). Built by `build-marketing.mjs`. Re-render diagrams with `bin/render-diagrams.mjs`; check a rewrite with `bin/fidelity.py` |
 | `src/worker.js` | Serves the hub, 301s `www` to the apex, forwards `/learn/...` to the `blossom` Worker (Blossom Tutoring courses, repo `blossom-tutoring-lessons`) over a service binding, and 301s every other path to the same path on justingriffiths.info |
 
 People are listed by name and work only, with no "why" lines (decided 2026-10-28).
