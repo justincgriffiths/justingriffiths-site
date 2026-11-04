@@ -5,8 +5,8 @@
 #   op run --env-file=bin/access.env -- bin/access-login.sh you@gmail.com her@gmail.com
 # bin/access.env (gitignored values are op:// refs, not secrets):
 #   CLOUDFLARE_API_TOKEN=op://Mycroft/cloudflare-api-token/credential   # needs Access: Apps and Policies + Organizations edit
-#   GOOGLE_CLIENT_ID=op://Mycroft/marketing-101-google-oauth/username
-#   GOOGLE_CLIENT_SECRET=op://Mycroft/marketing-101-google-oauth/credential
+#   GOOGLE_CLIENT_ID=op://Mycroft/marketing-paywall-oauth/username
+#   GOOGLE_CLIENT_SECRET=op://Mycroft/marketing-paywall-oauth/credential
 set -uo pipefail
 cd "$(dirname "$0")/.."
 LOG="bin/access-login.log"; ACCT="6d4a918dd966be7c05f23b2e154b3d1d"; API="https://api.cloudflare.com/client/v4/accounts/$ACCT/access"
