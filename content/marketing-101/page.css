@@ -73,6 +73,11 @@ ul.tasks { list-style: none; padding: 0; }
 ul.tasks li { margin-bottom: 8px; padding-left: 28px; text-indent: -28px; }
 .tick { display: inline-block; vertical-align: -2px; margin-right: 12px; text-indent: 0; width: 16px; height: 16px; border: 2px solid var(--border-on-night); border-radius: 4px; }
 
+ul.watch { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; max-width: none; }
+ul.watch a { display: inline-block; font-weight: 700; color: var(--night-800); background: var(--teal-500); text-decoration: none; border: 2px solid var(--teal-500); border-radius: var(--radius-pill); padding: 8px 18px; box-shadow: var(--shadow-hard-night); transition: transform var(--dur-fast), box-shadow var(--dur-fast); }
+ul.watch a::before { content: "▶  "; }
+ul.watch a:hover { background: var(--teal-400); color: var(--night-800); }
+ul.watch a:active { transform: translate(2px, 2px); box-shadow: none; }
 details.answer { margin: 8px 0 24px; max-width: 68ch; }
 details.answer summary { display: inline-block; cursor: pointer; list-style: none; font-weight: 700; color: var(--paper); border: 2px solid var(--border-on-night); border-radius: var(--radius-pill); padding: 8px 20px; box-shadow: var(--shadow-hard-night); transition: transform var(--dur-fast), box-shadow var(--dur-fast); }
 details.answer summary::-webkit-details-marker { display: none; }

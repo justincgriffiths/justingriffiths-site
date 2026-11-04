@@ -4,6 +4,15 @@
 
 &#91;embedded content: Sinek's Golden Circle · why, how, what\]
 
+## Watch first
+
+- [Simon Sinek, "How great leaders inspire action" (TED, 2009)](https://www.ted.com/talks/simon_sinek_how_great_leaders_inspire_action)
+- [Apple, "1984" (Super Bowl XVIII, 1984)](https://www.youtube.com/watch?v=2zfqw8nhUwA)
+- [Apple, "Think Different: Here's to the Crazy Ones" (1997)](https://www.youtube.com/watch?v=tjgtLSHhTPg)
+- [Nike, "Dream Crazy" (2018)](https://www.youtube.com/watch?v=mTjcGED1-Ko)
+
+The three ads are archive uploads on YouTube; neither Apple nor Nike hosts them on its own channel.
+
 ## Where it comes from
 
 Simon Sinek drew the Golden Circle in a September 2009 TEDx talk, ["How great leaders inspire action"](https://www.ted.com/talks/simon_sinek_how_great_leaders_inspire_action). It had more than 71 million plays on TED.com as of November 2026. He also drew it in his book *Start with Why* (Portfolio, 2009).

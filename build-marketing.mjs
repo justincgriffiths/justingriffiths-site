@@ -52,8 +52,9 @@ function render(md, { sessionHeading }) {
       const ordered = /^\d+\. /.test(l), items = [];
       while (i < lines.length && /^(- |\d+\. )/.test(lines[i])) items.push(lines[i++].replace(/^(- |\d+\. )/, ""));
       const task = items.every((x) => x.startsWith("[ ] "));
+      const links = !ordered && items.every((x) => /^\[[^\]]+\]\([^)]+\)$/.test(x));
       const tag = ordered ? "ol" : "ul";
-      html += `<${tag}${task ? ' class="tasks"' : ""}>${items.map((x) => `<li>${task ? '<span class="tick" aria-hidden="true"></span>' : ""}${inline(x.replace(/^\[ \] /, ""))}</li>`).join("")}</${tag}>`;
+      html += `<${tag}${task ? ' class="tasks"' : links ? ' class="watch"' : ""}>${items.map((x) => `<li>${task ? '<span class="tick" aria-hidden="true"></span>' : ""}${inline(x.replace(/^\[ \] /, ""))}</li>`).join("")}</${tag}>`;
       continue;
     }
     if (l.startsWith("> ")) { html += `<blockquote>${inline(l.slice(2))}</blockquote>`; i++; continue; }
