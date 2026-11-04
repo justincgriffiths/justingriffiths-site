@@ -1,5 +1,6 @@
 // Serves the hub from static assets. /learn/... is the Blossom Tutoring course site, a separate
 // Worker (justincgriffiths/blossom-tutoring-lessons) reached over the BLOSSOM service binding.
+// /marketing-101/ is the Marketing 101 lesson page (build-marketing.mjs).
 // Everything else belonged to the old research site, so it 301s to the same path on justingriffiths.info.
 const APEX = "justingriffiths.com";
 const RESEARCH = "https://justingriffiths.info";
@@ -16,6 +17,15 @@ export default {
 
     if (url.pathname === "/learn" || url.pathname.startsWith("/learn/")) {
       return env.BLOSSOM.fetch(request);
+    }
+
+    // /marketing-101/ is the Marketing 101 lesson, served from dist/marketing-101/.
+    if (url.pathname === "/marketing-101") {
+      url.pathname = "/marketing-101/";
+      return Response.redirect(url.toString(), 301);
+    }
+    if (url.pathname === "/marketing-101/" || url.pathname === "/marketing-101/index.html") {
+      return env.ASSETS.fetch(request);
     }
 
     if (!HUB_PATHS.has(url.pathname)) {
