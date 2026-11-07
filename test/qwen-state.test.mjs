@@ -12,16 +12,22 @@ const FORBIDDEN_KEYS = ["id", "ids", "subject", "sender", "from", "title", "numb
 
 const dir = mkdtempSync(join(tmpdir(), "qwen-"));
 const runs = join(dir, "runs"); mkdirSync(runs);
-writeFileSync(join(runs, "20261107-142909-SENTINEL_ACCOUNT.json"), JSON.stringify({ account: "SENTINEL_ACCOUNT", report: "SENTINEL_MSGID_9f3a.md", cost_usd: 0.4,
+writeFileSync(join(runs, "20261107-142909-SENTINEL_ACCOUNT.json"), JSON.stringify({ mode: "create", account: "SENTINEL_ACCOUNT", report: "SENTINEL_MSGID_9f3a.md", cost_usd: 0.4,
   qwen: { cap: 1, seen: 3, qwen: 1, escalated: 1, reasons: { "SENTINEL REASON free text 8841": 1, "exit-2": 1 } } }));
 writeFileSync(join(runs, "20261107-142909-SENTINEL_ACCOUNT.audit.jsonl"), [
   { tool: "qwen_classify", id: "SENTINEL_MSGID_9f3a", subject: "SENTINEL SUBJECT Q3 invoice", from: "sender-sentinel@example.com", label: "SENTINEL SUBJECT Q3 invoice", escalated: false, reason: "", latency_ms: 1500 },
   { tool: "qwen_classify", id: "SENTINEL_MSGID_9f3a", label: "fyi", escalated: false, latency_ms: 900 },
   { tool: "Agent", input: { prompt: "SENTINEL SUBJECT Q3 invoice sender-sentinel@example.com" } },
 ].map((r) => JSON.stringify(r)).join("\n") + "\n");
+writeFileSync(join(runs, "20261107-150000-SENTINEL_ACCOUNT.json"), JSON.stringify({ mode: "create", qwen: { cap: 1, seen: 0, qwen: 0, escalated: 0, reasons: {} } }));
 writeFileSync(join(runs, "20261107-150000-SENTINEL_ACCOUNT.audit.jsonl"), [
   { tool: "qwen_pair", ts: "2026-11-07T15:00:00Z", id: "SENTINEL_MSGID_PAIR", qwen_label: "SENTINEL_PAIR_LABEL", haiku_label: "SENTINEL_PAIR_LABEL", match: true, reason: "SENTINEL REASON free text 8841", haiku_usd: 0.01, latency_ms: 800 },
   { tool: "qwen_pair", id: "SENTINEL_MSGID_PAIR", qwen_label: "fyi", haiku_label: "task", match: false, haiku_usd: 0.01 },
+].map((r) => JSON.stringify(r)).join("\n") + "\n");
+writeFileSync(join(runs, "20261107-160000-dry.json"), JSON.stringify({ mode: "dry-run", qwen: { cap: 1, seen: 9, qwen: 9, escalated: 0, reasons: { "timeout": 4 } } }));
+writeFileSync(join(runs, "20261107-160000-dry.audit.jsonl"), [
+  { tool: "qwen_classify", label: "task", escalated: false, latency_ms: 50 },
+  { tool: "qwen_pair", match: false, qwen_label: "fyi", haiku_label: "task" },
 ].map((r) => JSON.stringify(r)).join("\n") + "\n");
 writeFileSync(join(runs, "corrections.audit.jsonl"), JSON.stringify({ tool: "qwen_correction", id: "SENTINEL_MSGID_9f3a", from_label: "SENTINEL_PAIR_LABEL", to_label: "task", model_of_origin: "qwen3-coder:30b", issue: "SENTINEL_CORR_ISSUE_8842" }) + "\n");
 writeFileSync(join(dir, "tag.log"),
@@ -49,6 +55,15 @@ test("exporter keeps the aggregates", () => {
   assert.equal(d.breakdowns.by_task_label.other, 1);
   assert.equal(d.share_by_day["issue-tag"][0].answered, 1);   // the apply=0 dry run (5) is not counted
   assert.equal(d.share_by_day["issue-tag"][0].capped, 2);
+});
+
+test("a dry-run sidecar and its audit rows are excluded", () => {
+  const d = JSON.parse(out);
+  assert.equal(d.share_by_day.triage.length, 1);              // only the 2026-11-07 live run; dry run (9 answered) dropped
+  assert.equal(d.share_by_day.triage[0].answered, 1);
+  assert.equal(d.fallback_reasons.timeout, 0);                // the dry run's timeouts are not counted
+  assert.equal(d.breakdowns.by_task_label.task, 0);
+  assert.equal(d.latency_ms.qwen.n, 2);
 });
 
 test("no per-message string reaches the output", () => {

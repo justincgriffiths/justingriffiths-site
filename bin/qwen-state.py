@@ -55,15 +55,30 @@ def day_of_run(path):
     return f"{m[1]}-{m[2]}-{m[3]}" if m else None
 
 
+def live_stems():
+    """Run stems whose sidecar is a live run (mode == "create") that used Qwen. Dry runs are dropped from the public page."""
+    out = set()
+    for p in glob.glob(f"{RUNS}/*.json"):
+        d = _load(p)
+        if d.get("mode") == "create" and isinstance(d.get("qwen"), dict):
+            out.add(os.path.basename(p)[:-len(".json")])
+    return out
+
+
+def live_audits():
+    live = live_stems()
+    return [p for p in sorted(glob.glob(f"{RUNS}/*.audit.jsonl")) if os.path.basename(p)[:-len(".audit.jsonl")] in live]
+
+
 def triage():
     share = defaultdict(lambda: {"answered": 0, "fell_back": 0, "capped": 0})
     reasons = {k: 0 for k in REASONS}
     labels = {k: 0 for k in sorted(LABELS) + ["other"]}
     lat = []
+    live = live_stems()
     for p in sorted(glob.glob(f"{RUNS}/*.json")):
-        try: d = json.load(open(p))
-        except (OSError, ValueError): continue
-        q = d.get("qwen")
+        d = _load(p)
+        q = d.get("qwen") if os.path.basename(p)[:-len(".json")] in live else None
         dy = day_of_run(p)
         if not isinstance(q, dict) or not dy: continue
         seen, ans, esc = int(q.get("seen") or 0), int(q.get("qwen") or 0), int(q.get("escalated") or 0)
@@ -72,7 +87,7 @@ def triage():
         share[dy]["capped"] += max(seen - ans - esc, 0)
         for r, n in (q.get("reasons") or {}).items():
             reasons[reason_bucket(r)] += int(n or 0)
-    for p in sorted(glob.glob(f"{RUNS}/*.audit.jsonl")):
+    for p in live_audits():
         for r in rows(p):
             if r.get("tool") != "qwen_classify": continue
             if r.get("escalated"): continue
@@ -97,8 +112,7 @@ def costs():
 
 
 def qwen_run_days():
-    return {day_of_run(p) for p in glob.glob(f"{RUNS}/*.json")
-            if isinstance(_load(p).get("qwen"), dict)}
+    return {day_of_run(f"{RUNS}/{st}.json") for st in live_stems()}
 
 
 def _load(p):
@@ -143,10 +157,11 @@ def tag_accuracy():
 def triage_accuracy(answered):
     """mycroft#670 rows in cos/runs/*.audit.jsonl. Returns (agreement %, correction-free %); None until rows exist.
     Per-message fields (id, issue, labels) are never read into the output."""
-    files = sorted(glob.glob(f"{RUNS}/*.audit.jsonl"))
+    files = live_audits()  # pairs only from live runs
+    corr = f"{RUNS}/corrections.audit.jsonl"  # corrections have no run of their own
     match = [r["match"] for p in files for r in rows(p) if r.get("tool") == "qwen_pair" and isinstance(r.get("match"), bool)]
-    has_corr_file = os.path.exists(f"{RUNS}/corrections.audit.jsonl")
-    fixed = len({r.get("id") for p in files for r in rows(p)
+    has_corr_file = os.path.exists(corr)
+    fixed = len({r.get("id") for p in files + [corr] for r in rows(p)
                  if r.get("tool") == "qwen_correction" and "qwen" in str(r.get("model_of_origin", "")).lower()})
     agree = round(100 * sum(match) / len(match), 1) if match else None
     clean = round(100 * max(answered - fixed, 0) / answered, 1) if has_corr_file and answered else None

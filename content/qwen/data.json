@@ -30,13 +30,13 @@
  "breakdowns": {
   "by_task_label": {
    "archive": 0,
-   "fyi": 1,
+   "fyi": 0,
    "other": 0,
    "reply": 0,
    "task": 0
   },
   "by_tool_call": {
-   "qwen_classify": 1
+   "qwen_classify": 0
   },
   "by_workflow": {
    "issue-tag": {
@@ -45,7 +45,7 @@
     "fell_back": 0
    },
    "triage": {
-    "answered": 1,
+    "answered": 0,
     "capped": 0,
     "fell_back": 0
    }
@@ -55,7 +55,7 @@
   "issue_tag_usd_per_item": {
    "qwen": 0.0
   },
-  "triage_baseline_usd_per_run": 0.4328,
+  "triage_baseline_usd_per_run": 0.4365,
   "triage_by_day": [
    {
     "day": "2026-10-23",
@@ -137,12 +137,12 @@
    },
    {
     "day": "2026-11-07",
-    "qwen_era": true,
+    "qwen_era": false,
     "runs": 7,
     "usd_per_run": 0.4747
    }
   ],
-  "triage_qwen_era_usd_per_run": 0.4747
+  "triage_qwen_era_usd_per_run": null
  },
  "fallback_reasons": {
   "bad-class": 0,
@@ -154,9 +154,9 @@
  "latency_ms": {
   "haiku": null,
   "qwen": {
-   "n": 1,
-   "p50": 1532.0,
-   "p90": 1532.0
+   "n": 0,
+   "p50": null,
+   "p90": null
   }
  },
  "model": "qwen3-coder:30b",
@@ -170,13 +170,6 @@
     "fell_back": 0
    }
   ],
-  "triage": [
-   {
-    "answered": 1,
-    "capped": 0,
-    "day": "2026-11-07",
-    "fell_back": 0
-   }
-  ]
+  "triage": []
  }
 }

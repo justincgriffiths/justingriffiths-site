@@ -21,7 +21,7 @@ function axisY(max, fmt = (v) => v) {
 
 // Stacked daily columns: answered / fell back / capped, one per day.
 function stacked(rows, label) {
-  if (!rows.length) return empty("No runs logged yet.");
+  if (!rows.length) return empty("No live runs yet. Dry runs are not counted.");
   const keys = ["answered", "fell_back", "capped"];
   const max = Math.max(1, ...rows.map((r) => keys.reduce((s, k) => s + r[k], 0)));
   const bw = Math.min(40, (W - P.l - P.r) / rows.length - 6), step = (W - P.l - P.r) / rows.length;
@@ -56,7 +56,7 @@ function costChart() {
 
 function latency() {
   const q = data.latency_ms.qwen, h = data.latency_ms.haiku;
-  const row = (name, v) => `<tr><th>${name}</th>${v ? `<td>${v.n}</td><td>${v.p50} ms</td><td>${v.p90} ms</td>` : `<td colspan="3" class="pending">Pending: not logged yet</td>`}</tr>`;
+  const row = (name, v) => `<tr><th>${name}</th>${v ? `<td>${v.n}</td><td>${v.p50} ms</td><td>${v.p90} ms</td>` : `<td colspan="3" class="pending">Pending: no live items yet</td>`}</tr>`;
   return `<table><thead><tr><th></th><th>Items</th><th>Median</th><th>90th percentile</th></tr></thead><tbody>${row("Qwen", q.n ? q : null)}${row("Haiku", h)}</tbody></table>`;
 }
 
