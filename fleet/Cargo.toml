@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "battle-school", "bike-factory"]
+members = [".", "battle-school", "bike-factory", "seats"]
 [package]
 name = "fleet-scene"
 version = "0.0.1"
