@@ -4,4 +4,5 @@ node_modules/
 .DS_Store
 candidates/
 bin/*.log
+bin/access-*.log
 fleet/target/

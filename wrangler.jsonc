@@ -20,5 +20,8 @@
     { "pattern": "justingriffiths.com", "custom_domain": true },
     { "pattern": "www.justingriffiths.com", "custom_domain": true }
   ],
+  // /fleet/* checks the Cloudflare Access token. Both are public identifiers, not secrets; empty
+  // means /fleet/ answers 404 to everyone. Fill after `access-login.sh` prints them, then deploy.
+  "vars": { "ACCESS_TEAM_DOMAIN": "", "ACCESS_AUD": "" },
   "workers_dev": true
 }
