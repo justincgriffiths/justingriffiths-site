@@ -16,8 +16,9 @@ HOME = os.path.expanduser("~")
 RUNS = os.environ.get("QWEN_RUNS", f"{HOME}/worktrees/mycroft/live/cos/runs")
 COST_DB = os.environ.get("QWEN_COST_DB", f"{HOME}/worktrees/mycroft/live/cos/state/cost.db")
 TAG_DIR = f"{HOME}/worktrees/skill-library/live/write-work-items/scripts"
-TAG_LOG = os.environ.get("QWEN_TAG_LOG", f"{TAG_DIR}/issue-tag.log")
-TAG_JSONL = os.environ.get("QWEN_TAG_JSONL", f"{TAG_DIR}/issue-tag.jsonl")
+# Paths may be a colon-separated list (the tagger logs into the worktree it runs from until its PRs merge).
+TAG_LOGS = os.environ.get("QWEN_TAG_LOG", f"{TAG_DIR}/issue-tag.log").split(":")
+TAG_JSONLS = os.environ.get("QWEN_TAG_JSONL", f"{TAG_DIR}/issue-tag.jsonl").split(":")
 
 LABELS = {"reply", "task", "fyi", "archive"}  # triage task labels (fixed set; anything else -> other)
 REASONS = ["bad-class", "timeout", "exit-N", "no-ql", "other"]
@@ -39,13 +40,14 @@ def day(ts):
 
 
 def rows(path):
-    try:
-        with open(path) as f:
-            for line in f:
-                try: yield json.loads(line)
-                except ValueError: pass
-    except OSError:
-        return
+    for p in path if isinstance(path, list) else [path]:
+        try:
+            with open(p) as f:
+                for line in f:
+                    try: yield json.loads(line)
+                    except ValueError: pass
+        except OSError:
+            continue
 
 
 def day_of_run(path):
@@ -106,16 +108,18 @@ def _load(p):
 
 def issue_tag():
     share = defaultdict(lambda: {"answered": 0, "fell_back": 0, "capped": 0})
-    for line in open(TAG_LOG) if os.path.exists(TAG_LOG) else []:
+    lines = [l for p in TAG_LOGS if os.path.exists(p) for l in open(p)]
+    for line in lines:
         m = re.match(r"\[(\d{4}-\d{2}-\d{2})T", line)
         if not m: continue
-        q = re.search(r"qwen_used=(\d+)", line); f = re.search(r"fallback_to_haiku=(\d+)", line); h = re.search(r"haiku_direct=(\d+)", line)
+        # The log line says qwen=N fallback=N haiku=N; the script's stdout summary says qwen_used= fallback_to_haiku= haiku_direct=.
+        q = re.search(r"qwen(?:_used)?=(\d+)", line); f = re.search(r"fallback(?:_to_haiku)?=(\d+)", line); h = re.search(r"haiku(?:_direct)?=(\d+)", line)
         if not q: continue
         share[m[1]]["answered"] += int(q[1])
         share[m[1]]["fell_back"] += int(f[1]) if f else 0
         share[m[1]]["capped"] += int(h[1]) if h else 0
     models, per_run_cost = defaultdict(lambda: {"items": 0, "usd": 0.0}), 0
-    for r in rows(TAG_JSONL):
+    for r in rows(TAG_JSONLS):
         if r.get("kind"): continue  # applied / correction rows: see tag_accuracy()
         m = "qwen" if "qwen" in str(r.get("model", "")).lower() else "haiku"
         models[m]["items"] += 1
@@ -126,13 +130,26 @@ def issue_tag():
 def tag_accuracy():
     """skill-library#561 rows in issue-tag.jsonl. Returns (shadow agreement %, correction-free %); None until rows exist.
     Per-item fields (repo, number, labels) are read only to count; none is returned."""
-    match = [r["pair"]["match"] for r in rows(TAG_JSONL)
+    match = [r["pair"]["match"] for r in rows(TAG_JSONLS)
              if not r.get("kind") and isinstance(r.get("pair"), dict) and isinstance(r["pair"].get("match"), bool)]
-    applied = sum(1 for r in rows(TAG_JSONL) if r.get("kind") == "applied" and "qwen" in str(r.get("model", "")).lower())
-    fixed = len({(r.get("repo"), r.get("number")) for r in rows(TAG_JSONL)
+    applied = sum(1 for r in rows(TAG_JSONLS) if r.get("kind") == "applied" and "qwen" in str(r.get("model", "")).lower())
+    fixed = len({(r.get("repo"), r.get("number")) for r in rows(TAG_JSONLS)
                  if r.get("kind") == "correction" and "qwen" in str(r.get("model_of_origin", "")).lower()})
     agree = round(100 * sum(match) / len(match), 1) if match else None
     clean = round(100 * max(applied - fixed, 0) / applied, 1) if applied else None
+    return agree, clean
+
+
+def triage_accuracy(answered):
+    """mycroft#670 rows in cos/runs/*.audit.jsonl. Returns (agreement %, correction-free %); None until rows exist.
+    Per-message fields (id, issue, labels) are never read into the output."""
+    files = sorted(glob.glob(f"{RUNS}/*.audit.jsonl"))
+    match = [r["match"] for p in files for r in rows(p) if r.get("tool") == "qwen_pair" and isinstance(r.get("match"), bool)]
+    has_corr_file = os.path.exists(f"{RUNS}/corrections.audit.jsonl")
+    fixed = len({r.get("id") for p in files for r in rows(p)
+                 if r.get("tool") == "qwen_correction" and "qwen" in str(r.get("model_of_origin", "")).lower()})
+    agree = round(100 * sum(match) / len(match), 1) if match else None
+    clean = round(100 * max(answered - fixed, 0) / answered, 1) if has_corr_file and answered else None
     return agree, clean
 
 
@@ -146,6 +163,7 @@ def build():
     c = costs()
     qdays = qwen_run_days()
     agree, clean = tag_accuracy()
+    t_agree, t_clean = triage_accuracy(len(lat))
     pre = [v for d, v in c.items() if d not in qdays]
     post = [v for d, v in c.items() if d in qdays]
     avg = lambda vs: (round(sum(v["usd"] for v in vs) / max(sum(v["runs"] for v in vs), 1), 4) if vs else None)
@@ -174,10 +192,13 @@ def build():
         # Pre-production trial (pedal#569), correct answers out of 4. Labelled as a trial on the page.
         "accuracy": {
             "trial": {"label": "Pre-production trial, 4 items", "correct_of_4": {"haiku": 3, "qwen": 2, "sonnet": 1}},
-            # issue-tag filled from skill-library#561 rows; triage slots wait on mycroft#668. null = not landed.
-            "shadow_agreement_pct": {"triage": None, "issue-tag": agree},  # triage: mycroft#668
-            "correction_free_pct": {"triage": None, "issue-tag": clean},  # triage: mycroft#668
-            "pending": {"shadow_agreement_pct": "mycroft#668", "correction_free_pct": "mycroft#668"},
+            # issue-tag from skill-library#561 rows, triage from mycroft#670 rows. null = rows not landed.
+            "shadow_agreement_pct": {"triage": t_agree, "issue-tag": agree},
+            "correction_free_pct": {"triage": t_clean, "issue-tag": clean},
+            "pending": {  # each workflow points at the issue that feeds it
+                "shadow_agreement_pct": {"triage": "mycroft#668", "issue-tag": "skill-library#561"},
+                "correction_free_pct": {"triage": "mycroft#668", "issue-tag": "skill-library#561"},
+            },
         },
     }
 

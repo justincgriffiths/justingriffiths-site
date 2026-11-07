@@ -5,11 +5,17 @@
    "triage": null
   },
   "pending": {
-   "correction_free_pct": "mycroft#668",
-   "shadow_agreement_pct": "mycroft#668"
+   "correction_free_pct": {
+    "issue-tag": "skill-library#561",
+    "triage": "mycroft#668"
+   },
+   "shadow_agreement_pct": {
+    "issue-tag": "skill-library#561",
+    "triage": "mycroft#668"
+   }
   },
   "shadow_agreement_pct": {
-   "issue-tag": null,
+   "issue-tag": 0.0,
    "triage": null
   },
   "trial": {
@@ -34,7 +40,7 @@
   },
   "by_workflow": {
    "issue-tag": {
-    "answered": 0,
+    "answered": 12,
     "capped": 0,
     "fell_back": 0
    },
@@ -47,7 +53,7 @@
  },
  "cost_per_run": {
   "issue_tag_usd_per_item": {
-   "haiku": 0.0063
+   "qwen": 0.0
   },
   "triage_baseline_usd_per_run": 0.4328,
   "triage_by_day": [
@@ -156,7 +162,14 @@
  "model": "qwen3-coder:30b",
  "schema": 1,
  "share_by_day": {
-  "issue-tag": [],
+  "issue-tag": [
+   {
+    "answered": 12,
+    "capped": 0,
+    "day": "2026-11-07",
+    "fell_back": 0
+   }
+  ],
   "triage": [
    {
     "answered": 1,

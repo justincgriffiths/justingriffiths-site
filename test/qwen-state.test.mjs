@@ -7,8 +7,8 @@ import { join } from "node:path";
 import worker from "../src/worker.js";
 
 // PUBLIC page: poison every source with per-message fields; none may reach the exporter output.
-const SENTINELS = ["SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841", "SENTINEL_LABEL_xyz", "secret-repo-sentinel2", "7771299"];
-const FORBIDDEN_KEYS = ["id", "ids", "subject", "sender", "from", "title", "number", "repo", "account", "labels", "pair", "haiku_add", "dimension", "from", "to", "model_of_origin", "applied_at", "context", "input", "message_id", "email", "report"];
+const SENTINELS = ["SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841", "SENTINEL_LABEL_xyz", "secret-repo-sentinel2", "7771299", "SENTINEL_PAIR_LABEL", "SENTINEL_MSGID_PAIR", "SENTINEL_CORR_ISSUE_8842"];
+const FORBIDDEN_KEYS = ["id", "ids", "subject", "sender", "from", "title", "number", "repo", "account", "labels", "pair", "haiku_add", "dimension", "from", "to", "model_of_origin", "applied_at", "qwen_label", "haiku_label", "from_label", "to_label", "issue", "match", "haiku_usd", "context", "input", "message_id", "email", "report"];
 
 const dir = mkdtempSync(join(tmpdir(), "qwen-"));
 const runs = join(dir, "runs"); mkdirSync(runs);
@@ -19,6 +19,11 @@ writeFileSync(join(runs, "20261107-142909-SENTINEL_ACCOUNT.audit.jsonl"), [
   { tool: "qwen_classify", id: "SENTINEL_MSGID_9f3a", label: "fyi", escalated: false, latency_ms: 900 },
   { tool: "Agent", input: { prompt: "SENTINEL SUBJECT Q3 invoice sender-sentinel@example.com" } },
 ].map((r) => JSON.stringify(r)).join("\n") + "\n");
+writeFileSync(join(runs, "20261107-150000-SENTINEL_ACCOUNT.audit.jsonl"), [
+  { tool: "qwen_pair", ts: "2026-11-07T15:00:00Z", id: "SENTINEL_MSGID_PAIR", qwen_label: "SENTINEL_PAIR_LABEL", haiku_label: "SENTINEL_PAIR_LABEL", match: true, reason: "SENTINEL REASON free text 8841", haiku_usd: 0.01, latency_ms: 800 },
+  { tool: "qwen_pair", id: "SENTINEL_MSGID_PAIR", qwen_label: "fyi", haiku_label: "task", match: false, haiku_usd: 0.01 },
+].map((r) => JSON.stringify(r)).join("\n") + "\n");
+writeFileSync(join(runs, "corrections.audit.jsonl"), JSON.stringify({ tool: "qwen_correction", id: "SENTINEL_MSGID_9f3a", from_label: "SENTINEL_PAIR_LABEL", to_label: "task", model_of_origin: "qwen3-coder:30b", issue: "SENTINEL_CORR_ISSUE_8842" }) + "\n");
 writeFileSync(join(dir, "tag.log"), "[2026-11-07T06:00:00Z] argv=[secret-repo-sentinel personal limit=1] exit=0 tagged=1 failed=0 qwen_used=1 fallback_to_haiku=0 haiku_direct=2\n");
 writeFileSync(join(dir, "tag.jsonl"), [
   { number: 7771234, title: "SENTINEL_ISSUE_TITLE", repo: "secret-repo-sentinel", model: "qwen3-coder:30b", cost_usd: 0, pair: { haiku_add: ["SENTINEL_LABEL_xyz"], match: true, cost_usd: 0.01, error: null } },
@@ -60,12 +65,14 @@ test("committed content/qwen/data.json holds no per-message field", () => {
   assert.ok(!/@|"id"|title|subject/.test(raw));
 });
 
-test("issue-tag accuracy comes from the #561 rows; triage waits on mycroft#668", () => {
+test("accuracy comes from the #561 (issue-tag) and #670 (triage) rows", () => {
   const a = JSON.parse(out).accuracy;
   assert.equal(a.shadow_agreement_pct["issue-tag"], 50);   // 1 match of 2 pairs
   assert.equal(a.correction_free_pct["issue-tag"], 50);    // 1 of 2 applied was corrected
-  assert.equal(a.shadow_agreement_pct.triage, null);
-  assert.equal(a.pending.shadow_agreement_pct, "mycroft#668");
+  assert.equal(a.shadow_agreement_pct.triage, 50);          // 1 match of 2 pairs
+  assert.equal(a.correction_free_pct.triage, 50);           // 2 answered, 1 corrected
+  assert.equal(a.pending.shadow_agreement_pct["issue-tag"], "skill-library#561");
+  assert.equal(a.pending.correction_free_pct.triage, "mycroft#668");
 });
 
 const assets = { fetch: async (r) => new Response(`asset:${new URL(r.url).pathname}`) };
