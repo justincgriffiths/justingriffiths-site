@@ -24,7 +24,9 @@ writeFileSync(join(runs, "20261107-150000-SENTINEL_ACCOUNT.audit.jsonl"), [
   { tool: "qwen_pair", id: "SENTINEL_MSGID_PAIR", qwen_label: "fyi", haiku_label: "task", match: false, haiku_usd: 0.01 },
 ].map((r) => JSON.stringify(r)).join("\n") + "\n");
 writeFileSync(join(runs, "corrections.audit.jsonl"), JSON.stringify({ tool: "qwen_correction", id: "SENTINEL_MSGID_9f3a", from_label: "SENTINEL_PAIR_LABEL", to_label: "task", model_of_origin: "qwen3-coder:30b", issue: "SENTINEL_CORR_ISSUE_8842" }) + "\n");
-writeFileSync(join(dir, "tag.log"), "[2026-11-07T06:00:00Z] argv=[secret-repo-sentinel personal limit=1] exit=0 tagged=1 failed=0 qwen_used=1 fallback_to_haiku=0 haiku_direct=2\n");
+writeFileSync(join(dir, "tag.log"),
+  "[2026-11-07T06:00:00Z] argv=[secret-repo-sentinel personal limit=1 apply=1] exit=0 tagged=1 failed=0 qwen=1 fallback=0 haiku=2\n" +
+  "[2026-11-07T06:05:00Z] argv=[secret-repo-sentinel personal limit=5 apply=0] exit=0 tagged=5 failed=0 qwen=5 fallback=0 haiku=0\n");
 writeFileSync(join(dir, "tag.jsonl"), [
   { number: 7771234, title: "SENTINEL_ISSUE_TITLE", repo: "secret-repo-sentinel", model: "qwen3-coder:30b", cost_usd: 0, pair: { haiku_add: ["SENTINEL_LABEL_xyz"], match: true, cost_usd: 0.01, error: null } },
   { number: 7771299, repo: "secret-repo-sentinel2", model: "qwen3-coder:30b", cost_usd: 0, pair: { haiku_add: [], match: false, cost_usd: 0.01, error: null } },
@@ -45,7 +47,8 @@ test("exporter keeps the aggregates", () => {
   assert.equal(d.fallback_reasons.other, 1);
   assert.equal(d.breakdowns.by_task_label.fyi, 1);
   assert.equal(d.breakdowns.by_task_label.other, 1);
-  assert.equal(d.share_by_day["issue-tag"][0].answered, 1);
+  assert.equal(d.share_by_day["issue-tag"][0].answered, 1);   // the apply=0 dry run (5) is not counted
+  assert.equal(d.share_by_day["issue-tag"][0].capped, 2);
 });
 
 test("no per-message string reaches the output", () => {

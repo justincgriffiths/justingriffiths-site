@@ -111,7 +111,7 @@ def issue_tag():
     lines = [l for p in TAG_LOGS if os.path.exists(p) for l in open(p)]
     for line in lines:
         m = re.match(r"\[(\d{4}-\d{2}-\d{2})T", line)
-        if not m: continue
+        if not m or "apply=1" not in line: continue  # public page counts live runs only; dry runs (apply=0) are dropped
         # The log line says qwen=N fallback=N haiku=N; the script's stdout summary says qwen_used= fallback_to_haiku= haiku_direct=.
         q = re.search(r"qwen(?:_used)?=(\d+)", line); f = re.search(r"fallback(?:_to_haiku)?=(\d+)", line); h = re.search(r"haiku(?:_direct)?=(\d+)", line)
         if not q: continue

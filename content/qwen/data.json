@@ -15,7 +15,7 @@
    }
   },
   "shadow_agreement_pct": {
-   "issue-tag": 0.0,
+   "issue-tag": null,
    "triage": null
   },
   "trial": {
@@ -40,7 +40,7 @@
   },
   "by_workflow": {
    "issue-tag": {
-    "answered": 12,
+    "answered": 10,
     "capped": 0,
     "fell_back": 0
    },
@@ -164,7 +164,7 @@
  "share_by_day": {
   "issue-tag": [
    {
-    "answered": 12,
+    "answered": 10,
     "capped": 0,
     "day": "2026-11-07",
     "fell_back": 0
