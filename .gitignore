@@ -4,6 +4,6 @@ node_modules/
 .DS_Store
 candidates/
 bin/*.log
-fleet/target/
 *.launchd.log
 bin/access-*.log
+fleet/target/
