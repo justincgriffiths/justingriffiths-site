@@ -10,6 +10,8 @@ const APEX = "justingriffiths.com";
 const RESEARCH = "https://justingriffiths.info";
 const HUB_PATHS = new Set(["/", "/index.html", "/style.css", "/favicon.svg", "/robots.txt"]);
 export const GATED_PREFIX = "/fleet";
+const STATE_PATH = `${GATED_PREFIX}/state.json`, STATE_KEY = "state.json";
+const GATED_HEADERS = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY", "Referrer-Policy": "no-referrer" };
 
 export default {
   async fetch(request, env) {
@@ -33,12 +35,15 @@ export default {
         url.pathname = `${GATED_PREFIX}/`;
         return Response.redirect(url.toString(), 301);
       }
+      // Live fleet state: the mini writes it to KV (bin/fleet-kv.sh); only this gated branch reads it.
+      if (url.pathname === STATE_PATH) {
+        const state = env.FLEET_KV ? await env.FLEET_KV.get(STATE_KEY) : null;
+        if (state === null) return new Response("Not found", { status: 404, headers: { "Cache-Control": "private, no-store" } });
+        return new Response(state, { headers: { ...GATED_HEADERS, "Content-Type": "application/json; charset=utf-8" } });
+      }
       const res = await env.ASSETS.fetch(request);
       const out = new Response(res.body, res);
-      out.headers.set("Cache-Control", "private, no-store");
-      out.headers.set("X-Content-Type-Options", "nosniff");
-      out.headers.set("X-Frame-Options", "DENY");
-      out.headers.set("Referrer-Policy", "no-referrer");
+      for (const [k, v] of Object.entries(GATED_HEADERS)) out.headers.set(k, v);
       return out;
     }
 
