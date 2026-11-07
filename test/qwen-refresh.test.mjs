@@ -12,7 +12,7 @@ const run = (data, state) => {
   return spawnSync("bin/qwen-refresh.sh", ["--no-deploy"], { encoding: "utf8",
     env: { ...process.env, QWEN_REFRESH_STATE: state, QWEN_REFRESH_REF: "HEAD", QWEN_REFRESH_DATA: f } });
 };
-const clean = { schema: 1, share_by_day: { triage: [{ day: "2026-11-07", answered: 3 }] } };
+const clean = JSON.parse(readFileSync("content/qwen/data.json", "utf8")); // real shape: the refresh now runs the full site build on it
 
 test("changed + clean data passes the gates and is not deployed", () => {
   const r = run(clean, join(dir, "s1"));
@@ -35,4 +35,27 @@ test("a planted per-message field blocks with a non-zero exit and names the rule
     assert.ok(!/SENTINEL|sentinel@/.test(r.stdout), "the leaked value was echoed");
     assert.ok(!existsSync(join(dir, "s3", "last-deployed.sha256")));
   }
+});
+
+// The refresh builds with bin/site-build.sh, so dist/ always carries the four /fleet/ pages (stubbed here: no cargo in tests).
+const stub = (body) => { const f = join(dir, "stub-" + Math.random().toString(36).slice(2) + ".sh"); writeFileSync(f, "#!/usr/bin/env bash\n" + body, { mode: 0o755 }); return f; };
+const runWith = (fleetBuild) => spawnSync("bin/qwen-refresh.sh", ["--no-deploy"], { encoding: "utf8",
+  env: { ...process.env, QWEN_REFRESH_STATE: join(dir, "sb" + Math.random()), QWEN_REFRESH_REF: "HEAD",
+    QWEN_REFRESH_DATA: (() => { const f = join(dir, "d2.json"); writeFileSync(f, JSON.stringify(clean)); return f; })(), FLEET_BUILD: fleetBuild } });
+const fleetStub = '# PAGE selects the sub-page\nd=dist/fleet${PAGE:+/$PAGE}; mkdir -p "$d"; echo x > "$d/index.html"\n';
+
+test("refresh build lists fleet/index.html and the three sub-pages", () => {
+  const r = runWith(stub(fleetStub));
+  assert.equal(r.status, 0, r.stdout);
+  for (const p of ["./index.html", "./bike-factory/index.html", "./seats/index.html", "./battle-school/index.html"]) assert.ok(r.stdout.includes(p), `missing ${p} in: ${r.stdout}`);
+});
+
+test("a fleet page that does not build fails the refresh (exit 1)", () => {
+  const r = runWith(stub('[ "$PAGE" = seats ] && exit 1\n' + fleetStub));
+  assert.equal(r.status, 1); assert.match(r.stdout, /site build failed/);
+});
+
+test("a fleet step that exits 0 without writing the page still fails", () => {
+  const r = runWith(stub("exit 0\n"));
+  assert.equal(r.status, 1); assert.match(r.stdout, /site build failed/);
 });

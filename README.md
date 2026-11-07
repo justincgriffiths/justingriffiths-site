@@ -70,7 +70,7 @@ npx wrangler dev          # http://localhost:8787
 
 1. **Research answers on justingriffiths.info.** The `.info` tunnel ingress already exists in the personal-web tunnel (to `web:3000`). Confirm `/research`, `/research/articles` and `/login` load on `.info`. Then retire the Vercel project and archive `justincgriffiths/justingriffiths-info`.
 2. **Free the apex.** Remove the personal-web tunnel's public-hostname route for `justingriffiths.com`, and the proxied CNAME for the apex (and `www`) in Cloudflare DNS. A custom domain will not attach over an existing CNAME.
-3. **Deploy.** `CLOUDFLARE_ACCOUNT_ID=6d4a918dd966be7c05f23b2e154b3d1d npx wrangler deploy` from `main`. Mycroft runs this; it can also be triggered through the deploy webhook at hooks.mycroft.tech.
+3. **Deploy.** `bin/site-build.sh` (the npm build plus all four `/fleet/` pages, so a deploy never ships without them), then `CLOUDFLARE_ACCOUNT_ID=6d4a918dd966be7c05f23b2e154b3d1d npx wrangler deploy` from `main`. Mycroft runs this; it can also be triggered through the deploy webhook at hooks.mycroft.tech.
 4. **Verify.**
    - `curl -sI https://justingriffiths.com/` returns 200.
    - `curl -sI https://www.justingriffiths.com/` returns a 301 to the apex.
@@ -105,6 +105,7 @@ Go-live (each line is a Cloudflare write, Justin's go): see the PR body of the l
 
 - **Change gate**: same sha256 as the last deploy (`~/.local/state/qwen-refresh/last-deployed.sha256`) exits 0 and deploys nothing.
 - **Privacy gate**: `bin/qwen-leakcheck.py` blocks any per-message key, `@`, or id/title/subject text; exit 1, nothing deployed, the value is never echoed.
+- **Build**: `bin/site-build.sh` in the snapshot (npm build, then `/fleet/` landing, bike-factory, seats, battle-school); any failed step or missing fleet page exits 1, nothing deployed. Every deploy path uses this one build.
 - **Deploy**: `npx wrangler deploy` from the snapshot, only on a clean change; the hash is recorded after success.
 
-`bin/qwen-refresh.sh --no-deploy` runs both gates and stops before the deploy. `bin/com.justin.qwen-refresh.plist` (08:10 and 14:10 ET, via `hbrun.sh`) ships unloaded; load it only after merge. Log: `bin/qwen-refresh.log`.
+`bin/qwen-refresh.sh --no-deploy` runs both gates and the build, prints the snapshot's `dist/fleet/` pages, and stops before the deploy. `bin/com.justin.qwen-refresh.plist` (08:10 and 14:10 ET, via `hbrun.sh`) ships unloaded; load it only after merge. Log: `bin/qwen-refresh.log`.
