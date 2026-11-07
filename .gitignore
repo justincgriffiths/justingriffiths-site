@@ -6,3 +6,4 @@ candidates/
 bin/*.log
 fleet/target/
 *.launchd.log
+bin/access-*.log
