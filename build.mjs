@@ -4,7 +4,7 @@
 // the page shows comes from bio.json. `bio.dossier` says what goes where; the canonical
 // text (name, headline, bios, work, links, people) stays in the top-level keys, and
 // blocks point at it with `from`. The block types are documented in the README.
-import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync, cpSync } from "node:fs";
 
 const bio = JSON.parse(readFileSync(new URL("./bio.json", import.meta.url), "utf8"));
 const REPO = "https://github.com/justincgriffiths/justingriffiths-site";
@@ -207,6 +207,10 @@ writeFileSync(new URL("./dist/index.html", import.meta.url), html);
 for (const f of ["style.css", "favicon.svg", "robots.txt"]) {
   const src = new URL(`./public/${f}`, import.meta.url);
   if (existsSync(src)) copyFileSync(src, new URL(`./dist/${f}`, import.meta.url));
+}
+// The .info snapshot at /archive/ (bin/archive-snap.mjs). Unlinked, so it is only copied, never indexed.
+if (existsSync(new URL("./archive/", import.meta.url))) {
+  cpSync(new URL("./archive/", import.meta.url), new URL("./dist/archive/", import.meta.url), { recursive: true });
 }
 console.log(`built dist/index.html (${html.length} bytes, ${dossier.sections.length} sections, ${exhibitCount} exhibits)`);
 

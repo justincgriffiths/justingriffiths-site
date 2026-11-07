@@ -3,11 +3,12 @@
 // /marketing-101/ is the Marketing 101 lesson page (build-marketing.mjs).
 // /fleet/... holds the visualization pages (live fleet state). Cloudflare Access gates them
 // (bin/access-login.sh); the Worker also checks the Access token itself and fails closed.
-// Everything else belonged to the old research site, so it 301s to the same path on justingriffiths.info.
+// /archive/... is a static snapshot of the old research site (justingriffiths.info), unlinked and noindex.
+// Everything else belonged to that site, so it 301s to the same path under /archive/.
 import { verifyAccessJwt } from "./access.js";
 
 const APEX = "justingriffiths.com";
-const RESEARCH = "https://justingriffiths.info";
+const ARCHIVE_PREFIX = "/archive";
 const HUB_PATHS = new Set(["/", "/index.html", "/style.css", "/favicon.svg", "/robots.txt"]);
 export const GATED_PREFIX = "/fleet";
 const STATE_PATH = `${GATED_PREFIX}/state.json`, STATE_KEY = "state.json";
@@ -56,8 +57,15 @@ export default {
       return env.ASSETS.fetch(request);
     }
 
+    if (url.pathname === ARCHIVE_PREFIX || url.pathname.startsWith(`${ARCHIVE_PREFIX}/`)) {
+      const res = await env.ASSETS.fetch(request);
+      const out = new Response(res.body, res);
+      out.headers.set("X-Robots-Tag", "noindex, nofollow");
+      return out;
+    }
+
     if (!HUB_PATHS.has(url.pathname)) {
-      return Response.redirect(`${RESEARCH}${url.pathname}${url.search}`, 301);
+      return Response.redirect(`${url.origin}${ARCHIVE_PREFIX}${url.pathname}${url.search}`, 301);
     }
 
     return env.ASSETS.fetch(request);

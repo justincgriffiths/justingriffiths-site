@@ -40,10 +40,15 @@ test("worker: /fleet/ without token is 404, not a redirect to .info", async () =
   assert.equal((await hit("/fleet/")).status, 404);
   assert.equal((await hit("/fleet/scene.js")).status, 404);
 });
-test("worker: other unknown paths still 301 to .info", async () => {
+test("worker: other unknown paths 301 to /archive/ on .com", async () => {
   const r = await hit("/research");
   assert.equal(r.status, 301);
-  assert.match(r.headers.get("location"), /justingriffiths\.info/);
+  assert.equal(r.headers.get("location"), "https://justingriffiths.com/archive/research");
+});
+test("worker: /archive/ is served from assets with noindex", async () => {
+  const r = await hit("/archive/research/");
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get("x-robots-tag"), "noindex, nofollow");
 });
 test("worker: hub stays public", async () => assert.equal((await hit("/")).status, 200));
 test("worker: gated response is private, no-store, framing denied", async () => {
