@@ -6,7 +6,7 @@ fixed category name. Nothing is copied from a source row, so a new per-message f
 Never exported: message ids, subjects, senders, issue titles, issue numbers, repo names, accounts.
 
 Sources (override with env for tests): QWEN_RUNS (cos/runs dir), QWEN_COST_DB (cos/state/cost.db),
-QWEN_TAG_LOG / QWEN_TAG_JSONL (skill-library write-work-items/scripts/issue-tag.{log,jsonl}).
+QWEN_TAG_LOG / QWEN_TAG_JSONL (the canonical issue-tag.{log,jsonl} in ~/.local/state/issue-tag, or ISSUE_TAG_STATE; skill-library#564).
 Usage: bin/qwen-state.py [--now ISO]
 """
 import glob, json, os, re, sqlite3, sys
@@ -15,8 +15,8 @@ from collections import defaultdict
 HOME = os.path.expanduser("~")
 RUNS = os.environ.get("QWEN_RUNS", f"{HOME}/worktrees/mycroft/live/cos/runs")
 COST_DB = os.environ.get("QWEN_COST_DB", f"{HOME}/worktrees/mycroft/live/cos/state/cost.db")
-TAG_DIR = f"{HOME}/worktrees/skill-library/live/write-work-items/scripts"
-# Paths may be a colon-separated list (the tagger logs into the worktree it runs from until its PRs merge).
+TAG_DIR = os.environ.get("ISSUE_TAG_STATE", f"{HOME}/.local/state/issue-tag")
+# Paths may be a colon-separated list; the tagger now logs to one canonical dir whatever checkout runs it (skill-library#564).
 TAG_LOGS = os.environ.get("QWEN_TAG_LOG", f"{TAG_DIR}/issue-tag.log").split(":")
 TAG_JSONLS = os.environ.get("QWEN_TAG_JSONL", f"{TAG_DIR}/issue-tag.jsonl").split(":")
 
