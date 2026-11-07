@@ -179,17 +179,45 @@
       {
         "name": "anansi · 112-seat-hosts",
         "state": "idle",
-        "card": "anansi-agent#112 · seat hosts"
+        "card": "anansi-agent#112 · seat hosts",
+        "repo": "anansi-agent",
+        "holder": "AGT_BLD_anansi-112"
       },
       {
         "name": "bike-shop · 74-seat-bus-hosts",
         "state": "blocked",
-        "card": "bike-shop#74 · seat bus hosts"
+        "card": "bike-shop#74 · seat bus hosts",
+        "repo": "bike-shop",
+        "holder": "AGT_BLD_bike-shop-74"
       },
       {
         "name": "mycroft · 653-price-session-tokens",
         "state": "working",
-        "card": "mycroft#653 · price session tokens"
+        "card": "mycroft#653 · price session tokens",
+        "repo": "mycroft",
+        "holder": "AGT_BLD_mycroft-653"
+      }
+    ],
+    "queue": [
+      {
+        "id": "BS-021",
+        "title": "Meta edit-in-place vs duplicate",
+        "state": "picked up"
+      },
+      {
+        "id": "BS-022",
+        "title": "Pacing sheet refresh, weekly",
+        "state": "queued"
+      },
+      {
+        "id": "BS-023",
+        "title": "UTM audit template",
+        "state": "queued"
+      },
+      {
+        "id": "BS-024",
+        "title": "Connection probe, second client",
+        "state": "queued"
       }
     ]
   }

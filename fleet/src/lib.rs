@@ -76,6 +76,19 @@ pub struct BikeFactory {
     pub seats: Vec<Lane>,
     #[serde(default)]
     pub bridges: Vec<Lane>,
+    /// BS-* cards in bike-shop `queue/`: `queued` until a bridge picks one up.
+    #[serde(default)]
+    pub queue: Vec<QueueCard>,
+}
+
+/// One BS card in the bike-shop queue.
+#[derive(Deserialize, Clone, Debug, Default)]
+pub struct QueueCard {
+    pub id: String,
+    #[serde(default)]
+    pub title: String,
+    #[serde(default)]
+    pub state: String,
 }
 
 /// One lane: a toon, a seat or a bridge. `state` is `working`, `blocked` or `idle`.
@@ -88,6 +101,11 @@ pub struct Lane {
     pub card: String,
     #[serde(default)]
     pub note: String,
+    /// Bridges only: the repo the lane builds in, and the session (bridgeman) holding the card.
+    #[serde(default)]
+    pub repo: String,
+    #[serde(default)]
+    pub holder: String,
 }
 
 pub struct State {
