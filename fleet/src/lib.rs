@@ -34,6 +34,8 @@ pub struct Fleet {
     pub battle_school: BattleSchool,
     #[serde(default)]
     pub bike_factory: BikeFactory,
+    #[serde(default)]
+    pub seat_flow: SeatFlow,
 }
 
 #[derive(Deserialize, Clone, Debug, Default)]
@@ -79,6 +81,43 @@ pub struct BikeFactory {
     /// BS-* cards in bike-shop `queue/`: `queued` until a bridge picks one up.
     #[serde(default)]
     pub queue: Vec<QueueCard>,
+}
+
+/// The seat buses (bike-shop#42 protocol): envelopes sent between seats, and what waits on Justin.
+#[derive(Deserialize, Clone, Debug, Default)]
+pub struct SeatFlow {
+    /// Oldest first, as the buses record them.
+    #[serde(default)]
+    pub envelopes: Vec<Envelope>,
+    #[serde(default)]
+    pub waiting_on_justin: Vec<Ask>,
+}
+
+/// One envelope on a seat bus: `from` sent `verb` about `card` to `to`.
+#[derive(Deserialize, Clone, Debug, Default)]
+pub struct Envelope {
+    #[serde(default)]
+    pub ts: String,
+    pub from: String,
+    pub to: String,
+    #[serde(default)]
+    pub verb: String,
+    #[serde(default)]
+    pub card: String,
+    #[serde(default)]
+    pub state: String,
+    #[serde(default)]
+    pub note: String,
+}
+
+/// A decision or review a seat has parked for Justin.
+#[derive(Deserialize, Clone, Debug, Default)]
+pub struct Ask {
+    pub card: String,
+    #[serde(default)]
+    pub ask: String,
+    #[serde(default)]
+    pub seat: String,
 }
 
 /// One BS card in the bike-shop queue.

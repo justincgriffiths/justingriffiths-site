@@ -220,5 +220,70 @@
         "state": "queued"
       }
     ]
+  },
+  "seat_flow": {
+    "envelopes": [
+      {
+        "ts": "2026-11-07T05:29:12Z",
+        "from": "◆MYCROFT_COS",
+        "to": "●ANANSI_ROUTER",
+        "verb": "dispatch",
+        "card": "bean-agent#24",
+        "state": "new",
+        "note": "pacing check for the week, N=1 first"
+      },
+      {
+        "ts": "2026-11-07T05:42:50Z",
+        "from": "◆MYCROFT_COS",
+        "to": "●ANANSI_ROUTER",
+        "verb": "dispatch",
+        "card": "bike-shop#71",
+        "state": "new",
+        "note": "Meta edit-in-place vs duplicate, sandbox only"
+      },
+      {
+        "ts": "2026-11-07T06:41:32Z",
+        "from": "◆MYCROFT_COS",
+        "to": "●ANANSI_ROUTER",
+        "verb": "dispatch",
+        "card": "mycroft#647",
+        "state": "new",
+        "note": "pick a lane for calendar management"
+      },
+      {
+        "ts": "2026-11-07T09:10:00Z",
+        "from": "●ANANSI_ROUTER",
+        "to": "■KALADIN",
+        "verb": "dispatch",
+        "card": "bike-shop#71",
+        "state": "new",
+        "note": "route: model=sonnet cap=$2.00"
+      },
+      {
+        "ts": "2026-11-07T12:30:00Z",
+        "from": "■KALADIN",
+        "to": "◆MYCROFT_COS",
+        "verb": "report",
+        "card": "bike-shop#71",
+        "state": "blocked",
+        "note": "waiting on a sandbox ad account"
+      },
+      {
+        "ts": "2026-11-07T15:04:51Z",
+        "from": "◆MYCROFT_COS",
+        "to": "▲BIKE_SHOP_FACTORY",
+        "verb": "report",
+        "card": "queue/BS-024.md",
+        "state": "done",
+        "note": ""
+      }
+    ],
+    "waiting_on_justin": [
+      {
+        "card": "mycroft#647",
+        "ask": "OK a family event on the personal calendar",
+        "seat": "◆MYCROFT_COS"
+      }
+    ]
   }
 }

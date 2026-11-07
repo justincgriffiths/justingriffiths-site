@@ -2704,6 +2704,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "seats"
+version = "0.0.1"
+dependencies = [
+ "fleet-scene",
+ "rune",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "semver"
 version = "1.0.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
