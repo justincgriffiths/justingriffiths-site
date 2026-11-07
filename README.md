@@ -75,3 +75,14 @@ npx wrangler dev          # http://localhost:8787
    - `curl -sI https://justingriffiths.com/research/articles` returns a 301 to .info.
 
 Rollback: remove the two `routes` entries and redeploy, then restore the tunnel route and CNAME.
+
+## Gated pages (`/fleet/`)
+
+The visualization pages (live fleet state) are served under `/fleet/` and are never public. Two layers:
+
+- **Cloudflare Access** (`bin/access-login.sh`) puts `justingriffiths.com/fleet` and `/marketing-101` behind Google sign-in with an email allowlist. `--dry-run` prints the planned apps and changes nothing.
+- **The Worker** (`src/access.js`) verifies the Access token on every `/fleet/*` request (signature, audience, issuer, expiry) and answers 404 without one, so workers.dev and a mis-set app cannot expose the pages. Unset `ACCESS_TEAM_DOMAIN`/`ACCESS_AUD` in `wrangler.jsonc` also means 404.
+
+The allowlist lives only in the Access policy: `bin/access-allow.sh list|add|remove` (run under `op run --env-file=bin/access.env`). No emails are committed; the scripts' `.log` files are gitignored because they record emails.
+
+Go-live, when Justin says go: `op run --env-file=bin/access.env -- bin/access-login.sh <emails>`; copy the printed `ACCESS_TEAM_DOMAIN` and the Fleet app's `ACCESS_AUD` into `wrangler.jsonc` vars; deploy. Tests: `npm test`.
