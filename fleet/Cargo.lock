@@ -384,6 +384,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bike-factory"
+version = "0.0.1"
+dependencies = [
+ "fleet-scene",
+ "rune",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "bit-set"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

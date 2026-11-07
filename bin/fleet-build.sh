@@ -4,6 +4,7 @@
 # Needs: rustup (fleet/rust-toolchain.toml picks 1.99.1), the wasm32-unknown-unknown target and
 # wasm-bindgen-cli 0.2.129 (see fleet/Cargo.toml), python3.11+ for Rune's web-build.sh.
 # FLEET_STATE=<json> renders live state (from bin/fleet-state.sh) instead of fleet/fixture.json.
+# PAGE=bike-factory builds /fleet/bike-factory/ the same way (fleet/bike-factory crate, docs/bike-factory-n1.png).
 # PAGE=battle-school builds the /fleet/battle-school/ page (fleet/battle-school crate) instead of the landing scene:
 #   PAGE=battle-school bin/fleet-build.sh [--snap]  → dist/fleet/battle-school/ or docs/battle-school-n1.png
 set -uo pipefail
@@ -17,11 +18,16 @@ run() {
       (cd fleet/battle-school && cargo run -q -- --snap ../../docs/battle-school-n1.png --size 1120x900 --scale 2) || return 1
       echo "docs/battle-school-n1.png"; return 0
     fi
+    if [ "$PAGE" = bike-factory ]; then
+      (cd fleet/bike-factory && cargo run -q -- --snap ../../docs/bike-factory-n1.png --size 1120x760 --scale 2) || return 1
+      echo "docs/bike-factory-n1.png"; return 0
+    fi
     (cd fleet && cargo run -q -- --snap ../docs/fleet-n1.png --size 1120x640 --scale 2 \
       && cargo run -q -- --tree ../docs/fleet-n1.tree.json) || return 1
     echo "docs/fleet-n1.png docs/fleet-n1.tree.json"; return 0
   fi
   local pkg=fleet-scene out=../dist/fleet dir=fleet
+  [ "$PAGE" = bike-factory ] && { pkg=bike-factory; out=../../dist/fleet/bike-factory; dir=fleet/bike-factory; }
   [ "$PAGE" = battle-school ] && { pkg=battle-school; out=../../dist/fleet/battle-school; dir=fleet/battle-school; }
   local rune; rune=$(cd fleet && cargo metadata --format-version 1 2>/dev/null \
     | python3 -c 'import json,sys,os; m=json.load(sys.stdin); print(os.path.dirname(next(p["manifest_path"] for p in m["packages"] if p["name"]=="rune")))')
