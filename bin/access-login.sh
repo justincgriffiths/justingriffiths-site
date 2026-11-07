@@ -21,6 +21,12 @@ DRY=0; [ "${1:-}" = "--dry-run" ] && { DRY=1; shift; }
 [ $# -ge 1 ] || { echo "usage: access-login.sh [--dry-run] email [email ...]" >&2; log 2 "no emails"; }
 # name|domain-with-path. Add a path here to gate it.
 APPS=("Marketing 101|justingriffiths.com/marketing-101" "Fleet visualizations|justingriffiths.com/fleet")
+# ACCESS_ONLY=fleet locks one app and leaves the rest as they are (2026-11-07: /marketing-101 stays public).
+if [ -n "${ACCESS_ONLY:-}" ]; then
+  KEEP=(); for a in "${APPS[@]}"; do case "${a#*|}" in *"/${ACCESS_ONLY}") KEEP+=("$a");; esac; done; APPS=("${KEEP[@]}")
+fi
+# ACCESS_LOGIN=otp signs in with Cloudflare's emailed one-time code instead of Google (no OAuth client needed).
+LOGIN="${ACCESS_LOGIN:-google}"
 INCLUDE=$(printf '%s\n' "$@" | jq -R '{email:{email:.}}' | jq -s .)
 app_body() { # $1 name, $2 domain, $3 idp id
   jq -n --arg n "$1" --arg d "$2" --arg idp "$3" --argjson inc "$INCLUDE" '{name:$n, type:"self_hosted",
@@ -34,15 +40,22 @@ if [ "$DRY" = 1 ]; then
   echo "Then set ACCESS_TEAM_DOMAIN and ACCESS_AUD (printed per app after a real run) in wrangler.jsonc vars, and deploy."
   log 0 "dry run for $# email(s)"
 fi
-: "${CLOUDFLARE_API_TOKEN:?}" "${GOOGLE_CLIENT_ID:?}" "${GOOGLE_CLIENT_SECRET:?}"
+: "${CLOUDFLARE_API_TOKEN:?}"
+[ "$LOGIN" = otp ] || : "${GOOGLE_CLIENT_ID:?}" "${GOOGLE_CLIENT_SECRET:?}"
 cf() { curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "$@"; }
 
 ORG=$(cf "$API/organizations" | jq -r '.result.auth_domain // empty')
 [ -n "$ORG" ] || log 1 "no Zero Trust org on JG Personal: create one in the dashboard (Zero Trust > Settings), then rerun"
-echo "Google OAuth redirect URI must be: https://$ORG/cdn-cgi/access/callback"
+[ "$LOGIN" = otp ] || echo "Google OAuth redirect URI must be: https://$ORG/cdn-cgi/access/callback"
 echo "ACCESS_TEAM_DOMAIN=$ORG"
 
+if [ "$LOGIN" = otp ]; then
+  IDP=$(cf "$API/identity_providers" | jq -r '.result[] | select(.type=="onetimepin") | .id' | head -1)
+  [ -n "$IDP" ] || IDP=$(cf -X POST "$API/identity_providers" -d '{"name":"Email code","type":"onetimepin","config":{}}' | jq -r '.result.id // empty')
+  [ -n "$IDP" ] || log 1 "creating the email-code login method failed"
+else
 IDP=$(cf "$API/identity_providers" | jq -r '.result[] | select(.type=="google") | .id' | head -1)
+fi
 if [ -z "$IDP" ]; then
   IDP=$(cf -X POST "$API/identity_providers" -d "$(jq -n --arg id "$GOOGLE_CLIENT_ID" --arg s "$GOOGLE_CLIENT_SECRET" \
     '{name:"Google", type:"google", config:{client_id:$id, client_secret:$s}}')" | jq -r '.result.id // empty')
@@ -57,6 +70,6 @@ for a in "${APPS[@]}"; do
   echo "$NAME: ACCESS_AUD=$(echo "$OUT" | jq -r '.result.aud')  (only the /fleet app's value goes in wrangler.jsonc)"
   CODE=$(curl -s -o /dev/null -w '%{http_code}' "https://$DOM/")
   [ "$CODE" = "302" ] || log 1 "app saved but $DOM/ answered $CODE, not a 302 to sign-in"
-  echo "Locked: $DOM/ now redirects to Google sign-in for $*"
+  echo "Locked: $DOM/ now redirects to $LOGIN sign-in for $*"
 done
 log 0 "locked ${#APPS[@]} app(s) for $# email(s)"
