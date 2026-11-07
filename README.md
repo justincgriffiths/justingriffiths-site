@@ -87,3 +87,13 @@ The visualization pages (live fleet state) are served under `/fleet/` and are ne
 The allowlist lives only in the Access policy: `bin/access-allow.sh list|add|remove` (run under `op run --env-file=bin/access.env`). No emails are committed; the scripts' `.log` files are gitignored because they record emails.
 
 Go-live, when Justin says go: `op run --env-file=bin/access.env -- bin/access-login.sh <emails>`; copy the printed `ACCESS_TEAM_DOMAIN` and the Fleet app's `ACCESS_AUD` into `wrangler.jsonc` vars; deploy. Tests: `npm test`.
+
+### Live feed (`/fleet/state.json`)
+
+The mini pushes fleet state to Cloudflare KV; the Worker reads it only behind the `/fleet/` gate. Nothing is public and the data is minutes old.
+
+- **Writer** (`bin/fleet-kv.sh`) runs `bin/fleet-state.py` and PUTs the JSON to KV key `state.json` with a 30-minute expiry, so a dead mini means 404, not stale data. `bin/fleet-kv.sh --dry-run` prints the write (key, bytes) and touches nothing. Live: `op run --env-file=bin/fleet-kv.env -- bin/fleet-kv.sh`. Log: `bin/fleet-kv.log`.
+- **Schedule** (`bin/com.justin.fleet-kv.plist`) runs it every 5 minutes. It ships unloaded (`RunAtLoad` false, not in `~/Library/LaunchAgents`).
+- **Reader** (`src/worker.js`) answers `/fleet/state.json` from the `FLEET_KV` binding inside the Access check. No token, no binding or no key all return 404.
+
+Go-live (each line is a Cloudflare write, Justin's go): see the PR body of the live-feed PR for the exact commands.

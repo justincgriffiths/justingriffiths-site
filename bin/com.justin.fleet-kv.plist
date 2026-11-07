@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Pushes fleet state to Cloudflare KV every 5 minutes. Ships UNLOADED: nothing runs until Justin
+     copies it to ~/Library/LaunchAgents and runs `launchctl bootstrap` (README, Live feed). -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.justin.fleet-kv</string>
+  <key>WorkingDirectory</key><string>/Users/justin/projects/justincgriffiths/justingriffiths-site</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/op</string>
+    <string>run</string>
+    <string>--env-file=bin/fleet-kv.env</string>
+    <string>--</string>
+    <string>bin/fleet-kv.sh</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+  <key>StartInterval</key><integer>300</integer>
+  <key>RunAtLoad</key><false/>
+  <key>StandardErrorPath</key><string>/Users/justin/projects/justincgriffiths/justingriffiths-site/bin/fleet-kv.launchd.log</string>
+</dict>
+</plist>
