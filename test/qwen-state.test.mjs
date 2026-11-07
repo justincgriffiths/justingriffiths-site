@@ -7,8 +7,8 @@ import { join } from "node:path";
 import worker from "../src/worker.js";
 
 // PUBLIC page: poison every source with per-message fields; none may reach the exporter output.
-const SENTINELS = ["SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841"];
-const FORBIDDEN_KEYS = ["id", "ids", "subject", "sender", "from", "title", "number", "repo", "account", "context", "input", "message_id", "email", "report"];
+const SENTINELS = ["SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841", "SENTINEL_LABEL_xyz", "secret-repo-sentinel2", "7771299"];
+const FORBIDDEN_KEYS = ["id", "ids", "subject", "sender", "from", "title", "number", "repo", "account", "labels", "pair", "haiku_add", "dimension", "from", "to", "model_of_origin", "applied_at", "context", "input", "message_id", "email", "report"];
 
 const dir = mkdtempSync(join(tmpdir(), "qwen-"));
 const runs = join(dir, "runs"); mkdirSync(runs);
@@ -20,7 +20,13 @@ writeFileSync(join(runs, "20261107-142909-SENTINEL_ACCOUNT.audit.jsonl"), [
   { tool: "Agent", input: { prompt: "SENTINEL SUBJECT Q3 invoice sender-sentinel@example.com" } },
 ].map((r) => JSON.stringify(r)).join("\n") + "\n");
 writeFileSync(join(dir, "tag.log"), "[2026-11-07T06:00:00Z] argv=[secret-repo-sentinel personal limit=1] exit=0 tagged=1 failed=0 qwen_used=1 fallback_to_haiku=0 haiku_direct=2\n");
-writeFileSync(join(dir, "tag.jsonl"), JSON.stringify({ number: 7771234, title: "SENTINEL_ISSUE_TITLE", repo: "secret-repo-sentinel", model: "qwen3-coder:30b", cost_usd: 0 }) + "\n");
+writeFileSync(join(dir, "tag.jsonl"), [
+  { number: 7771234, title: "SENTINEL_ISSUE_TITLE", repo: "secret-repo-sentinel", model: "qwen3-coder:30b", cost_usd: 0, pair: { haiku_add: ["SENTINEL_LABEL_xyz"], match: true, cost_usd: 0.01, error: null } },
+  { number: 7771299, repo: "secret-repo-sentinel2", model: "qwen3-coder:30b", cost_usd: 0, pair: { haiku_add: [], match: false, cost_usd: 0.01, error: null } },
+  { kind: "applied", ts: "2026-11-07T06:00:00Z", repo: "secret-repo-sentinel", number: 7771234, labels: ["SENTINEL_LABEL_xyz"], model: "qwen3-coder:30b" },
+  { kind: "applied", ts: "2026-11-07T06:00:00Z", repo: "secret-repo-sentinel2", number: 7771299, labels: ["SENTINEL_LABEL_xyz"], model: "qwen3-coder:30b" },
+  { kind: "correction", ts: "2026-11-07T07:00:00Z", repo: "secret-repo-sentinel2", number: 7771299, dimension: "SENTINEL_LABEL_xyz", from: "a", to: "b", model_of_origin: "qwen3-coder:30b", applied_at: "2026-11-07T06:00:00Z" },
+].map((r) => JSON.stringify(r)).join("\n") + "\n");
 
 const out = execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env,
   QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"), QWEN_TAG_LOG: join(dir, "tag.log"), QWEN_TAG_JSONL: join(dir, "tag.jsonl") } });
@@ -54,10 +60,12 @@ test("committed content/qwen/data.json holds no per-message field", () => {
   assert.ok(!/@|"id"|title|subject/.test(raw));
 });
 
-test("accuracy slots stay null until mycroft#668 / skill-library#560 land", () => {
+test("issue-tag accuracy comes from the #561 rows; triage waits on mycroft#668", () => {
   const a = JSON.parse(out).accuracy;
+  assert.equal(a.shadow_agreement_pct["issue-tag"], 50);   // 1 match of 2 pairs
+  assert.equal(a.correction_free_pct["issue-tag"], 50);    // 1 of 2 applied was corrected
   assert.equal(a.shadow_agreement_pct.triage, null);
-  assert.equal(a.pending.correction_free_pct, "skill-library#560");
+  assert.equal(a.pending.shadow_agreement_pct, "mycroft#668");
 });
 
 const assets = { fetch: async (r) => new Response(`asset:${new URL(r.url).pathname}`) };

@@ -116,10 +116,24 @@ def issue_tag():
         share[m[1]]["capped"] += int(h[1]) if h else 0
     models, per_run_cost = defaultdict(lambda: {"items": 0, "usd": 0.0}), 0
     for r in rows(TAG_JSONL):
+        if r.get("kind"): continue  # applied / correction rows: see tag_accuracy()
         m = "qwen" if "qwen" in str(r.get("model", "")).lower() else "haiku"
         models[m]["items"] += 1
         models[m]["usd"] += float(r.get("cost_usd") or 0)
     return share, models
+
+
+def tag_accuracy():
+    """skill-library#561 rows in issue-tag.jsonl. Returns (shadow agreement %, correction-free %); None until rows exist.
+    Per-item fields (repo, number, labels) are read only to count; none is returned."""
+    match = [r["pair"]["match"] for r in rows(TAG_JSONL)
+             if not r.get("kind") and isinstance(r.get("pair"), dict) and isinstance(r["pair"].get("match"), bool)]
+    applied = sum(1 for r in rows(TAG_JSONL) if r.get("kind") == "applied" and "qwen" in str(r.get("model", "")).lower())
+    fixed = len({(r.get("repo"), r.get("number")) for r in rows(TAG_JSONL)
+                 if r.get("kind") == "correction" and "qwen" in str(r.get("model_of_origin", "")).lower()})
+    agree = round(100 * sum(match) / len(match), 1) if match else None
+    clean = round(100 * max(applied - fixed, 0) / applied, 1) if applied else None
+    return agree, clean
 
 
 def series(share):
@@ -131,6 +145,7 @@ def build():
     i_share, i_models = issue_tag()
     c = costs()
     qdays = qwen_run_days()
+    agree, clean = tag_accuracy()
     pre = [v for d, v in c.items() if d not in qdays]
     post = [v for d, v in c.items() if d in qdays]
     avg = lambda vs: (round(sum(v["usd"] for v in vs) / max(sum(v["runs"] for v in vs), 1), 4) if vs else None)
@@ -159,10 +174,10 @@ def build():
         # Pre-production trial (pedal#569), correct answers out of 4. Labelled as a trial on the page.
         "accuracy": {
             "trial": {"label": "Pre-production trial, 4 items", "correct_of_4": {"haiku": 3, "qwen": 2, "sonnet": 1}},
-            # SLOT: mycroft#668 (shadow pairs) and skill-library#560 (corrections) fill these. null = not landed.
-            "shadow_agreement_pct": {"triage": None, "issue-tag": None},
-            "correction_free_pct": {"triage": None, "issue-tag": None},
-            "pending": {"shadow_agreement_pct": "mycroft#668", "correction_free_pct": "skill-library#560"},
+            # issue-tag filled from skill-library#561 rows; triage slots wait on mycroft#668. null = not landed.
+            "shadow_agreement_pct": {"triage": None, "issue-tag": agree},  # triage: mycroft#668
+            "correction_free_pct": {"triage": None, "issue-tag": clean},  # triage: mycroft#668
+            "pending": {"shadow_agreement_pct": "mycroft#668", "correction_free_pct": "mycroft#668"},
         },
     }
 

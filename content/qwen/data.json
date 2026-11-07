@@ -5,7 +5,7 @@
    "triage": null
   },
   "pending": {
-   "correction_free_pct": "skill-library#560",
+   "correction_free_pct": "mycroft#668",
    "shadow_agreement_pct": "mycroft#668"
   },
   "shadow_agreement_pct": {
