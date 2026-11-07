@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Refreshes /qwen/ at 08:10 and 14:10 ET, ten minutes after the 07:00 and 13:00 CoS sweeps (Air local time is ET).
+     hbrun.sh appends the heartbeat. Ships UNLOADED: nothing runs until ◆MYCROFT_COS copies it to
+     ~/Library/LaunchAgents and bootstraps it after the PR merges (README, Qwen refresh). The job is the only
+     thing that runs `wrangler deploy`. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.justin.qwen-refresh</string>
+  <key>WorkingDirectory</key><string>/Users/justin/projects/justincgriffiths/justingriffiths-site</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/justin/brain/bin/hbrun.sh</string>
+    <string>com.justin.qwen-refresh</string>
+    <string>--</string>
+    <string>/Users/justin/projects/justincgriffiths/justingriffiths-site/bin/qwen-refresh.sh</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Hour</key><integer>8</integer><key>Minute</key><integer>10</integer></dict>
+    <dict><key>Hour</key><integer>14</integer><key>Minute</key><integer>10</integer></dict>
+  </array>
+  <key>RunAtLoad</key><false/>
+  <key>StandardErrorPath</key><string>/Users/justin/projects/justincgriffiths/justingriffiths-site/bin/qwen-refresh.launchd.log</string>
+</dict>
+</plist>
