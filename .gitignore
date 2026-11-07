@@ -3,4 +3,6 @@ node_modules/
 .wrangler/
 .DS_Store
 candidates/
+bin/*.log
 bin/access-*.log
+fleet/target/
