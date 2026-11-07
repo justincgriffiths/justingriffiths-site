@@ -11,8 +11,21 @@ const APEX = "justingriffiths.com";
 const ARCHIVE_PREFIX = "/archive";
 const HUB_PATHS = new Set(["/", "/index.html", "/style.css", "/favicon.svg", "/robots.txt"]);
 const GATED_PREFIX = "/fleet";
+const META_PREFIX = `${GATED_PREFIX}/meta`, META_STATE_PATH = `${META_PREFIX}/state.json`, META_KEY = "meta.json";
 const STATE_PATH = `${GATED_PREFIX}/state.json`, STATE_KEY = "state.json";
 const GATED_HEADERS = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY", "Referrer-Policy": "no-referrer" };
+
+// The token was already verified; this reads its email claim and checks the allowlist. Fails closed.
+async function metaAllowed(request, env) {
+  const allow = (env.META_ALLOWLIST || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  try {
+    const p = request.headers.get("Cf-Access-Jwt-Assertion").split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const email = String(JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(p), (c) => c.charCodeAt(0)))).email || "").toLowerCase();
+    return !!email && allow.includes(email);
+  } catch {
+    return false;
+  }
+}
 
 export default {
   async fetch(request, env) {
@@ -35,6 +48,20 @@ export default {
       if (url.pathname === GATED_PREFIX) {
         url.pathname = `${GATED_PREFIX}/`;
         return Response.redirect(url.toString(), 301);
+      }
+      // /fleet/meta/ is Justin-only: the Access token's email must be in the META_ALLOWLIST secret
+      // (comma-separated). Unset means nobody. Anyone else gets the same 404 as no token.
+      if (url.pathname === META_PREFIX || url.pathname.startsWith(`${META_PREFIX}/`)) {
+        if (!(await metaAllowed(request, env))) return new Response("Not found", { status: 404, headers: { "Cache-Control": "private, no-store" } });
+        if (url.pathname === META_PREFIX) {
+          url.pathname = `${META_PREFIX}/`;
+          return Response.redirect(url.toString(), 301);
+        }
+        if (url.pathname === META_STATE_PATH) {
+          const meta = env.FLEET_KV ? await env.FLEET_KV.get(META_KEY) : null;
+          if (meta === null) return new Response("Not found", { status: 404, headers: { "Cache-Control": "private, no-store" } });
+          return new Response(meta, { headers: { ...GATED_HEADERS, "Content-Type": "application/json; charset=utf-8" } });
+        }
       }
       // Live fleet state: the mini writes it to KV (bin/fleet-kv.sh); only this gated branch reads it.
       if (url.pathname === STATE_PATH) {
