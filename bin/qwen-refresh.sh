@@ -6,7 +6,8 @@
 # Steps: 1 snapshot a fresh origin/main (git archive)  2 qwen-state.py -> data.json inside it
 #        3 change gate: same sha256 as the last deploy -> exit 0, nothing deployed
 #        4 privacy gate: bin/qwen-leakcheck.py on data.json -> any hit exits 1, nothing deployed
-#        5 npx wrangler deploy from the snapshot; on success, record the sha256.
+#        5 bin/site-build.sh in the snapshot (npm build + the four /fleet/ pages; any failure exits 1, nothing deployed)
+#        6 npx wrangler deploy from the snapshot; on success, record the sha256.
 # Never committed: data.json is built from counts only (qwen-state.py whitelist); email-derived rows never leave the Air.
 # Env (tests/overrides): QWEN_REFRESH_STATE (state dir), QWEN_REFRESH_REF (default origin/main), QWEN_REFRESH_DATA (use this
 #   file instead of running qwen-state.py), plus qwen-state.py's own QWEN_* sources.
@@ -33,6 +34,9 @@ SUM=$(shasum -a 256 "$DATA" | cut -d' ' -f1)
 [ "$SUM" = "$(cat "$STATE/last-deployed.sha256" 2>/dev/null)" ] && fin 0 "unchanged (${SUM:0:12}); nothing deployed"
 
 why=$(python3 "$SNAP/bin/qwen-leakcheck.py" < "$DATA" 2>&1) || fin 1 "PRIVACY GATE BLOCKED (${SUM:0:12}): $why"
+bout=$("$SNAP/bin/site-build.sh" 2>&1) || fin 1 "site build failed: $(echo "$bout" | tail -n 3 | tr '\n' ' ' | cut -c1-200)"
+FLEETLS=$(cd "$SNAP/dist/fleet" && find . -name '*.html' | sort | tr '\n' ' ')
+[ "$NODEPLOY" = 1 ] && echo "dist/fleet: $FLEETLS"
 [ "$NODEPLOY" = 1 ] && fin 0 "changed (${SUM:0:12}); privacy gate clean; --no-deploy, not deployed"
 
 (cd "$SNAP" && npx --yes wrangler deploy > "$SNAP/deploy.out" 2>&1) || fin 1 "wrangler deploy failed: $(tail -n 3 "$SNAP/deploy.out" | tr '\n' ' ' | cut -c1-200)"
