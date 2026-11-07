@@ -1,0 +1,2 @@
+{"success":true,"result":[{"id":"a1","domain":"justingriffiths.com/fleet","policies":[{"name":"Allow-listed people","decision":"allow","include":[{"email":{"email":"a@example.com"}},{"email_domain":{"domain":"example.org"}}]}]},
+ {"id":"a2","domain":"justingriffiths.com/marketing-101","policies":[{"name":"Allow-listed people","decision":"allow","include":[{"email":{"email":"a@example.com"}}]}]}]}
