@@ -1,0 +1,4003 @@
+{
+  "accessibility": {
+    "bounds": [
+      0.0,
+      0.0,
+      1120.0,
+      640.0
+    ],
+    "children": [
+      {
+        "bounds": [
+          0.0,
+          0.0,
+          1120.0,
+          640.0
+        ],
+        "children": [
+          {
+            "bounds": [
+              0.0,
+              0.0,
+              1120.0,
+              608.0
+            ],
+            "children": [
+              {
+                "bounds": [
+                  0.0,
+                  12.0,
+                  559.8,
+                  596.0
+                ],
+                "children": [
+                  {
+                    "bounds": [
+                      24.0,
+                      20.0,
+                      523.8,
+                      43.5
+                    ],
+                    "children": [
+                      {
+                        "bounds": [
+                          24.0,
+                          20.0,
+                          523.8,
+                          25.0
+                        ],
+                        "key": "title",
+                        "name": "Battle school",
+                        "role": "label"
+                      },
+                      {
+                        "bounds": [
+                          24.0,
+                          47.0,
+                          523.8,
+                          16.5
+                        ],
+                        "key": "subtitle",
+                        "name": "✦BEAN's client work: armies are clients, toons are channels",
+                        "role": "label"
+                      }
+                    ],
+                    "key": "head",
+                    "role": "group"
+                  },
+                  {
+                    "actions": [
+                      "scroll-up",
+                      "scroll-down",
+                      "set-scroll-offset"
+                    ],
+                    "bounds": [
+                      12.0,
+                      75.5,
+                      535.8,
+                      532.5
+                    ],
+                    "children": [
+                      {
+                        "actions": [
+                          "scroll-into-view"
+                        ],
+                        "bounds": [
+                          12.0,
+                          75.5,
+                          535.8,
+                          313.5
+                        ],
+                        "children": [
+                          {
+                            "actions": [
+                              "scroll-into-view"
+                            ],
+                            "bounds": [
+                              24.0,
+                              75.5,
+                              523.8,
+                              14.5
+                            ],
+                            "key": "header",
+                            "name": "Army · Client A",
+                            "role": "label"
+                          },
+                          {
+                            "actions": [
+                              "scroll-into-view"
+                            ],
+                            "bounds": [
+                              12.0,
+                              98.0,
+                              535.8,
+                              291.0
+                            ],
+                            "children": [
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  16.0,
+                                  102.0,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      28.0,
+                                      113.8,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "A · read",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      302.5,
+                                      113.8,
+                                      229.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "bean-agent#24 · pacing check for the week",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane0",
+                                "name": "A · read",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  16.0,
+                                  142.5,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      28.0,
+                                      154.3,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "B · write",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      278.5,
+                                      154.3,
+                                      253.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "no card",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane1",
+                                "name": "B · write",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  16.0,
+                                  183.0,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      28.0,
+                                      194.8,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "C · analysis",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      301.5,
+                                      194.8,
+                                      230.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "bean-agent#31 · weekly report, waiting on toon A",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane2",
+                                "name": "C · analysis",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  16.0,
+                                  223.5,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      28.0,
+                                      235.3,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "D · creative",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      278.5,
+                                      235.3,
+                                      253.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "no card",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane3",
+                                "name": "D · creative",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  16.0,
+                                  264.0,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      28.0,
+                                      275.8,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "E · tracking",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      302.5,
+                                      275.8,
+                                      229.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "bean-agent#28 · UTM audit",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane4",
+                                "name": "E · tracking",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  16.0,
+                                  304.5,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      28.0,
+                                      316.3,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "F · comms",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      278.5,
+                                      316.3,
+                                      253.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "no card",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane5",
+                                "name": "F · comms",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  16.0,
+                                  345.0,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      28.0,
+                                      356.8,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "G · access",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      278.5,
+                                      356.8,
+                                      253.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "bean-agent#12 · connection map, done 11/06",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane6",
+                                "name": "G · access",
+                                "role": "row"
+                              }
+                            ],
+                            "key": "card",
+                            "role": "group"
+                          }
+                        ],
+                        "key": "army0",
+                        "role": "group"
+                      }
+                    ],
+                    "key": "sections",
+                    "role": "scroll-view",
+                    "scroll": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "states": [
+                      "clips"
+                    ]
+                  }
+                ],
+                "key": "battle-school",
+                "name": "Battle school",
+                "role": "region"
+              },
+              {
+                "bounds": [
+                  560.3,
+                  12.0,
+                  559.8,
+                  596.0
+                ],
+                "children": [
+                  {
+                    "bounds": [
+                      584.3,
+                      20.0,
+                      523.8,
+                      43.5
+                    ],
+                    "children": [
+                      {
+                        "bounds": [
+                          584.3,
+                          20.0,
+                          523.8,
+                          25.0
+                        ],
+                        "key": "title",
+                        "name": "Bike Factory",
+                        "role": "label"
+                      },
+                      {
+                        "bounds": [
+                          584.3,
+                          47.0,
+                          523.8,
+                          16.5
+                        ],
+                        "key": "subtitle",
+                        "name": "agent infrastructure: seats hold desks, bridges build lanes",
+                        "role": "label"
+                      }
+                    ],
+                    "key": "head",
+                    "role": "group"
+                  },
+                  {
+                    "actions": [
+                      "scroll-up",
+                      "scroll-down",
+                      "set-scroll-offset"
+                    ],
+                    "bounds": [
+                      572.3,
+                      75.5,
+                      535.8,
+                      532.5
+                    ],
+                    "children": [
+                      {
+                        "actions": [
+                          "scroll-into-view"
+                        ],
+                        "bounds": [
+                          572.3,
+                          75.5,
+                          535.8,
+                          232.5
+                        ],
+                        "children": [
+                          {
+                            "actions": [
+                              "scroll-into-view"
+                            ],
+                            "bounds": [
+                              584.3,
+                              75.5,
+                              523.8,
+                              14.5
+                            ],
+                            "key": "header",
+                            "name": "Seats",
+                            "role": "label"
+                          },
+                          {
+                            "actions": [
+                              "scroll-into-view"
+                            ],
+                            "bounds": [
+                              572.3,
+                              98.0,
+                              535.8,
+                              210.0
+                            ],
+                            "children": [
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  576.3,
+                                  102.0,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      113.8,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "◆MYCROFT_COS",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      861.8,
+                                      113.8,
+                                      230.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "kaladin-agent#24 · bridge token for the mycroft lane",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane0",
+                                "name": "◆MYCROFT_COS",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  576.3,
+                                  142.5,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      154.3,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "●ANANSI_ROUTER",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      838.8,
+                                      154.3,
+                                      253.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "mycroft#647 · calendar lane routing",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane1",
+                                "name": "●ANANSI_ROUTER",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  576.3,
+                                  183.0,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      194.8,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "■KALADIN",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      862.8,
+                                      194.8,
+                                      229.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "bike-shop#71 · Meta edit-in-place vs duplicate",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane2",
+                                "name": "■KALADIN",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  576.3,
+                                  223.5,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      235.3,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "✦BEAN",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      862.8,
+                                      235.3,
+                                      229.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "justingriffiths-site#8 · battle school and Bike Factory",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane3",
+                                "name": "✦BEAN",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  576.3,
+                                  264.0,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      275.8,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "▲BIKE_SHOP_FACTORY",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      838.8,
+                                      275.8,
+                                      253.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "bike-shop#45 · BS-021",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane4",
+                                "name": "▲BIKE_SHOP_FACTORY",
+                                "role": "row"
+                              }
+                            ],
+                            "key": "card",
+                            "role": "group"
+                          }
+                        ],
+                        "key": "seats",
+                        "role": "group"
+                      },
+                      {
+                        "actions": [
+                          "scroll-into-view"
+                        ],
+                        "bounds": [
+                          572.3,
+                          320.0,
+                          535.8,
+                          151.5
+                        ],
+                        "children": [
+                          {
+                            "actions": [
+                              "scroll-into-view"
+                            ],
+                            "bounds": [
+                              584.3,
+                              320.0,
+                              523.8,
+                              14.5
+                            ],
+                            "key": "header",
+                            "name": "Bridges · run by ■KALADIN",
+                            "role": "label"
+                          },
+                          {
+                            "actions": [
+                              "scroll-into-view"
+                            ],
+                            "bounds": [
+                              572.3,
+                              342.5,
+                              535.8,
+                              129.0
+                            ],
+                            "children": [
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  576.3,
+                                  346.5,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      358.3,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "anansi · 112-seat-hosts",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      838.8,
+                                      358.3,
+                                      253.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "anansi-agent#112 · seat hosts",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane0",
+                                "name": "anansi · 112-seat-hosts",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  576.3,
+                                  387.0,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      398.8,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "bike-shop · 74-seat-bus-hosts",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      861.8,
+                                      398.8,
+                                      230.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "bike-shop#74 · seat bus hosts",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane1",
+                                "name": "bike-shop · 74-seat-bus-hosts",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  576.3,
+                                  427.5,
+                                  527.8,
+                                  40.0
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      439.3,
+                                      170.0,
+                                      16.5
+                                    ],
+                                    "key": "name",
+                                    "name": "mycroft · 653-price-session-tokens",
+                                    "role": "label"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      862.8,
+                                      439.3,
+                                      229.3,
+                                      16.5
+                                    ],
+                                    "key": "card",
+                                    "name": "mycroft#653 · price session tokens",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "lane2",
+                                "name": "mycroft · 653-price-session-tokens",
+                                "role": "row"
+                              }
+                            ],
+                            "key": "card",
+                            "role": "group"
+                          }
+                        ],
+                        "key": "bridges",
+                        "role": "group"
+                      }
+                    ],
+                    "key": "sections",
+                    "role": "scroll-view",
+                    "scroll": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "states": [
+                      "clips"
+                    ]
+                  }
+                ],
+                "key": "bike-factory",
+                "name": "Bike Factory",
+                "role": "region"
+              }
+            ],
+            "key": "worlds",
+            "role": "group"
+          },
+          {
+            "bounds": [
+              0.0,
+              608.0,
+              1120.0,
+              32.0
+            ],
+            "children": [
+              {
+                "bounds": [
+                  24.0,
+                  616.5,
+                  171.0,
+                  15.0
+                ],
+                "key": "where",
+                "name": "justingriffiths.com/fleet/ · N=1",
+                "role": "label"
+              },
+              {
+                "bounds": [
+                  866.0,
+                  616.5,
+                  230.0,
+                  15.0
+                ],
+                "key": "stamp",
+                "name": "fixture, masked · 2026-11-07T17:00:00Z",
+                "role": "label"
+              }
+            ],
+            "key": "foot",
+            "role": "group"
+          }
+        ],
+        "key": "window",
+        "role": "window"
+      }
+    ],
+    "name": "Fleet",
+    "role": "window"
+  },
+  "anim_t": 0.0,
+  "animating": false,
+  "dark_system": true,
+  "elements": [
+    {
+      "blur": 0.0,
+      "fill": "#121314ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "window",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window",
+      "rect": [
+        0.0,
+        0.0,
+        1120.0,
+        640.0
+      ],
+      "role": "window",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "worlds",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds",
+      "rect": [
+        0.0,
+        0.0,
+        1120.0,
+        608.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "battle-school",
+      "label": "Battle school",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school",
+      "rect": [
+        0.0,
+        12.0,
+        559.75,
+        596.0
+      ],
+      "role": "region",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "head",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/head",
+      "rect": [
+        24.0,
+        20.0,
+        523.75,
+        43.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "title",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/head/title",
+      "rect": [
+        24.0,
+        20.0,
+        523.75,
+        25.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "Battle school"
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "subtitle",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/head/subtitle",
+      "rect": [
+        24.0,
+        47.0,
+        523.75,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "✦BEAN's client work: armies are clients, toons are channels"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sections",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections",
+      "rect": [
+        12.0,
+        75.5,
+        535.75,
+        532.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "army0",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0",
+      "rect": [
+        12.0,
+        75.5,
+        535.75,
+        313.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "header",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/header",
+      "rect": [
+        24.0,
+        75.5,
+        523.75,
+        14.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "Army · Client A"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#1c1d20ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card",
+      "rect": [
+        12.0,
+        98.0,
+        535.75,
+        291.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane0",
+      "label": "A · read",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane0",
+      "rect": [
+        16.0,
+        102.0,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane0/name",
+      "rect": [
+        28.0,
+        113.75,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "A · read"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57b29",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "working",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane0/state",
+      "rect": [
+        210.0,
+        112.0,
+        80.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57bff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane0/state/dot",
+      "rect": [
+        218.0,
+        118.5,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#56d57bff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane0/state/label",
+      "rect": [
+        231.0,
+        115.0,
+        43.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "working"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane0/state/pad",
+      "rect": [
+        280.5,
+        122.0,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane0/card",
+      "rect": [
+        302.5,
+        113.75,
+        229.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "bean-agent#24 · pacing check for the week"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep0",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/sep0",
+      "rect": [
+        28.0,
+        142.0,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane1",
+      "label": "B · write",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane1",
+      "rect": [
+        16.0,
+        142.5,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane1/name",
+      "rect": [
+        28.0,
+        154.25,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "B · write"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d879229",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "idle",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane1/state",
+      "rect": [
+        210.0,
+        152.5,
+        56.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d8792ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane1/state/dot",
+      "rect": [
+        218.0,
+        159.0,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#7d8792ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane1/state/label",
+      "rect": [
+        231.0,
+        155.5,
+        19.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "idle"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane1/state/pad",
+      "rect": [
+        256.5,
+        162.5,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane1/card",
+      "rect": [
+        278.5,
+        154.25,
+        253.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "no card"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep1",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/sep1",
+      "rect": [
+        28.0,
+        182.5,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane2",
+      "label": "C · analysis",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane2",
+      "rect": [
+        16.0,
+        183.0,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane2/name",
+      "rect": [
+        28.0,
+        194.75,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "C · analysis"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ff735e29",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "blocked",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane2/state",
+      "rect": [
+        210.0,
+        193.0,
+        79.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ff735eff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane2/state/dot",
+      "rect": [
+        218.0,
+        199.5,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#ff735eff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane2/state/label",
+      "rect": [
+        231.0,
+        196.0,
+        42.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "blocked"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane2/state/pad",
+      "rect": [
+        279.5,
+        203.0,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane2/card",
+      "rect": [
+        301.5,
+        194.75,
+        230.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "bean-agent#31 · weekly report, waiting on toon A"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep2",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/sep2",
+      "rect": [
+        28.0,
+        223.0,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane3",
+      "label": "D · creative",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane3",
+      "rect": [
+        16.0,
+        223.5,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane3/name",
+      "rect": [
+        28.0,
+        235.25,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "D · creative"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d879229",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "idle",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane3/state",
+      "rect": [
+        210.0,
+        233.5,
+        56.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d8792ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane3/state/dot",
+      "rect": [
+        218.0,
+        240.0,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#7d8792ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane3/state/label",
+      "rect": [
+        231.0,
+        236.5,
+        19.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "idle"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane3/state/pad",
+      "rect": [
+        256.5,
+        243.5,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane3/card",
+      "rect": [
+        278.5,
+        235.25,
+        253.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "no card"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep3",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/sep3",
+      "rect": [
+        28.0,
+        263.5,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane4",
+      "label": "E · tracking",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane4",
+      "rect": [
+        16.0,
+        264.0,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane4/name",
+      "rect": [
+        28.0,
+        275.75,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "E · tracking"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57b29",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "working",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane4/state",
+      "rect": [
+        210.0,
+        274.0,
+        80.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57bff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane4/state/dot",
+      "rect": [
+        218.0,
+        280.5,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#56d57bff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane4/state/label",
+      "rect": [
+        231.0,
+        277.0,
+        43.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "working"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane4/state/pad",
+      "rect": [
+        280.5,
+        284.0,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane4/card",
+      "rect": [
+        302.5,
+        275.75,
+        229.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "bean-agent#28 · UTM audit"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep4",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/sep4",
+      "rect": [
+        28.0,
+        304.0,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane5",
+      "label": "F · comms",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane5",
+      "rect": [
+        16.0,
+        304.5,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane5/name",
+      "rect": [
+        28.0,
+        316.25,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "F · comms"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d879229",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "idle",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane5/state",
+      "rect": [
+        210.0,
+        314.5,
+        56.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d8792ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane5/state/dot",
+      "rect": [
+        218.0,
+        321.0,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#7d8792ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane5/state/label",
+      "rect": [
+        231.0,
+        317.5,
+        19.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "idle"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane5/state/pad",
+      "rect": [
+        256.5,
+        324.5,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane5/card",
+      "rect": [
+        278.5,
+        316.25,
+        253.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "no card"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep5",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/sep5",
+      "rect": [
+        28.0,
+        344.5,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane6",
+      "label": "G · access",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane6",
+      "rect": [
+        16.0,
+        345.0,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane6/name",
+      "rect": [
+        28.0,
+        356.75,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "G · access"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d879229",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "idle",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane6/state",
+      "rect": [
+        210.0,
+        355.0,
+        56.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d8792ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane6/state/dot",
+      "rect": [
+        218.0,
+        361.5,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#7d8792ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane6/state/label",
+      "rect": [
+        231.0,
+        358.0,
+        19.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "idle"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane6/state/pad",
+      "rect": [
+        256.5,
+        365.0,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/battle-school/sections/army0/card/lane6/card",
+      "rect": [
+        278.5,
+        356.75,
+        253.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "bean-agent#12 · connection map, done 11/06"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "divider",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/divider",
+      "rect": [
+        559.75,
+        36.0,
+        0.5,
+        596.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "bike-factory",
+      "label": "Bike Factory",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory",
+      "rect": [
+        560.25,
+        12.0,
+        559.75,
+        596.0
+      ],
+      "role": "region",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "head",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/head",
+      "rect": [
+        584.25,
+        20.0,
+        523.75,
+        43.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "title",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/head/title",
+      "rect": [
+        584.25,
+        20.0,
+        523.75,
+        25.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "Bike Factory"
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "subtitle",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/head/subtitle",
+      "rect": [
+        584.25,
+        47.0,
+        523.75,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "agent infrastructure: seats hold desks, bridges build lanes"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sections",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections",
+      "rect": [
+        572.25,
+        75.5,
+        535.75,
+        532.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "seats",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats",
+      "rect": [
+        572.25,
+        75.5,
+        535.75,
+        232.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "header",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/header",
+      "rect": [
+        584.25,
+        75.5,
+        523.75,
+        14.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "Seats"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#1c1d20ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card",
+      "rect": [
+        572.25,
+        98.0,
+        535.75,
+        210.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane0",
+      "label": "◆MYCROFT_COS",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane0",
+      "rect": [
+        576.25,
+        102.0,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane0/name",
+      "rect": [
+        588.25,
+        113.75,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "◆MYCROFT_COS"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ff735e29",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "blocked",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane0/state",
+      "rect": [
+        770.25,
+        112.0,
+        79.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ff735eff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane0/state/dot",
+      "rect": [
+        778.25,
+        118.5,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#ff735eff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane0/state/label",
+      "rect": [
+        791.25,
+        115.0,
+        42.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "blocked"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane0/state/pad",
+      "rect": [
+        839.75,
+        122.0,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane0/card",
+      "rect": [
+        861.75,
+        113.75,
+        230.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "kaladin-agent#24 · bridge token for the mycroft lane"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep0",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/sep0",
+      "rect": [
+        588.25,
+        142.0,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane1",
+      "label": "●ANANSI_ROUTER",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane1",
+      "rect": [
+        576.25,
+        142.5,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane1/name",
+      "rect": [
+        588.25,
+        154.25,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "●ANANSI_ROUTER"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d879229",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "idle",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane1/state",
+      "rect": [
+        770.25,
+        152.5,
+        56.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d8792ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane1/state/dot",
+      "rect": [
+        778.25,
+        159.0,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#7d8792ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane1/state/label",
+      "rect": [
+        791.25,
+        155.5,
+        19.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "idle"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane1/state/pad",
+      "rect": [
+        816.75,
+        162.5,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane1/card",
+      "rect": [
+        838.75,
+        154.25,
+        253.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "mycroft#647 · calendar lane routing"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep1",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/sep1",
+      "rect": [
+        588.25,
+        182.5,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane2",
+      "label": "■KALADIN",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane2",
+      "rect": [
+        576.25,
+        183.0,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane2/name",
+      "rect": [
+        588.25,
+        194.75,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "■KALADIN"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57b29",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "working",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane2/state",
+      "rect": [
+        770.25,
+        193.0,
+        80.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57bff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane2/state/dot",
+      "rect": [
+        778.25,
+        199.5,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#56d57bff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane2/state/label",
+      "rect": [
+        791.25,
+        196.0,
+        43.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "working"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane2/state/pad",
+      "rect": [
+        840.75,
+        203.0,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane2/card",
+      "rect": [
+        862.75,
+        194.75,
+        229.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "bike-shop#71 · Meta edit-in-place vs duplicate"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep2",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/sep2",
+      "rect": [
+        588.25,
+        223.0,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane3",
+      "label": "✦BEAN",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane3",
+      "rect": [
+        576.25,
+        223.5,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane3/name",
+      "rect": [
+        588.25,
+        235.25,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "✦BEAN"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57b29",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "working",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane3/state",
+      "rect": [
+        770.25,
+        233.5,
+        80.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57bff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane3/state/dot",
+      "rect": [
+        778.25,
+        240.0,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#56d57bff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane3/state/label",
+      "rect": [
+        791.25,
+        236.5,
+        43.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "working"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane3/state/pad",
+      "rect": [
+        840.75,
+        243.5,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane3/card",
+      "rect": [
+        862.75,
+        235.25,
+        229.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "justingriffiths-site#8 · battle school and Bike Factory"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep3",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/sep3",
+      "rect": [
+        588.25,
+        263.5,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane4",
+      "label": "▲BIKE_SHOP_FACTORY",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane4",
+      "rect": [
+        576.25,
+        264.0,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane4/name",
+      "rect": [
+        588.25,
+        275.75,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "▲BIKE_SHOP_FACTORY"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d879229",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "idle",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane4/state",
+      "rect": [
+        770.25,
+        274.0,
+        56.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d8792ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane4/state/dot",
+      "rect": [
+        778.25,
+        280.5,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#7d8792ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane4/state/label",
+      "rect": [
+        791.25,
+        277.0,
+        19.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "idle"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane4/state/pad",
+      "rect": [
+        816.75,
+        284.0,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/seats/card/lane4/card",
+      "rect": [
+        838.75,
+        275.75,
+        253.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "bike-shop#45 · BS-021"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "bridges",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges",
+      "rect": [
+        572.25,
+        320.0,
+        535.75,
+        151.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "header",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/header",
+      "rect": [
+        584.25,
+        320.0,
+        523.75,
+        14.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "Bridges · run by ■KALADIN"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#1c1d20ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card",
+      "rect": [
+        572.25,
+        342.5,
+        535.75,
+        129.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane0",
+      "label": "anansi · 112-seat-hosts",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane0",
+      "rect": [
+        576.25,
+        346.5,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane0/name",
+      "rect": [
+        588.25,
+        358.25,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "anansi · 112-seat-hosts"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d879229",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "idle",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane0/state",
+      "rect": [
+        770.25,
+        356.5,
+        56.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7d8792ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane0/state/dot",
+      "rect": [
+        778.25,
+        363.0,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#7d8792ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane0/state/label",
+      "rect": [
+        791.25,
+        359.5,
+        19.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "idle"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane0/state/pad",
+      "rect": [
+        816.75,
+        366.5,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane0/card",
+      "rect": [
+        838.75,
+        358.25,
+        253.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "anansi-agent#112 · seat hosts"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep0",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/sep0",
+      "rect": [
+        588.25,
+        386.5,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane1",
+      "label": "bike-shop · 74-seat-bus-hosts",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane1",
+      "rect": [
+        576.25,
+        387.0,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane1/name",
+      "rect": [
+        588.25,
+        398.75,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "bike-shop · 74-seat-bus-hosts"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ff735e29",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "blocked",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane1/state",
+      "rect": [
+        770.25,
+        397.0,
+        79.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ff735eff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane1/state/dot",
+      "rect": [
+        778.25,
+        403.5,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#ff735eff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane1/state/label",
+      "rect": [
+        791.25,
+        400.0,
+        42.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "blocked"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane1/state/pad",
+      "rect": [
+        839.75,
+        407.0,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane1/card",
+      "rect": [
+        861.75,
+        398.75,
+        230.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "bike-shop#74 · seat bus hosts"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sep1",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/sep1",
+      "rect": [
+        588.25,
+        427.0,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lane2",
+      "label": "mycroft · 653-price-session-tokens",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane2",
+      "rect": [
+        576.25,
+        427.5,
+        527.75,
+        40.0
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane2/name",
+      "rect": [
+        588.25,
+        439.25,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "mycroft · 653-price-session-tokens"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57b29",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "working",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane2/state",
+      "rect": [
+        770.25,
+        437.5,
+        80.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57bff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane2/state/dot",
+      "rect": [
+        778.25,
+        444.0,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#56d57bff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane2/state/label",
+      "rect": [
+        791.25,
+        440.5,
+        43.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "working"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane2/state/pad",
+      "rect": [
+        840.75,
+        447.5,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/bridges/card/lane2/card",
+      "rect": [
+        862.75,
+        439.25,
+        229.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "mycroft#653 · price session tokens"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "foot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/foot",
+      "rect": [
+        0.0,
+        608.0,
+        1120.0,
+        32.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "where",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/foot/where",
+      "rect": [
+        24.0,
+        616.5,
+        171.0,
+        15.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "justingriffiths.com/fleet/ · N=1"
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "stamp",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/foot/stamp",
+      "rect": [
+        866.0,
+        616.5,
+        230.0,
+        15.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "fixture, masked · 2026-11-07T17:00:00Z"
+    }
+  ],
+  "reduced_motion": false,
+  "scale": 2.0,
+  "t": 0.0,
+  "time_scale": 1.0,
+  "title": "Fleet",
+  "viewport": [
+    1120.0,
+    640.0
+  ],
+  "warnings": []
+}
