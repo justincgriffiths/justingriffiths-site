@@ -10,7 +10,7 @@ import { verifyAccessJwt } from "./access.js";
 const APEX = "justingriffiths.com";
 const ARCHIVE_PREFIX = "/archive";
 const HUB_PATHS = new Set(["/", "/index.html", "/style.css", "/favicon.svg", "/robots.txt"]);
-export const GATED_PREFIX = "/fleet";
+const GATED_PREFIX = "/fleet";
 const STATE_PATH = `${GATED_PREFIX}/state.json`, STATE_KEY = "state.json";
 const GATED_HEADERS = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY", "Referrer-Policy": "no-referrer" };
 
@@ -54,6 +54,15 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     if (url.pathname === "/marketing-101/" || url.pathname === "/marketing-101/index.html") {
+      return env.ASSETS.fetch(request);
+    }
+
+    // /qwen/ is the public Qwen rollout page (aggregates only), served from dist/qwen/.
+    if (url.pathname === "/qwen") {
+      url.pathname = "/qwen/";
+      return Response.redirect(url.toString(), 301);
+    }
+    if (url.pathname === "/qwen/" || url.pathname === "/qwen/index.html" || url.pathname === "/qwen/data.json") {
       return env.ASSETS.fetch(request);
     }
 

@@ -1,0 +1,169 @@
+{
+ "accuracy": {
+  "correction_free_pct": {
+   "issue-tag": null,
+   "triage": null
+  },
+  "pending": {
+   "correction_free_pct": "skill-library#560",
+   "shadow_agreement_pct": "mycroft#668"
+  },
+  "shadow_agreement_pct": {
+   "issue-tag": null,
+   "triage": null
+  },
+  "trial": {
+   "correct_of_4": {
+    "haiku": 3,
+    "qwen": 2,
+    "sonnet": 1
+   },
+   "label": "Pre-production trial, 4 items"
+  }
+ },
+ "breakdowns": {
+  "by_task_label": {
+   "archive": 0,
+   "fyi": 1,
+   "other": 0,
+   "reply": 0,
+   "task": 0
+  },
+  "by_tool_call": {
+   "qwen_classify": 1
+  },
+  "by_workflow": {
+   "issue-tag": {
+    "answered": 0,
+    "capped": 0,
+    "fell_back": 0
+   },
+   "triage": {
+    "answered": 1,
+    "capped": 0,
+    "fell_back": 0
+   }
+  }
+ },
+ "cost_per_run": {
+  "issue_tag_usd_per_item": {
+   "haiku": 0.0063
+  },
+  "triage_baseline_usd_per_run": 0.4328,
+  "triage_by_day": [
+   {
+    "day": "2026-10-23",
+    "qwen_era": false,
+    "runs": 2,
+    "usd_per_run": 0.308
+   },
+   {
+    "day": "2026-10-24",
+    "qwen_era": false,
+    "runs": 6,
+    "usd_per_run": 0.4141
+   },
+   {
+    "day": "2026-10-25",
+    "qwen_era": false,
+    "runs": 6,
+    "usd_per_run": 0.3435
+   },
+   {
+    "day": "2026-10-26",
+    "qwen_era": false,
+    "runs": 6,
+    "usd_per_run": 0.4073
+   },
+   {
+    "day": "2026-10-27",
+    "qwen_era": false,
+    "runs": 6,
+    "usd_per_run": 0.355
+   },
+   {
+    "day": "2026-10-28",
+    "qwen_era": false,
+    "runs": 6,
+    "usd_per_run": 0.4016
+   },
+   {
+    "day": "2026-10-29",
+    "qwen_era": false,
+    "runs": 6,
+    "usd_per_run": 0.4511
+   },
+   {
+    "day": "2026-10-30",
+    "qwen_era": false,
+    "runs": 6,
+    "usd_per_run": 0.4627
+   },
+   {
+    "day": "2026-10-31",
+    "qwen_era": false,
+    "runs": 6,
+    "usd_per_run": 0.3858
+   },
+   {
+    "day": "2026-11-03",
+    "qwen_era": false,
+    "runs": 7,
+    "usd_per_run": 0.5267
+   },
+   {
+    "day": "2026-11-04",
+    "qwen_era": false,
+    "runs": 6,
+    "usd_per_run": 0.4477
+   },
+   {
+    "day": "2026-11-05",
+    "qwen_era": false,
+    "runs": 6,
+    "usd_per_run": 0.5214
+   },
+   {
+    "day": "2026-11-06",
+    "qwen_era": false,
+    "runs": 3,
+    "usd_per_run": 0.5724
+   },
+   {
+    "day": "2026-11-07",
+    "qwen_era": true,
+    "runs": 7,
+    "usd_per_run": 0.4747
+   }
+  ],
+  "triage_qwen_era_usd_per_run": 0.4747
+ },
+ "fallback_reasons": {
+  "bad-class": 0,
+  "exit-N": 0,
+  "no-ql": 0,
+  "other": 0,
+  "timeout": 0
+ },
+ "latency_ms": {
+  "haiku": null,
+  "qwen": {
+   "n": 1,
+   "p50": 1532.0,
+   "p90": 1532.0
+  }
+ },
+ "model": "qwen3-coder:30b",
+ "schema": 1,
+ "share_by_day": {
+  "issue-tag": [],
+  "triage": [
+   {
+    "answered": 1,
+    "capped": 0,
+    "day": "2026-11-07",
+    "fell_back": 0
+   }
+  ]
+ }
+}

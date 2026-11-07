@@ -216,3 +216,6 @@ console.log(`built dist/index.html (${html.length} bytes, ${dossier.sections.len
 
 // The Marketing 101 lesson at /marketing-101/ (see build-marketing.mjs).
 await import("./build-marketing.mjs");
+
+// The Qwen rollout page at /qwen/ (see build-qwen.mjs; data from bin/qwen-state.sh).
+await import("./build-qwen.mjs");
