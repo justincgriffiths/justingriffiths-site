@@ -1,0 +1,289 @@
+{
+  "generated_at": "2026-11-07T17:00:00Z",
+  "masked": true,
+  "battle_school": {
+    "armies": [
+      {
+        "name": "Client A",
+        "toons": [
+          {
+            "name": "A · read",
+            "state": "working",
+            "card": "bean-agent#24 · pacing check for the week"
+          },
+          {
+            "name": "B · write",
+            "state": "idle",
+            "card": ""
+          },
+          {
+            "name": "C · analysis",
+            "state": "blocked",
+            "card": "bean-agent#31 · weekly report, waiting on toon A"
+          },
+          {
+            "name": "D · creative",
+            "state": "idle",
+            "card": ""
+          },
+          {
+            "name": "E · tracking",
+            "state": "working",
+            "card": "bean-agent#28 · UTM audit"
+          },
+          {
+            "name": "F · comms",
+            "state": "idle",
+            "card": ""
+          },
+          {
+            "name": "G · access",
+            "state": "idle",
+            "card": "bean-agent#12 · connection map, done 11/06"
+          }
+        ],
+        "probed_by": "✦BEAN session",
+        "connections": [
+          {
+            "channel": "meta",
+            "label": "owned by account lead",
+            "result": "ok",
+            "probed_on": "2026-11-07",
+            "use_for": [
+              "A",
+              "E",
+              "G"
+            ]
+          },
+          {
+            "channel": "meta",
+            "label": "shared (default)",
+            "result": "ok",
+            "probed_on": "2026-11-07",
+            "use_for": [
+              "A",
+              "E",
+              "G"
+            ]
+          },
+          {
+            "channel": "meta",
+            "label": "Claude.ai Meta Ads connector",
+            "result": "ok",
+            "probed_on": "2026-11-07",
+            "use_for": [
+              "A",
+              "B",
+              "E",
+              "G"
+            ]
+          },
+          {
+            "channel": "google",
+            "label": "owned (default)",
+            "result": "ok",
+            "probed_on": "2026-11-07",
+            "use_for": [
+              "A",
+              "E",
+              "G"
+            ]
+          },
+          {
+            "channel": "google",
+            "label": "shared",
+            "result": "ok",
+            "probed_on": "2026-11-07",
+            "use_for": [
+              "A",
+              "E",
+              "G"
+            ]
+          },
+          {
+            "channel": "google",
+            "label": "owned, expiry listed",
+            "result": "not probed",
+            "probed_on": "",
+            "use_for": []
+          },
+          {
+            "channel": "tiktok",
+            "label": "owned",
+            "result": "ok",
+            "probed_on": "2026-11-07",
+            "use_for": [
+              "A",
+              "G"
+            ]
+          },
+          {
+            "channel": "tiktok",
+            "label": "shared (default)",
+            "result": "ok",
+            "probed_on": "2026-11-07",
+            "use_for": [
+              "A",
+              "G"
+            ]
+          },
+          {
+            "channel": "shopify",
+            "label": "no read tool wired to a toon",
+            "result": "none wired",
+            "probed_on": "",
+            "use_for": []
+          },
+          {
+            "channel": "warehouse",
+            "label": "read only",
+            "result": "ok",
+            "probed_on": "2026-11-07",
+            "use_for": [
+              "A"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "bike_factory": {
+    "seats": [
+      {
+        "name": "◆MYCROFT_COS",
+        "state": "blocked",
+        "card": "kaladin-agent#24 · bridge token for the mycroft lane"
+      },
+      {
+        "name": "●ANANSI_ROUTER",
+        "state": "idle",
+        "card": "mycroft#647 · calendar lane routing"
+      },
+      {
+        "name": "■KALADIN",
+        "state": "working",
+        "card": "bike-shop#71 · Meta edit-in-place vs duplicate"
+      },
+      {
+        "name": "✦BEAN",
+        "state": "working",
+        "card": "justingriffiths-site#8 · battle school and Bike Factory"
+      },
+      {
+        "name": "▲BIKE_SHOP_FACTORY",
+        "state": "idle",
+        "card": "bike-shop#45 · BS-021"
+      }
+    ],
+    "bridges": [
+      {
+        "name": "anansi · 112-seat-hosts",
+        "state": "idle",
+        "card": "anansi-agent#112 · seat hosts",
+        "repo": "anansi-agent",
+        "holder": "AGT_BLD_anansi-112"
+      },
+      {
+        "name": "bike-shop · 74-seat-bus-hosts",
+        "state": "blocked",
+        "card": "bike-shop#74 · seat bus hosts",
+        "repo": "bike-shop",
+        "holder": "AGT_BLD_bike-shop-74"
+      },
+      {
+        "name": "mycroft · 653-price-session-tokens",
+        "state": "working",
+        "card": "mycroft#653 · price session tokens",
+        "repo": "mycroft",
+        "holder": "AGT_BLD_mycroft-653"
+      }
+    ],
+    "queue": [
+      {
+        "id": "BS-021",
+        "title": "Meta edit-in-place vs duplicate",
+        "state": "picked up"
+      },
+      {
+        "id": "BS-022",
+        "title": "Pacing sheet refresh, weekly",
+        "state": "queued"
+      },
+      {
+        "id": "BS-023",
+        "title": "UTM audit template",
+        "state": "queued"
+      },
+      {
+        "id": "BS-024",
+        "title": "Connection probe, second client",
+        "state": "queued"
+      }
+    ]
+  },
+  "seat_flow": {
+    "envelopes": [
+      {
+        "ts": "2026-11-07T05:29:12Z",
+        "from": "◆MYCROFT_COS",
+        "to": "●ANANSI_ROUTER",
+        "verb": "dispatch",
+        "card": "bean-agent#24",
+        "state": "new",
+        "note": "pacing check for the week, N=1 first"
+      },
+      {
+        "ts": "2026-11-07T05:42:50Z",
+        "from": "◆MYCROFT_COS",
+        "to": "●ANANSI_ROUTER",
+        "verb": "dispatch",
+        "card": "bike-shop#71",
+        "state": "new",
+        "note": "Meta edit-in-place vs duplicate, sandbox only"
+      },
+      {
+        "ts": "2026-11-07T06:41:32Z",
+        "from": "◆MYCROFT_COS",
+        "to": "●ANANSI_ROUTER",
+        "verb": "dispatch",
+        "card": "mycroft#647",
+        "state": "new",
+        "note": "pick a lane for calendar management"
+      },
+      {
+        "ts": "2026-11-07T09:10:00Z",
+        "from": "●ANANSI_ROUTER",
+        "to": "■KALADIN",
+        "verb": "dispatch",
+        "card": "bike-shop#71",
+        "state": "new",
+        "note": "route: model=sonnet cap=$2.00"
+      },
+      {
+        "ts": "2026-11-07T12:30:00Z",
+        "from": "■KALADIN",
+        "to": "◆MYCROFT_COS",
+        "verb": "report",
+        "card": "bike-shop#71",
+        "state": "blocked",
+        "note": "waiting on a sandbox ad account"
+      },
+      {
+        "ts": "2026-11-07T15:04:51Z",
+        "from": "◆MYCROFT_COS",
+        "to": "▲BIKE_SHOP_FACTORY",
+        "verb": "report",
+        "card": "queue/BS-024.md",
+        "state": "done",
+        "note": ""
+      }
+    ],
+    "waiting_on_justin": [
+      {
+        "card": "mycroft#647",
+        "ask": "OK a family event on the personal calendar",
+        "seat": "◆MYCROFT_COS"
+      }
+    ]
+  }
+}
