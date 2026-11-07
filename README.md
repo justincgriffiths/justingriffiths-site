@@ -96,6 +96,7 @@ The mini pushes fleet state to Cloudflare KV; the Worker reads it only behind th
 - **Writer** (`bin/fleet-kv.sh`) runs `bin/fleet-state.py` and PUTs the JSON to KV key `state.json` with a 30-minute expiry, so a dead mini means 404, not stale data. `bin/fleet-kv.sh --dry-run` prints the write (key, bytes) and touches nothing. Live: `op run --env-file=bin/fleet-kv.env -- bin/fleet-kv.sh`. Log: `bin/fleet-kv.log`.
 - **Schedule** (`bin/com.justin.fleet-kv.plist`) runs it every 5 minutes. It ships unloaded (`RunAtLoad` false, not in `~/Library/LaunchAgents`).
 - **Reader** (`src/worker.js`) answers `/fleet/state.json` from the `FLEET_KV` binding inside the Access check. No token, no binding or no key all return 404.
+- **Sweeps panel** (`sweeps` key in the state JSON): `bin/fleet-state.py` reads the declutter sweep's `~/.local/state/declutter-sweep/summary.json` (routine-library#261; `FLEET_SWEEP_FILES` takes a colon list for more hosts) and keeps only host, run time, status and four counts. `leftover_issue` and any other field are dropped, and a row whose host or time is not the plain shape is skipped. `test/fleet-sweeps.test.mjs` fails if a name, id or path gets through. Same route, same gate: no new endpoint.
 
 Go-live (each line is a Cloudflare write, Justin's go): see the PR body of the live-feed PR for the exact commands.
 

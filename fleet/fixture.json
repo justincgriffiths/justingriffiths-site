@@ -285,5 +285,25 @@
         "seat": "◆MYCROFT_COS"
       }
     ]
-  }
+  },
+  "sweeps": [
+    {
+      "host": "host-a",
+      "run_at": "2026-11-07T23:00:00Z",
+      "status": "ok",
+      "removed": 2,
+      "tombstoned": 1,
+      "left": 3,
+      "errors": 0
+    },
+    {
+      "host": "host-b",
+      "run_at": "2026-11-07T19:00:00Z",
+      "status": "error",
+      "removed": 0,
+      "tombstoned": 0,
+      "left": 3,
+      "errors": 1
+    }
+  ]
 }

@@ -14,6 +14,9 @@ TOONS = [("a", "read"), ("b", "write"), ("c", "analysis"), ("d", "creative"), ("
 STATE_DIR = os.path.expanduser("~/.local/state/fleet-scene")
 BUS = os.path.expanduser("~/.local/state/seat-bus")
 CARD = re.compile(r"github\.com/([\w.-]+)/([\w.-]+)/(?:issues|pull)/(\d+)")
+SWEEP_DIR = os.path.expanduser("~/.local/state/declutter-sweep")
+HOST = re.compile(r"^[a-z0-9][a-z0-9-]{0,39}$")
+STAMP = re.compile(r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
 LANE = re.compile(r"/worktrees/([\w.-]+)/(?:lane/)?(\d+)-([\w.-]+)/?$")
 
 
@@ -103,6 +106,29 @@ def armies_map():
         return []
 
 
+def sweeps():
+    """The declutter sweep's per-host summary (routine-library#261: summary.json), as counts and a run
+    time only. An allowlist: host, run_at, status and four integers survive; leftover_issue and any other
+    field (a name, id or path) never reach the page. A file that fails the shape check is skipped.
+    FLEET_SWEEP_FILES (colon list) names the summaries to read; default is this host's summary.json."""
+    files = [f for f in os.environ.get("FLEET_SWEEP_FILES", os.path.join(SWEEP_DIR, "summary.json")).split(":") if f]
+    out = []
+    for f in files:
+        try:
+            d = json.load(open(f, encoding="utf-8"))
+            ints = {k: d[k] for k in ("removed", "tombstoned", "left", "errors")}
+            ok = (d["schema"] == 1 and HOST.match(d["host"]) and STAMP.match(d["run_at"]) and d["status"] in ("ok", "error")
+                  and all(type(v) is int and 0 <= v < 10**6 for v in ints.values()))
+        except (OSError, ValueError, KeyError, TypeError) as e:
+            print(f"skip sweep summary ({os.path.basename(f)}): {e}", file=sys.stderr)
+            continue
+        if not ok:
+            print(f"skip sweep summary ({os.path.basename(f)}): bad shape", file=sys.stderr)
+            continue
+        out.append({"host": d["host"], "run_at": d["run_at"], "status": d["status"], **ints})
+    return sorted(out, key=lambda r: r["host"])
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mask", action="store_true")
@@ -143,7 +169,7 @@ def main():
         bridges.append({"name": f"{wt} · {n}-{slug}", "state": lane_state(a), "card": card, "note": a.get("name", "")})
 
     doc = {"generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "masked": args.mask,
-           "battle_school": {"armies": armies}, "bike_factory": {"seats": seats, "bridges": bridges}}
+           "battle_school": {"armies": armies}, "bike_factory": {"seats": seats, "bridges": bridges}, "sweeps": sweeps()}
     text = json.dumps(doc, ensure_ascii=False, indent=2)
     if args.mask:
         for i, (slug, display) in enumerate(ARMIES):
