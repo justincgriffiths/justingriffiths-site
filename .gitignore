@@ -5,3 +5,4 @@ node_modules/
 candidates/
 bin/*.log
 fleet/target/
+*.launchd.log

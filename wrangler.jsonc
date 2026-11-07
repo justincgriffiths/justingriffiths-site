@@ -23,5 +23,9 @@
   // /fleet/* checks the Cloudflare Access token. Both are public identifiers, not secrets; empty
   // means /fleet/ answers 404 to everyone. Fill after `access-login.sh` prints them, then deploy.
   "vars": { "ACCESS_TEAM_DOMAIN": "", "ACCESS_AUD": "" },
+  // Live fleet state: /fleet/state.json reads key "state.json" from this KV binding (the mini writes it,
+  // bin/fleet-kv.sh). Not bound yet: a binding needs the namespace id, so it is added at go-live
+  // (see README, Live feed). Unbound means /fleet/state.json answers 404.
+  // "kv_namespaces": [{ "binding": "FLEET_KV", "id": "<namespace id from go-live step 1>" }],
   "workers_dev": true
 }
