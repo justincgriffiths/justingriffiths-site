@@ -57,3 +57,45 @@ test("worker: gated response is private, no-store, framing denied", async () => 
     assert.equal(r.headers.get("x-frame-options"), "DENY");
   } finally { globalThis.fetch = realFetch; }
 });
+
+// Live feed: /fleet/state.json reads the FLEET_KV binding, only behind the Access gate.
+const kv = (value) => ({ get: async (k) => (k === "state.json" ? value : null) });
+const hitKv = (path, headers, kvBinding) =>
+  worker.fetch(new Request(`https://justingriffiths.com${path}`, { headers }), { ASSETS: assets, FLEET_KV: kvBinding, ...env });
+const STATE = JSON.stringify({ seats: ["a"] });
+async function authed(path, kvBinding) {
+  const t = await token();
+  resetKeyCache();
+  const realFetch = globalThis.fetch; globalThis.fetch = certs;
+  try { return await hitKv(path, { "Cf-Access-Jwt-Assertion": t }, kvBinding); } finally { globalThis.fetch = realFetch; }
+}
+test("kv: state.json without a token is 404 and never reads KV", async () => {
+  let reads = 0;
+  const r = await hitKv("/fleet/state.json", {}, { get: async () => { reads++; return STATE; } });
+  assert.equal(r.status, 404);
+  assert.equal(await r.text(), "Not found");
+  assert.equal(reads, 0);
+});
+test("kv: state.json with a forged token is 404", async () => {
+  const r = await hitKv("/fleet/state.json", { "Cf-Access-Jwt-Assertion": "a.b.c" }, kv(STATE));
+  assert.equal(r.status, 404);
+});
+test("kv: state.json behind the gate serves the KV value, private and JSON", async () => {
+  const r = await authed("/fleet/state.json", kv(STATE));
+  assert.equal(r.status, 200);
+  assert.equal(await r.text(), STATE);
+  assert.match(r.headers.get("content-type"), /application\/json/);
+  assert.equal(r.headers.get("cache-control"), "private, no-store");
+  assert.equal(r.headers.get("x-frame-options"), "DENY");
+});
+test("kv: empty or unbound KV is 404 behind the gate", async () => {
+  assert.equal((await authed("/fleet/state.json", kv(null))).status, 404);
+  assert.equal((await authed("/fleet/state.json", undefined)).status, 404);
+});
+test("kv: the state is reachable at no path outside /fleet/", async () => {
+  for (const p of ["/state.json", "/fleet-state.json", "/marketing-101/state.json"]) {
+    const r = await hitKv(p, {}, kv(STATE));
+    assert.notEqual(r.status, 200, p);
+    assert.doesNotMatch(await r.text(), /seats/, p);
+  }
+});
