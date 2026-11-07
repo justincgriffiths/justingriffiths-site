@@ -99,6 +99,15 @@ The mini pushes fleet state to Cloudflare KV; the Worker reads it only behind th
 
 Go-live (each line is a Cloudflare write, Justin's go): see the PR body of the live-feed PR for the exact commands.
 
+### Meta rollout (`/fleet/meta/`, Justin only)
+
+Per-client built / verified / live / first-hour delivery / issues, from `~/.local/state/meta-rollout/<client>.json` (schema `meta-rollout-report/1`, pearmill/pedal#636). Counts and statuses only; clients show as "Client A, B, C".
+
+- **Reader** (`bin/meta-state.py`) is thin: `shape()` is the only code that knows the schema, and copies through an allowlist (no account id, flag detail, spend, plan or CPA). `test/meta-state.test.mjs` blocks names, ids and creative text.
+- **Feed**: `bin/fleet-kv.sh` also PUTs KV key `meta.json`; the Worker serves it at `/fleet/meta/state.json`. `fleet/meta-fixture.json` is baked into the page so a preview renders without KV.
+- **Gate**: the Fleet Access token is checked first, then `src/worker.js` requires the token's email to be in the `META_ALLOWLIST` secret (comma-separated). Unset means nobody (404). Set it: `printf 'justin@...' | npx wrangler secret put META_ALLOWLIST` (◆MYCROFT_COS). A separate Access app for `/fleet/meta` would not work as-is: its token carries another AUD, which `src/access.js` rejects.
+- **Not public**: no link from the hub, sitemap or nav; `noindex`.
+
 ## Qwen refresh (`/qwen/`)
 
 `bin/qwen-refresh.sh` keeps `/qwen/` current after each CoS sweep. It snapshots a fresh `origin/main`, runs `bin/qwen-state.py` against the live sources (`~/.local/state/issue-tag`, `~/worktrees/mycroft/live/cos/runs`) into the snapshot's `content/qwen/data.json`, then:
