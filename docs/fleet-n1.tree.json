@@ -4,7 +4,7 @@
       0.0,
       0.0,
       1120.0,
-      640.0
+      760.0
     ],
     "children": [
       {
@@ -12,7 +12,7 @@
           0.0,
           0.0,
           1120.0,
-          640.0
+          760.0
         ],
         "children": [
           {
@@ -20,7 +20,7 @@
               0.0,
               0.0,
               1120.0,
-              608.0
+              728.0
             ],
             "children": [
               {
@@ -28,7 +28,7 @@
                   0.0,
                   12.0,
                   559.8,
-                  596.0
+                  716.0
                 ],
                 "children": [
                   {
@@ -75,7 +75,7 @@
                       12.0,
                       75.5,
                       535.8,
-                      532.5
+                      652.5
                     ],
                     "children": [
                       {
@@ -452,7 +452,7 @@
                   560.3,
                   12.0,
                   559.8,
-                  596.0
+                  716.0
                 ],
                 "children": [
                   {
@@ -499,7 +499,7 @@
                       572.3,
                       75.5,
                       535.8,
-                      532.5
+                      652.5
                     ],
                     "children": [
                       {
@@ -941,6 +941,196 @@
                         ],
                         "key": "bridges",
                         "role": "group"
+                      },
+                      {
+                        "actions": [
+                          "scroll-into-view"
+                        ],
+                        "bounds": [
+                          572.3,
+                          483.5,
+                          535.8,
+                          152.0
+                        ],
+                        "children": [
+                          {
+                            "actions": [
+                              "scroll-into-view"
+                            ],
+                            "bounds": [
+                              584.3,
+                              483.5,
+                              523.8,
+                              14.5
+                            ],
+                            "key": "header",
+                            "name": "Sweeps · last run per host",
+                            "role": "label"
+                          },
+                          {
+                            "actions": [
+                              "scroll-into-view"
+                            ],
+                            "bounds": [
+                              572.3,
+                              506.0,
+                              535.8,
+                              129.5
+                            ],
+                            "children": [
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  576.3,
+                                  510.0,
+                                  527.8,
+                                  60.5
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      518.0,
+                                      503.8,
+                                      24.0
+                                    ],
+                                    "children": [
+                                      {
+                                        "actions": [
+                                          "scroll-into-view"
+                                        ],
+                                        "bounds": [
+                                          588.3,
+                                          521.8,
+                                          170.0,
+                                          16.5
+                                        ],
+                                        "key": "name",
+                                        "name": "host-a",
+                                        "role": "label"
+                                      },
+                                      {
+                                        "actions": [
+                                          "scroll-into-view"
+                                        ],
+                                        "bounds": [
+                                          832.3,
+                                          521.8,
+                                          259.8,
+                                          16.5
+                                        ],
+                                        "key": "when",
+                                        "name": "2026-11-07T23:00:00Z",
+                                        "role": "label"
+                                      }
+                                    ],
+                                    "key": "top",
+                                    "role": "group"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      546.0,
+                                      503.8,
+                                      16.5
+                                    ],
+                                    "key": "counts",
+                                    "name": "removed 2 · tombstoned 1 · left for Justin 3 · errors 0",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "sweep0",
+                                "name": "host-a 2026-11-07T23:00:00Z",
+                                "role": "row"
+                              },
+                              {
+                                "actions": [
+                                  "scroll-into-view"
+                                ],
+                                "bounds": [
+                                  576.3,
+                                  571.0,
+                                  527.8,
+                                  60.5
+                                ],
+                                "children": [
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      579.0,
+                                      503.8,
+                                      24.0
+                                    ],
+                                    "children": [
+                                      {
+                                        "actions": [
+                                          "scroll-into-view"
+                                        ],
+                                        "bounds": [
+                                          588.3,
+                                          582.8,
+                                          170.0,
+                                          16.5
+                                        ],
+                                        "key": "name",
+                                        "name": "host-b",
+                                        "role": "label"
+                                      },
+                                      {
+                                        "actions": [
+                                          "scroll-into-view"
+                                        ],
+                                        "bounds": [
+                                          845.8,
+                                          582.8,
+                                          246.3,
+                                          16.5
+                                        ],
+                                        "key": "when",
+                                        "name": "2026-11-07T19:00:00Z",
+                                        "role": "label"
+                                      }
+                                    ],
+                                    "key": "top",
+                                    "role": "group"
+                                  },
+                                  {
+                                    "actions": [
+                                      "scroll-into-view"
+                                    ],
+                                    "bounds": [
+                                      588.3,
+                                      607.0,
+                                      503.8,
+                                      16.5
+                                    ],
+                                    "key": "counts",
+                                    "name": "removed 0 · tombstoned 0 · left for Justin 3 · errors 1",
+                                    "role": "label"
+                                  }
+                                ],
+                                "key": "sweep1",
+                                "name": "host-b 2026-11-07T19:00:00Z",
+                                "role": "row"
+                              }
+                            ],
+                            "key": "card",
+                            "role": "group"
+                          }
+                        ],
+                        "key": "sweeps",
+                        "role": "group"
                       }
                     ],
                     "key": "sections",
@@ -966,7 +1156,7 @@
           {
             "bounds": [
               0.0,
-              608.0,
+              728.0,
               1120.0,
               32.0
             ],
@@ -974,7 +1164,7 @@
               {
                 "bounds": [
                   24.0,
-                  616.5,
+                  736.5,
                   171.0,
                   15.0
                 ],
@@ -985,7 +1175,7 @@
               {
                 "bounds": [
                   866.0,
-                  616.5,
+                  736.5,
                   230.0,
                   15.0
                 ],
@@ -1024,7 +1214,7 @@
         0.0,
         0.0,
         1120.0,
-        640.0
+        760.0
       ],
       "role": "window",
       "scale": 1.0
@@ -1044,7 +1234,7 @@
         0.0,
         0.0,
         1120.0,
-        608.0
+        728.0
       ],
       "role": "group",
       "scale": 1.0
@@ -1065,7 +1255,7 @@
         0.0,
         12.0,
         559.75,
-        596.0
+        716.0
       ],
       "role": "region",
       "scale": 1.0
@@ -1149,7 +1339,7 @@
         12.0,
         75.5,
         535.75,
-        532.5
+        652.5
       ],
       "role": "group",
       "scale": 1.0
@@ -2387,7 +2577,7 @@
         559.75,
         36.0,
         0.5,
-        596.0
+        716.0
       ],
       "role": "group",
       "scale": 1.0
@@ -2408,7 +2598,7 @@
         560.25,
         12.0,
         559.75,
-        596.0
+        716.0
       ],
       "role": "region",
       "scale": 1.0
@@ -2492,7 +2682,7 @@
         572.25,
         75.5,
         535.75,
-        532.5
+        652.5
       ],
       "role": "group",
       "scale": 1.0
@@ -3932,13 +4122,475 @@
       "focusable": false,
       "focused": false,
       "inert": false,
+      "key": "sweeps",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps",
+      "rect": [
+        572.25,
+        483.5,
+        535.75,
+        152.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "header",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/header",
+      "rect": [
+        584.25,
+        483.5,
+        523.75,
+        14.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "Sweeps · last run per host"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#1c1d20ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "card",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card",
+      "rect": [
+        572.25,
+        506.0,
+        535.75,
+        129.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sweep0",
+      "label": "host-a 2026-11-07T23:00:00Z",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep0",
+      "rect": [
+        576.25,
+        510.0,
+        527.75,
+        60.5
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "top",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep0/top",
+      "rect": [
+        588.25,
+        518.0,
+        503.75,
+        24.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep0/top/name",
+      "rect": [
+        588.25,
+        521.75,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "host-a"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57b29",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "ok",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep0/top/state",
+      "rect": [
+        770.25,
+        520.0,
+        50.0,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#56d57bff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep0/top/state/dot",
+      "rect": [
+        778.25,
+        526.5,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#56d57bff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep0/top/state/label",
+      "rect": [
+        791.25,
+        523.0,
+        13.0,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "ok"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep0/top/state/pad",
+      "rect": [
+        810.25,
+        530.0,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "when",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep0/top/when",
+      "rect": [
+        832.25,
+        521.75,
+        259.75,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "2026-11-07T23:00:00Z"
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "counts",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep0/counts",
+      "rect": [
+        588.25,
+        546.0,
+        503.75,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "removed 2 · tombstoned 1 · left for Justin 3 · errors 0"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ffffff0e",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sweepsep0",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweepsep0",
+      "rect": [
+        588.25,
+        570.5,
+        503.75,
+        0.5
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "sweep1",
+      "label": "host-b 2026-11-07T19:00:00Z",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep1",
+      "rect": [
+        576.25,
+        571.0,
+        527.75,
+        60.5
+      ],
+      "role": "row",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "top",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep1/top",
+      "rect": [
+        588.25,
+        579.0,
+        503.75,
+        24.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "name",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep1/top/name",
+      "rect": [
+        588.25,
+        582.75,
+        170.0,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "host-b"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ff735e29",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "state",
+      "label": "error",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep1/top/state",
+      "rect": [
+        770.25,
+        581.0,
+        63.5,
+        20.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#ff735eff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "dot",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep1/top/state/dot",
+      "rect": [
+        778.25,
+        587.5,
+        7.0,
+        7.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#ff735eff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "label",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep1/top/state/label",
+      "rect": [
+        791.25,
+        584.0,
+        26.5,
+        14.0
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "error"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "pad",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep1/top/state/pad",
+      "rect": [
+        823.75,
+        591.0,
+        2.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#a2a5aaff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "when",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep1/top/when",
+      "rect": [
+        845.75,
+        582.75,
+        246.25,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "2026-11-07T19:00:00Z"
+    },
+    {
+      "blur": 0.0,
+      "color": "#eff0f2ff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "counts",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "window/worlds/bike-factory/sections/sweeps/card/sweep1/counts",
+      "rect": [
+        588.25,
+        607.0,
+        503.75,
+        16.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "removed 0 · tombstoned 0 · left for Justin 3 · errors 1"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
       "key": "foot",
       "loopPhase": null,
       "opacity": 1.0,
       "path": "window/foot",
       "rect": [
         0.0,
-        608.0,
+        728.0,
         1120.0,
         32.0
       ],
@@ -3959,7 +4611,7 @@
       "path": "window/foot/where",
       "rect": [
         24.0,
-        616.5,
+        736.5,
         171.0,
         15.0
       ],
@@ -3981,7 +4633,7 @@
       "path": "window/foot/stamp",
       "rect": [
         866.0,
-        616.5,
+        736.5,
         230.0,
         15.0
       ],
@@ -3997,7 +4649,7 @@
   "title": "Fleet",
   "viewport": [
     1120.0,
-    640.0
+    760.0
   ],
   "warnings": []
 }

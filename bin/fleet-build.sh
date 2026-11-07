@@ -27,7 +27,7 @@ run() {
       (cd fleet/bike-factory && cargo run -q -- --snap ../../docs/bike-factory-n1.png --size 1120x760 --scale 2) || return 1
       echo "docs/bike-factory-n1.png"; return 0
     fi
-    (cd fleet && cargo run -q -- --snap ../docs/fleet-n1.png --size 1120x640 --scale 2 \
+    (cd fleet && cargo run -q -- --snap ../docs/fleet-n1.png --size 1120x760 --scale 2 \
       && cargo run -q -- --tree ../docs/fleet-n1.tree.json) || return 1
     echo "docs/fleet-n1.png docs/fleet-n1.tree.json"; return 0
   fi

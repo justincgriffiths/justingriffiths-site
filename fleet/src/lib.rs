@@ -14,7 +14,7 @@ use rune::{Color, Cx, El, ScrollSpec, TextStyle, col, el, oklch, row, text};
 use serde::Deserialize;
 
 pub const FIXTURE: &str = include_str!("../fixture.json");
-pub const SIZE: (f32, f32) = (1120.0, 640.0);
+pub const SIZE: (f32, f32) = (1120.0, 760.0);
 /// DejaVu Sans (free licence) cut down to ✦ ◆ ● ■ ▲, the seat marks Rune's bundled fonts lack.
 pub const GLYPHS: &[u8] = include_bytes!("glyphs.ttf");
 /// Fonts to hand `AppSpec::fonts`: the web build has no system fonts, so it carries the seat marks.
@@ -36,6 +36,28 @@ pub struct Fleet {
     pub bike_factory: BikeFactory,
     #[serde(default)]
     pub seat_flow: SeatFlow,
+    /// The declutter sweep's last run per host (routine-library#261): counts and a run time only.
+    #[serde(default)]
+    pub sweeps: Vec<Sweep>,
+}
+
+/// One host's last sweep. Counts only, never a session name, id or path.
+#[derive(Deserialize, Clone, Debug, Default)]
+pub struct Sweep {
+    pub host: String,
+    #[serde(default)]
+    pub run_at: String,
+    /// `ok` or `error`.
+    #[serde(default)]
+    pub status: String,
+    #[serde(default)]
+    pub removed: u32,
+    #[serde(default)]
+    pub tombstoned: u32,
+    #[serde(default)]
+    pub left: u32,
+    #[serde(default)]
+    pub errors: u32,
 }
 
 #[derive(Deserialize, Clone, Debug, Default)]
@@ -225,6 +247,33 @@ pub fn lanes(p: Paint, key: &str, title: &str, items: &[Lane], empty: &str) -> E
         .child(card)
 }
 
+/// The Sweeps panel: one row per host, its last run time and the four counts.
+pub fn sweeps_panel(p: Paint, key: &str, items: &[Sweep]) -> El {
+    let t = p.t;
+    let mut card = col().key("card").padding(space::S1).fill(t.card).radius(radius::LG)
+        .border(p.hair, t.card_border).shadow(1.0, 2.0, t.shadow).shadow(8.0, 24.0, t.shadow_soft);
+    if items.is_empty() {
+        card = card.child(text("no sweep has reported").key("empty").font(type_::BODY).color(t.text_secondary).padding(space::S3));
+    }
+    for (i, s) in items.iter().enumerate() {
+        let (label, c) = if s.status == "ok" { ("ok", state_color("working")) } else { ("error", state_color("blocked")) };
+        let counts = format!("removed {} · tombstoned {} · left for Justin {} · errors {}", s.removed, s.tombstoned, s.left, s.errors);
+        card = card.child(col().key(format!("sweep{i}")).w_full().px(space::S3).py(space::S2).gap(4.0).role("row")
+            .label(&format!("{} {}", s.host, s.run_at))
+            .child(row().key("top").w_full().h(24.0).gap(space::S3).center_y()
+                .child(text(&s.host).key("name").font(type_::TITLE).color(t.text).w(170.0).truncate())
+                .child(tag(label, c))
+                .child(text(&s.run_at).key("when").font(type_::BODY).color(t.text_secondary).grow(1.0).truncate()))
+            .child(text(counts).key("counts").font(type_::BODY).color(t.text).truncate()));
+        if i + 1 < items.len() {
+            card = card.child(el().key(format!("sweepsep{i}")).h(p.hair).ml(space::S3).mr(space::S3).fill(t.separator).a11y_hidden());
+        }
+    }
+    col().key(key).w_full().gap(space::S2)
+        .child(text("Sweeps · last run per host").key("header").font(type_::SECTION).color(t.text_secondary).ml(space::S3))
+        .child(card)
+}
+
 pub fn world(p: Paint, key: &str, title: &str, subtitle: &str, sections: Vec<El>) -> El {
     let t = p.t;
     col().key(key).grow(1.0).min_w(0.0).h_full().gap(space::S3).px(space::S3).role("region").label(title)
@@ -252,6 +301,7 @@ pub fn view(s: &State, cx: &mut Cx<State>) -> El {
     let factory = vec![
         lanes(p, "seats", "Seats", &f.bike_factory.seats, "no seats"),
         lanes(p, "bridges", "Bridges · run by ■KALADIN", &f.bike_factory.bridges, "no bridges building"),
+        sweeps_panel(p, "sweeps", &f.sweeps),
     ];
 
     let stamp = if f.masked {
