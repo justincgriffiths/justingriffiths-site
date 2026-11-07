@@ -12,7 +12,7 @@ const run = (data, state) => {
   return spawnSync("bin/qwen-refresh.sh", ["--no-deploy"], { encoding: "utf8",
     env: { ...process.env, QWEN_REFRESH_STATE: state, QWEN_REFRESH_REF: "HEAD", QWEN_REFRESH_DATA: f } });
 };
-const clean = { schema: 1, share_by_day: { triage: [{ day: "2026-11-07", answered: 3 }] } };
+const clean = JSON.parse(readFileSync("content/qwen/data.json", "utf8")); // real shape: the refresh now runs the full site build on it
 
 test("changed + clean data passes the gates and is not deployed", () => {
   const r = run(clean, join(dir, "s1"));
