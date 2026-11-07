@@ -1,9 +1,16 @@
+[workspace]
+members = [".", "battle-school"]
 [package]
 name = "fleet-scene"
 version = "0.0.1"
 edition = "2024"
 license = "MIT"
 description = "The /fleet/ scene: battle school and the Bike Factory, drawn by Rune from a fleet-state JSON"
+
+[features]
+# The wasm `start` entry. battle-school links this crate as a library and has its own, so it turns this off.
+default = ["start"]
+start = []
 
 [lib]
 crate-type = ["cdylib", "rlib"]

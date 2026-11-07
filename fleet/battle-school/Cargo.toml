@@ -1,0 +1,20 @@
+[package]
+name = "battle-school"
+version = "0.0.1"
+edition = "2024"
+license = "MIT"
+description = "The /fleet/battle-school/ page: one army per client, its seven toons, their cards and probed connections"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "battle-school"
+path = "src/main.rs"
+
+[dependencies]
+fleet-scene = { path = "..", default-features = false }
+rune = { git = "https://github.com/anomalyco/rune", rev = "dd0888d11bdf9bf24e98a35087f15f803336f405" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "=0.2.129"

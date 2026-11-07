@@ -15,6 +15,14 @@ use serde::Deserialize;
 
 pub const FIXTURE: &str = include_str!("../fixture.json");
 pub const SIZE: (f32, f32) = (1120.0, 640.0);
+/// DejaVu Sans (free licence) cut down to ✦ ◆ ● ■ ▲, the seat marks Rune's bundled fonts lack.
+pub const GLYPHS: &[u8] = include_bytes!("glyphs.ttf");
+/// Fonts to hand `AppSpec::fonts`: the web build has no system fonts, so it carries the seat marks.
+/// Native keeps its own (a non-empty list there would replace Inter).
+#[cfg(target_arch = "wasm32")]
+pub const FONTS: &[&[u8]] = &[GLYPHS];
+#[cfg(not(target_arch = "wasm32"))]
+pub const FONTS: &[&[u8]] = &[];
 
 #[derive(Deserialize, Clone, Debug, Default)]
 pub struct Fleet {
@@ -39,6 +47,27 @@ pub struct Army {
     pub name: String,
     #[serde(default)]
     pub toons: Vec<Lane>,
+    /// From `armies/<client>/pack.yaml` `connections:` (bean-agent): what each probe answered.
+    #[serde(default)]
+    pub connections: Vec<Conn>,
+    #[serde(default)]
+    pub probed_by: String,
+}
+
+/// One probed connection. `result` is `ok`, `not probed`, `none wired` or a failure; `use_for` lists toon letters.
+#[derive(Deserialize, Clone, Debug, Default)]
+pub struct Conn {
+    pub channel: String,
+    #[serde(default)]
+    pub label: String,
+    #[serde(default)]
+    pub result: String,
+    #[serde(default)]
+    pub probed_on: String,
+    #[serde(default)]
+    pub note: String,
+    #[serde(default)]
+    pub use_for: Vec<String>,
 }
 
 #[derive(Deserialize, Clone, Debug, Default)]
@@ -82,12 +111,12 @@ impl Default for State {
 }
 
 #[derive(Clone, Copy)]
-struct Paint {
-    t: tok::Theme,
-    hair: f32,
+pub struct Paint {
+    pub t: tok::Theme,
+    pub hair: f32,
 }
 
-fn state_color(state: &str) -> Color {
+pub fn state_color(state: &str) -> Color {
     match state {
         "working" => oklch(0.78, 0.17, 150.0), // green
         "blocked" => oklch(0.74, 0.19, 30.0),  // red-orange
@@ -95,9 +124,13 @@ fn state_color(state: &str) -> Color {
     }
 }
 
-fn pill(_p: Paint, state: &str) -> El {
-    let c = state_color(state);
+pub fn pill(_p: Paint, state: &str) -> El {
     let label = if state.is_empty() { "idle" } else { state };
+    tag(label, state_color(state))
+}
+
+/// A coloured status pill with any label.
+pub fn tag(label: &str, c: Color) -> El {
     row().key("state").h(20.0).px(space::S2).gap(6.0).center_y().radius(10.0)
         .fill(Color { a: 0.16, ..c })
         .child(el().key("dot").size(7.0, 7.0).radius(3.5).fill(c).a11y_hidden())
@@ -107,7 +140,7 @@ fn pill(_p: Paint, state: &str) -> El {
         .label(label)
 }
 
-fn lane(p: Paint, key: &str, l: &Lane) -> El {
+pub fn lane(p: Paint, key: &str, l: &Lane) -> El {
     let t = p.t;
     let card = if l.card.is_empty() { "no card".to_owned() } else { l.card.clone() };
     row().key(key).w_full().h(40.0).px(space::S3).gap(space::S3).center_y().role("row").label(&l.name)
@@ -117,7 +150,7 @@ fn lane(p: Paint, key: &str, l: &Lane) -> El {
             .color(if l.card.is_empty() { t.text_secondary } else { t.text }).grow(1.0).truncate())
 }
 
-fn lanes(p: Paint, key: &str, title: &str, items: &[Lane], empty: &str) -> El {
+pub fn lanes(p: Paint, key: &str, title: &str, items: &[Lane], empty: &str) -> El {
     let t = p.t;
     let mut card = col().key("card").padding(space::S1).fill(t.card).radius(radius::LG)
         .border(p.hair, t.card_border).shadow(1.0, 2.0, t.shadow).shadow(8.0, 24.0, t.shadow_soft);
@@ -135,7 +168,7 @@ fn lanes(p: Paint, key: &str, title: &str, items: &[Lane], empty: &str) -> El {
         .child(card)
 }
 
-fn world(p: Paint, key: &str, title: &str, subtitle: &str, sections: Vec<El>) -> El {
+pub fn world(p: Paint, key: &str, title: &str, subtitle: &str, sections: Vec<El>) -> El {
     let t = p.t;
     col().key(key).grow(1.0).min_w(0.0).h_full().gap(space::S3).px(space::S3).role("region").label(title)
         .child(col().key("head").gap(2.0).ml(space::S3).mt(space::S2)
@@ -181,10 +214,12 @@ pub fn view(s: &State, cx: &mut Cx<State>) -> El {
 }
 
 pub fn spec() -> AppSpec<State> {
-    AppSpec::new("Fleet", SIZE, State::default, view)
+    let mut s = AppSpec::new("Fleet", SIZE, State::default, view);
+    s.fonts = FONTS;
+    s
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(all(target_arch = "wasm32", feature = "start"))]
 #[wasm_bindgen::prelude::wasm_bindgen(start)]
 pub fn start() {
     rune::run(spec());
