@@ -98,3 +98,13 @@ The mini pushes fleet state to Cloudflare KV; the Worker reads it only behind th
 - **Reader** (`src/worker.js`) answers `/fleet/state.json` from the `FLEET_KV` binding inside the Access check. No token, no binding or no key all return 404.
 
 Go-live (each line is a Cloudflare write, Justin's go): see the PR body of the live-feed PR for the exact commands.
+
+## Qwen refresh (`/qwen/`)
+
+`bin/qwen-refresh.sh` keeps `/qwen/` current after each CoS sweep. It snapshots a fresh `origin/main`, runs `bin/qwen-state.py` against the live sources (`~/.local/state/issue-tag`, `~/worktrees/mycroft/live/cos/runs`) into the snapshot's `content/qwen/data.json`, then:
+
+- **Change gate**: same sha256 as the last deploy (`~/.local/state/qwen-refresh/last-deployed.sha256`) exits 0 and deploys nothing.
+- **Privacy gate**: `bin/qwen-leakcheck.py` blocks any per-message key, `@`, or id/title/subject text; exit 1, nothing deployed, the value is never echoed.
+- **Deploy**: `npx wrangler deploy` from the snapshot, only on a clean change; the hash is recorded after success.
+
+`bin/qwen-refresh.sh --no-deploy` runs both gates and stops before the deploy. `bin/com.justin.qwen-refresh.plist` (08:10 and 14:10 ET, via `hbrun.sh`) ships unloaded; load it only after merge. Log: `bin/qwen-refresh.log`.
