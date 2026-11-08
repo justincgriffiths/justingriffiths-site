@@ -2,6 +2,7 @@
 // Worker (justincgriffiths/blossom-tutoring-lessons) reached over the BLOSSOM service binding.
 // /marketing-101/ is the Marketing 101 lesson page (build-marketing.mjs).
 // /pedal-design/ is the same hub in the Pedal Design System (build.mjs), public like /.
+// /qwen/data.json comes from KV (bin/qwen-kv.sh), falling back to the built asset.
 // /fleet/... holds the visualization pages (live fleet state). Cloudflare Access gates them
 // (bin/access-login.sh); the Worker also checks the Access token itself and fails closed.
 // /archive/... is a static snapshot of the old research site (justingriffiths.info), unlinked and noindex.
@@ -19,6 +20,7 @@ const GATED_PREFIX = "/fleet";
 const META_PREFIX = `${GATED_PREFIX}/meta`, META_STATE_PATH = `${META_PREFIX}/state.json`, META_KEY = "meta.json";
 const STATE_PATH = `${GATED_PREFIX}/state.json`, STATE_KEY = "state.json";
 const GAME_STATE_PATH = `${GATED_PREFIX}/game/state.json`, GAME_KEY = "game/state.json";
+const QWEN_DATA_PATH = "/qwen/data.json", QWEN_KEY = "qwen/data.json";
 const GATED_HEADERS = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY", "Referrer-Policy": "no-referrer" };
 
 // The token was already verified; this reads its email claim and checks the allowlist. Fails closed.
@@ -129,7 +131,16 @@ export default {
       url.pathname = "/qwen/";
       return Response.redirect(url.toString(), 301);
     }
-    if (url.pathname === "/qwen/" || url.pathname === "/qwen/index.html" || url.pathname === "/qwen/data.json") {
+    // /qwen/data.json is live: bin/qwen-kv.sh puts the aggregates in KV every 10 minutes (1-hour TTL). Public, no Access;
+    // only the leakchecked aggregates ever reach that key. A missing key, an expired one or a KV error falls back to the
+    // built asset, so the page never goes dark.
+    if (url.pathname === QWEN_DATA_PATH) {
+      let live = null;
+      try { live = env.FLEET_KV ? await env.FLEET_KV.get(QWEN_KEY) : null; } catch { live = null; }
+      if (live !== null) return new Response(live, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=60", "X-Content-Type-Options": "nosniff" } });
+      return env.ASSETS.fetch(request);
+    }
+    if (url.pathname === "/qwen/" || url.pathname === "/qwen/index.html") {
       return env.ASSETS.fetch(request);
     }
 

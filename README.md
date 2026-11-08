@@ -120,13 +120,10 @@ Per-client built / verified / live / first-hour delivery / issues, from `~/.loca
 - **Gate**: the Fleet Access token is checked first, then `src/worker.js` requires the token's email to be in the `META_ALLOWLIST` secret (comma-separated). Unset means nobody (404). Set it: `printf 'justin@...' | npx wrangler secret put META_ALLOWLIST` (◆MYCROFT_COS). A separate Access app for `/fleet/meta` would not work as-is: its token carries another AUD, which `src/access.js` rejects.
 - **Not public**: no link from the hub, sitemap or nav; `noindex`.
 
-## Qwen refresh (`/qwen/`)
+## Qwen live data (`/qwen/`)
 
-`bin/qwen-refresh.sh` keeps `/qwen/` current after each CoS sweep. It snapshots a fresh `origin/main`, runs `bin/qwen-state.py` against the live sources (`~/.local/state/issue-tag`, `~/worktrees/mycroft/live/cos/runs`) into the snapshot's `content/qwen/data.json`, then:
+`/qwen/data.json` is live (site#78): `bin/qwen-kv.sh` puts the aggregates in KV key `qwen/data.json` (binding `FLEET_KV`, 1-hour TTL) and the Worker serves that key publicly, falling back to the built asset when the key is missing, expired or KV errors. The page inlines `src/qwen-render.mjs`, pulls `/qwen/data.json` on a 5-minute timer and re-renders the charts and "Data as of" without a deploy; the built HTML stays the no-JS fallback. The page reads stale after 1 hour.
 
-- **Change gate**: same sha256 as the last deploy (`~/.local/state/qwen-refresh/last-deployed.sha256`) exits 0 and deploys nothing.
-- **Privacy gate**: `bin/qwen-leakcheck.py` blocks any per-message key, `@`, or id/title/subject text; exit 1, nothing deployed, the value is never echoed.
-- **Build**: `bin/site-build.sh` in the snapshot (npm build, then `/fleet/` landing, bike-factory, seats, battle-school); any failed step or missing fleet page exits 1, nothing deployed. Every deploy path uses this one build.
-- **Deploy**: `npx wrangler deploy` from the snapshot, only on a clean change; the hash is recorded after success.
-
-`bin/qwen-refresh.sh --no-deploy` runs both gates and the build, prints the snapshot's `dist/fleet/` pages, and stops before the deploy. `bin/com.justin.qwen-refresh.plist` (every two hours, 08:10–22:10 ET, via `hbrun.sh`; each run stamps `as_of`, so each run deploys) ships unloaded; load it only after merge. Log: `bin/qwen-refresh.log`.
+- **Run**: `bin/qwen-kv.sh` runs `bin/qwen-state.py`, then `bin/qwen-leakcheck.py` (any hit exits 1, nothing is written, the value is never echoed), then skips the put if the sha256 matches the last one (`~/.local/state/qwen-kv/last-put.sha256`), then PUTs. `as_of` is in the document, so a real run differs each time. `--dry-run` stops before the put. Log: `bin/qwen-kv.log`.
+- **Schedule**: `bin/com.justin.qwen-kv.plist` (every 10 minutes, via `hbrun.sh`) ships unloaded; load it only after the PR merges and the Worker change is deployed. Credentials are as `bin/fleet-kv.sh` (`~/.config/justingriffiths-site/fleet-kv.token`, mode 0600).
+- **No data deploys**: `bin/qwen-refresh.sh` no longer runs `wrangler deploy`; it is a build check (snapshot, privacy gate, build). Its plist is deleted. If `com.justin.qwen-refresh` is loaded on the Air, unload it.

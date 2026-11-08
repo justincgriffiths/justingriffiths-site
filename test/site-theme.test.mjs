@@ -3,7 +3,7 @@
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 
 const root = new URL("..", import.meta.url);
 const read = (p) => readFileSync(new URL(p, root), "utf8");
@@ -43,11 +43,13 @@ test("/qwen/ prints its as-of time; a missing stamp says so instead of hiding", 
   assert.match(html, /labeling GitHub issues/);
 });
 
-test("qwen-state.py stamps as_of (pinnable for tests); the refresh runs every two hours", () => {
+test("qwen-state.py stamps as_of (pinnable for tests); the KV refresh runs every ten minutes, loaded by hand", () => {
   const out = execFileSync("python3", ["bin/qwen-state.py"], { cwd: root, env: { ...process.env, QWEN_AS_OF: "2026-01-02T03:04:05Z" } }).toString();
   assert.equal(JSON.parse(out).as_of, "2026-01-02T03:04:05Z");
-  const hours = [...read("bin/com.justin.qwen-refresh.plist").matchAll(/<key>Hour<\/key><integer>(\d+)<\/integer>/g)].map((m) => +m[1]);
-  assert.deepEqual(hours, [8, 10, 12, 14, 16, 18, 20, 22]);
+  const plist = read("bin/com.justin.qwen-kv.plist");
+  assert.match(plist, /<key>StartInterval<\/key><integer>600<\/integer>/);
+  assert.match(plist, /<key>RunAtLoad<\/key><false\/>/);
+  assert.ok(!existsSync(new URL("bin/com.justin.qwen-refresh.plist", root)), "the deploying plist is gone");
 });
 
 test("/qwen/ has collapsible Background (closed) and Data (open, as-of in summary) and a quiet Learn more (site#68)", () => {

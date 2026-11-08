@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Puts the /qwen/ aggregates in Cloudflare KV every 10 minutes (site#78). The Worker serves them at /qwen/data.json,
+     so the page moves without a deploy. Ships UNLOADED: nothing runs until Justin copies it to
+     ~/Library/LaunchAgents and runs `launchctl bootstrap`, after the PR merges and the Worker change is deployed.
+     No `op run`: op needs Touch ID, which fails unattended. The writer reads its scoped token from
+     ~/.config/justingriffiths-site/fleet-kv.token (mode 0600). hbrun.sh appends the heartbeat. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.justin.qwen-kv</string>
+  <key>WorkingDirectory</key><string>/Users/justin/projects/justincgriffiths/justingriffiths-site</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/justin/brain/bin/hbrun.sh</string>
+    <string>com.justin.qwen-kv</string>
+    <string>--</string>
+    <string>/Users/justin/projects/justincgriffiths/justingriffiths-site/bin/qwen-kv.sh</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+  <key>StartInterval</key><integer>600</integer>
+  <key>RunAtLoad</key><false/>
+  <key>StandardErrorPath</key><string>/Users/justin/projects/justincgriffiths/justingriffiths-site/bin/qwen-kv.launchd.log</string>
+</dict>
+</plist>
