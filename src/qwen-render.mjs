@@ -9,7 +9,7 @@ const W = 560, H = 190, P = { l: 44, r: 12, t: 12, b: 28 };
 
 const empty = (msg) => `<p class="empty">${esc(msg)}</p>`;
 const legend = (items) => `<p class="legend cluster">${items.map(([k, c]) => `<span><i style="background:${c}"></i>${esc(k)}</span>`).join("")}</p>`;
-const svg = (label, inner) => `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${inner}</svg>`;
+const svg = (label, inner, up = 0) => `<svg viewBox="0 ${-up} ${W} ${H + up}" role="img" aria-label="${esc(label)}">${inner}</svg>`;
 
 function axisY(max, fmt = (v) => v) {
   return [0, 0.5, 1].map((f) => {
@@ -215,11 +215,13 @@ function historyOne(c, last) {
   }).join("");
   const peak = top && top.usd > 0 ? (() => { const i = days.indexOf(top.day), x = P.l + i * step + step / 2, anchor = i > days.length / 2 ? "end" : "start"; return `<text x="${x}" y="${H - P.b - yv(topv(top)) - 4}" text-anchor="${anchor}">${usd(top.usd)}</text>`; })() : "";
   const mi = c.marker && c.marker.day ? days.indexOf(c.marker.day) : -1;
-  const mark = mi >= 0 ? `<line x1="${P.l + mi * step + step / 2}" x2="${P.l + mi * step + step / 2}" y1="${P.t}" y2="${H - P.b}" class="trend" stroke-dasharray="4 3"/><text x="${P.l + mi * step + step / 2 + (mi > days.length / 2 ? -4 : 4)}" y="${P.t + 10}" text-anchor="${mi > days.length / 2 ? "end" : "start"}">${esc(c.marker.label)}</text>` : "";
+  // The marker label sits in a band above the plot (the viewBox grows upward by MB, which also keeps the peak label whole), so it never covers a bar (site#97).
+  const MB = 40, mx = P.l + mi * step + step / 2;
+  const mark = mi >= 0 ? `<line x1="${mx}" x2="${mx}" y1="-14" y2="${H - P.b}" class="trend" stroke-dasharray="4 3"/><text x="${mx + (mi > days.length / 2 ? -4 : 4)}" y="-20" text-anchor="${mi > days.length / 2 ? "end" : "start"}">${esc(c.marker.label)}</text>` : "";
   const idx = [...new Set([0, Math.floor((days.length - 1) / 2), days.length - 1])];
   const ticks = idx.map((i) => `<text x="${P.l + i * step + step / 2}" y="${H - 10}" text-anchor="${i === 0 ? "start" : i === days.length - 1 ? "end" : "middle"}">${esc(days[i].slice(5))}</text>`).join("");
   const axis = [0, max].map((v) => { const y = H - P.b - yv(v); return `<line x1="${P.l}" x2="${W - P.r}" y1="${y}" y2="${y}" class="gridline"/><text x="${P.l - 6}" y="${y + 4}" text-anchor="end">${money ? (v === 0 ? "$0" : `$${v < 1 ? v.toFixed(2) : Math.round(v)}`) : v}</text>`; }).join("");
-  return `<div class="callsjob">${head}${note(`${mk}${top && top.usd > 0 ? `; the label marks the costliest day, ${esc(top.day.slice(5))}` : ""}${money ? "; bar height is dollars per day" : ""}`)}${legend(keys.map((k) => [lab(k), col(k)]))}${svg(`${name} ${money ? "dollars" : "runs"} per day by model, ${days.length} days`, axis + bars + mark + peak + ticks)}</div>`;
+  return `<div class="callsjob">${head}${note(`${mk}${top && top.usd > 0 ? `; the label marks the costliest day, ${esc(top.day.slice(5))}` : ""}${money ? "; bar height is dollars per day" : ""}`)}${legend(keys.map((k) => [lab(k), col(k)]))}${svg(`${name} ${money ? "dollars" : "runs"} per day by model, ${days.length} days`, axis + bars + mark + peak + ticks, MB)}</div>`;
 }
 
 function historyCharts(h) {
