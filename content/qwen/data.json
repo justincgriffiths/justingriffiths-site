@@ -16,7 +16,7 @@
   },
   "shadow_agreement_pct": {
    "issue-tag": null,
-   "triage": null
+   "triage": 9.1
   },
   "trial": {
    "correct_of_4": {
@@ -27,33 +27,49 @@
    "label": "Pre-production trial, 4 items"
   }
  },
- "as_of": "2026-11-07T20:04:21Z",
+ "as_of": "2026-11-08T16:16:00Z",
  "breakdowns": {
   "by_task_label": {
-   "archive": 0,
-   "fyi": 0,
+   "archive": 6,
+   "fyi": 4,
    "other": 0,
    "reply": 0,
-   "task": 0
+   "task": 1
   },
   "by_tool_call": {
-   "qwen_classify": 0
+   "qwen_classify": 11
   },
   "by_workflow": {
+   "cron-triage": {
+    "answered": 43,
+    "capped": 0,
+    "fell_back": 11
+   },
+   "declutter": {
+    "answered": 2,
+    "capped": 2,
+    "fell_back": 0
+   },
    "issue-tag": {
     "answered": 10,
     "capped": 0,
     "fell_back": 0
    },
-   "triage": {
+   "session-reap": {
     "answered": 0,
     "capped": 0,
     "fell_back": 0
+   },
+   "triage": {
+    "answered": 11,
+    "capped": 1,
+    "fell_back": 1
    }
   }
  },
  "cost_per_run": {
   "issue_tag_usd_per_item": {
+   "haiku": 0.0063,
    "qwen": 0.0
   },
   "triage_baseline_usd_per_run": 0.4365,
@@ -141,13 +157,19 @@
     "qwen_era": false,
     "runs": 7,
     "usd_per_run": 0.4747
+   },
+   {
+    "day": "2026-11-08",
+    "qwen_era": true,
+    "runs": 6,
+    "usd_per_run": 0.3385
    }
   ],
-  "triage_qwen_era_usd_per_run": null
+  "triage_qwen_era_usd_per_run": 0.3385
  },
  "fallback_reasons": {
   "bad-class": 0,
-  "exit-N": 0,
+  "exit-N": 1,
   "no-ql": 0,
   "other": 0,
   "timeout": 0
@@ -155,9 +177,9 @@
  "latency_ms": {
   "haiku": null,
   "qwen": {
-   "n": 0,
-   "p50": null,
-   "p90": null
+   "n": 11,
+   "p50": 2432.0,
+   "p90": 10554.0
   }
  },
  "model": "qwen3-coder:30b",
@@ -171,6 +193,98 @@
     "fell_back": 0
    }
   ],
-  "triage": []
+  "triage": [
+   {
+    "answered": 11,
+    "capped": 1,
+    "day": "2026-11-08",
+    "fell_back": 1
+   }
+  ]
+ },
+ "workflows": {
+  "cron-triage": {
+   "answered": 43,
+   "capped": 0,
+   "fell_back": 11,
+   "first_logged": "2026-11-08",
+   "latency_ms": {
+    "n": 9,
+    "p50": 37930.0,
+    "p90": 42089.0,
+    "unit": "run"
+   },
+   "policy": 0,
+   "policy_reasons": {},
+   "runs": 10,
+   "share_by_day": [
+    {
+     "answered": 43,
+     "capped": 0,
+     "day": "2026-11-08",
+     "fell_back": 11,
+     "policy": 0,
+     "runs": 10,
+     "usd": 0.0134
+    }
+   ],
+   "usd": 0.0134
+  },
+  "declutter": {
+   "answered": 2,
+   "capped": 2,
+   "fell_back": 0,
+   "first_logged": "2026-11-07",
+   "latency_ms": {
+    "n": 2,
+    "p50": 14332.0,
+    "p90": 14332.0,
+    "unit": "item"
+   },
+   "policy": 0,
+   "policy_reasons": {},
+   "runs": 1,
+   "share_by_day": [
+    {
+     "answered": 2,
+     "capped": 2,
+     "day": "2026-11-07",
+     "fell_back": 0,
+     "policy": 0,
+     "runs": 1,
+     "usd": 0.0046
+    }
+   ],
+   "usd": 0.0046
+  },
+  "session-reap": {
+   "answered": 0,
+   "capped": 0,
+   "fell_back": 0,
+   "first_logged": "2026-11-07",
+   "latency_ms": {
+    "n": 0,
+    "p50": null,
+    "p90": null,
+    "unit": "item"
+   },
+   "policy": 5,
+   "policy_reasons": {
+    "needs-name": 5
+   },
+   "runs": 1,
+   "share_by_day": [
+    {
+     "answered": 0,
+     "capped": 0,
+     "day": "2026-11-07",
+     "fell_back": 0,
+     "policy": 5,
+     "runs": 1,
+     "usd": 0.0
+    }
+   ],
+   "usd": 0.0
+  }
  }
 }

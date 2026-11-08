@@ -1,13 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import worker from "../src/worker.js";
 
 // PUBLIC page: poison every source with per-message fields; none may reach the exporter output.
-const SENTINELS = ["SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841", "SENTINEL_LABEL_xyz", "secret-repo-sentinel2", "7771299", "SENTINEL_PAIR_LABEL", "SENTINEL_MSGID_PAIR", "SENTINEL_CORR_ISSUE_8842"];
+const SENTINELS = ["SENTINEL_CRON_JOB_NAME", "SENTINEL_CRON_RUNID", "SENTINEL_FLAGGED_TEXT", "SENTINEL_DECLUTTER_JOB", "SENTINEL_SESSION_NAME", "SENTINEL_REAP_JOB", "SENTINEL REASON declutter 5521", "SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841", "SENTINEL_LABEL_xyz", "secret-repo-sentinel2", "7771299", "SENTINEL_PAIR_LABEL", "SENTINEL_MSGID_PAIR", "SENTINEL_CORR_ISSUE_8842"];
 const FORBIDDEN_KEYS = ["id", "ids", "subject", "sender", "from", "title", "number", "repo", "account", "labels", "pair", "haiku_add", "dimension", "from", "to", "model_of_origin", "applied_at", "qwen_label", "haiku_label", "from_label", "to_label", "issue", "match", "haiku_usd", "context", "input", "message_id", "email", "report"];
 
 const dir = mkdtempSync(join(tmpdir(), "qwen-"));
@@ -41,7 +41,30 @@ writeFileSync(join(dir, "tag.jsonl"), [
   { kind: "correction", ts: "2026-11-07T07:00:00Z", repo: "secret-repo-sentinel2", number: 7771299, dimension: "SENTINEL_LABEL_xyz", from: "a", to: "b", model_of_origin: "qwen3-coder:30b", applied_at: "2026-11-07T06:00:00Z" },
 ].map((r) => JSON.stringify(r)).join("\n") + "\n");
 
-const out = execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env,
+
+// site#79: cron triage, declutter and session-reap. Every job name, run id, flagged-job text and session name is a sentinel.
+const none = join(dir, "does-not-exist.jsonl");
+const jl = (name, rows) => { const f = join(dir, name); writeFileSync(f, rows.map((r) => JSON.stringify(r)).join("\n") + "\n"); return f; };
+const cronFile = jl("cron.jsonl", [
+  { run_id: "SENTINEL_CRON_RUNID_1", started: "2026-11-08T09:11:00Z", ended: "2026-11-08T09:12:00Z", jobs_flagged: 6, qwen_ok: 0, escalated: { qwen_error: 6 }, usd: 0.0067, latency_ms: 20000, flagged: ["SENTINEL_CRON_JOB_NAME"], text: "SENTINEL_FLAGGED_TEXT" },
+  { run_id: "SENTINEL_CRON_RUNID_2", started: "2026-11-08T10:11:00Z", ended: "2026-11-08T10:12:00Z", jobs_flagged: 0, qwen_ok: 0, escalated: {}, usd: 0, latency_ms: 0 },
+  { run_id: "SENTINEL_CRON_RUNID_3", started: "2026-11-08T11:11:00Z", ended: "2026-11-08T11:12:00Z", jobs_flagged: 6, qwen_ok: 5, escalated: { "gate:exit-code": 1 }, usd: 0.0013, latency_ms: 30000 },
+  { run_id: "SENTINEL_CRON_RUNID_4", started: "2026-11-09T11:11:00Z", ended: "2026-11-09T11:12:00Z", jobs_flagged: 3, qwen_ok: 3, escalated: {}, usd: 0, latency_ms: 40000 },
+]);
+const declutterFile = jl("declutter.jsonl", [
+  { ts: "2026-11-07T23:16:58+00:00", job: "SENTINEL_DECLUTTER_JOB", tool: "qwen_classify", model: "qwen3-coder:30b", escalated: false, reason: "", latency_ms: 14000, usd: 0.002 },
+  { ts: "2026-11-07T23:16:58+00:00", job: "SENTINEL_SESSION_NAME", tool: "qwen_classify", model: "qwen3-coder:30b", escalated: true, reason: "cap", latency_ms: 0 },
+  { ts: "2026-11-07T23:17:20+00:00", job: "SENTINEL_SESSION_NAME", tool: "qwen_classify", model: "qwen3-coder:30b", escalated: true, reason: "timeout", latency_ms: 0 },
+  { ts: "2026-11-08T07:00:00+00:00", job: "SENTINEL_SESSION_NAME", tool: "qwen_classify", model: "qwen3-coder:30b", escalated: true, reason: "SENTINEL REASON declutter 5521", latency_ms: 0 },
+]);
+const reapFile = jl("reap.jsonl", [
+  { ts: "2026-11-07T23:17:24+00:00", job: "SENTINEL_REAP_JOB", tool: "qwen_classify", model: "claude-haiku-5-5", escalated: true, reason: "needs-name", latency_ms: 0 },
+  { ts: "2026-11-07T23:17:24+00:00", job: "SENTINEL_SESSION_NAME", tool: "qwen_classify", model: "claude-haiku-5-5", escalated: true, reason: "needs-del", latency_ms: 0 },
+  { ts: "2026-11-07T23:17:25+00:00", job: "SENTINEL_SESSION_NAME", tool: "qwen_classify", model: "claude-haiku-5-5", escalated: true, reason: "needs-name", latency_ms: 0 },
+]);
+const wfEnv = { QWEN_CRON_RUNS: cronFile, QWEN_DECLUTTER: declutterFile, QWEN_REAP: reapFile };
+
+const out = execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env, ...wfEnv,
   QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"), QWEN_TAG_LOG: join(dir, "tag.log"), QWEN_TAG_JSONL: join(dir, "tag.jsonl") } });
 const keysOf = (o, acc = []) => { if (o && typeof o === "object") for (const [k, v] of Object.entries(o)) { acc.push(k); keysOf(v, acc); } return acc; };
 
@@ -111,7 +134,7 @@ test("a ramp cap is capped, not a fallback, and a day Qwen answered nothing is n
   const db = join(d2, "cost.db");
   execFileSync("python3", ["-c", `import sqlite3,sys; c=sqlite3.connect(sys.argv[1]); c.execute("create table runs(ts text, job text, usd real)"); c.executemany("insert into runs values(?,?,?)", [("2026-11-06T12:00:00Z","triage",0.5),("2026-11-07T12:00:00Z","triage",0.4),("2026-11-08T12:00:00Z","triage",0.3)]); c.commit()`, db]);
   const d = JSON.parse(execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env,
-    QWEN_RUNS: r2, QWEN_COST_DB: db, QWEN_TAG_LOG: join(d2, "none.log"), QWEN_TAG_JSONL: join(d2, "none.jsonl") } }));
+    QWEN_RUNS: r2, QWEN_COST_DB: db, QWEN_TAG_LOG: join(d2, "none.log"), QWEN_TAG_JSONL: join(d2, "none.jsonl"), QWEN_CRON_RUNS: none, QWEN_DECLUTTER: none, QWEN_REAP: none } }));
   const day8 = d.share_by_day.triage.find((r) => r.day === "2026-11-08");
   assert.deepEqual([day8.answered, day8.fell_back, day8.capped], [0, 1, 1]);
   assert.equal(d.fallback_reasons["exit-N"], 1);
@@ -119,4 +142,50 @@ test("a ramp cap is capped, not a fallback, and a day Qwen answered nothing is n
   const era = Object.fromEntries(d.cost_per_run.triage_by_day.map((r) => [r.day, r.qwen_era]));
   assert.deepEqual(era, { "2026-11-06": false, "2026-11-07": true, "2026-11-08": false });
   assert.equal(d.cost_per_run.triage_qwen_era_usd_per_run, 0.4);
+});
+
+test("cron triage, declutter and session-reap are counted as workflows, counts only", () => {
+  const w = JSON.parse(out).workflows;
+  assert.deepEqual(w["cron-triage"].share_by_day.map((r) => [r.day, r.answered, r.fell_back, r.runs]), [["2026-11-08", 5, 7, 3], ["2026-11-09", 3, 0, 1]]);
+  assert.equal(w["cron-triage"].answered, 8); assert.equal(w["cron-triage"].runs, 4); assert.equal(w["cron-triage"].first_logged, "2026-11-08");
+  assert.deepEqual(w["cron-triage"].latency_ms, { n: 3, p50: 30000, p90: 40000, unit: "run" });   // the run that flagged nothing logged 0 ms
+  assert.equal(w["cron-triage"].usd, 0.008);
+  assert.equal(w.declutter.first_logged, "2026-11-07");
+  assert.equal(w.declutter.runs, 2);   // 23:16:58, 23:16:58 and 23:17:20 are one sweep (gaps under 2 minutes); 07:00 the next day is another
+  assert.deepEqual(w.declutter.share_by_day.map((r) => [r.day, r.answered, r.capped, r.fell_back, r.policy, r.runs]), [["2026-11-07", 1, 1, 1, 0, 1], ["2026-11-08", 0, 0, 1, 0, 1]]);
+  assert.deepEqual(w.declutter.latency_ms, { n: 1, p50: 14000, p90: 14000, unit: "item" });
+  assert.equal(w.declutter.usd, 0.002);
+  assert.deepEqual(w["session-reap"].share_by_day.map((r) => [r.day, r.answered, r.fell_back, r.policy, r.runs]), [["2026-11-07", 0, 0, 3, 1]]);
+});
+
+test("policy reasons (needs-name, needs-del) are kept apart from failures", () => {
+  const w = JSON.parse(out).workflows["session-reap"];
+  assert.equal(w.policy, 3); assert.equal(w.fell_back, 0); assert.deepEqual(w.policy_reasons, { "needs-del": 1, "needs-name": 2 });
+  assert.equal(JSON.parse(out).workflows.declutter.policy, 0);   // an unknown reason is a failure, not a policy
+});
+
+test("an empty or missing source reads as no runs logged, with no first-logged day", () => {
+  const d = JSON.parse(execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env, ...wfEnv, QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"),
+    QWEN_TAG_LOG: join(dir, "tag.log"), QWEN_TAG_JSONL: join(dir, "tag.jsonl"), QWEN_CRON_RUNS: none, QWEN_DECLUTTER: jl("blank.jsonl", []) } }));
+  for (const k of ["cron-triage", "declutter"]) { assert.equal(d.workflows[k].runs, 0, k); assert.equal(d.workflows[k].first_logged, null, k); assert.deepEqual(d.workflows[k].share_by_day, [], k); }
+  assert.equal(d.workflows["session-reap"].runs, 1);
+});
+
+test("the exporter output passes the leakcheck the KV writer runs", () => {
+  const r = spawnSync("python3", ["bin/qwen-leakcheck.py"], { input: out, encoding: "utf8" });
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test("the page renders one chart per job with runs and says so for a job with none", async () => {
+  const { renderData } = await import("../src/qwen-render.mjs");
+  const base = JSON.parse(readFileSync("content/qwen/data.json", "utf8"));
+  const d = JSON.parse(out);
+  const html = renderData({ ...base, workflows: { ...d.workflows, declutter: { ...d.workflows.declutter, runs: 0, share_by_day: [] } } });
+  const sec = html.slice(html.indexOf('id="workflows"'), html.indexOf('id="fallbacks"'));
+  assert.match(sec, /Cron triage<\/h3><p class="note">first logged 2026-11-08 · 4 runs · 8 answered by Qwen · 7 fell back to Claude/);
+  assert.match(sec, /Declutter<\/h3><p class="empty">No runs logged\.<\/p>/);
+  assert.match(sec, /held back by rule \(needs-del 1, needs-name 2\)/);
+  assert.equal((sec.match(/<svg /g) || []).length, 2);
+  assert.doesNotMatch(sec, /NaN|undefined|0%/);
+  assert.doesNotMatch(renderData(base), /NaN|undefined/);   // the older snapshot without workflows still renders
 });

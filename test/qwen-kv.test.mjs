@@ -58,7 +58,7 @@ test("a poisoned real source never reaches the put: the exporter whitelist and t
   writeFileSync(join(runs, "20261108-100000-SENTINEL_ACCOUNT.json"), JSON.stringify({ mode: "create", qwen: { cap: 1, seen: 2, qwen: 1, escalated: 1, reasons: { "SENTINEL REASON free text 8841": 1 } } }));
   writeFileSync(join(runs, "20261108-100000-SENTINEL_ACCOUNT.audit.jsonl"), JSON.stringify({ tool: "qwen_classify", id: "SENTINEL_MSGID", subject: "SENTINEL SUBJECT", from: "sender-sentinel@example.com", label: "SENTINEL SUBJECT", escalated: false, latency_ms: 900 }) + "\n");
   const empty = file("empty.log", "");
-  const r = kv({ QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"), QWEN_TAG_LOG: empty, QWEN_TAG_JSONL: empty });
+  const r = kv({ QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"), QWEN_TAG_LOG: empty, QWEN_TAG_JSONL: empty, QWEN_CRON_RUNS: empty, QWEN_DECLUTTER: empty, QWEN_REAP: empty });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.equal(r.called, true);
   assert.doesNotMatch(r.sent, /SENTINEL|sentinel@/);
