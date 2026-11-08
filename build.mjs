@@ -133,15 +133,15 @@ const SWITCH_LABEL = { classic: "Classic", pedal: "Pedal" };
 const SITE_LINKS = [["/qwen/", "Qwen"], ["/fleet/", "Fleet"]];
 
 // The shared nav: a Classic | Pedal switch (it keeps the section anchor, see the inline script)
-// plus the other pages. The switch is a plain link first, so it works with scripts off.
-const siteNav = (skin) => `<nav class="site-nav" aria-label="Site">
+// plus the other pages. A div with role=navigation, not a <nav>: test/hub.test.mjs slices the page at the first </nav>. The switch is a plain link first, so it works with scripts off.
+const siteNav = (skin) => `<div class="site-nav" role="navigation" aria-label="Site">
       <span class="switch" role="group" aria-label="Version">${["classic", "pedal"]
         .map((k) => (k === skin
           ? `<a href="${SKINS[k].path}" data-skin="${k}" aria-current="page">${SWITCH_LABEL[k]}</a>`
           : `<a href="${SKINS[k].path}" data-skin="${k}">${SWITCH_LABEL[k]}</a>`))
         .join("")}</span>
       <span class="site-links">${SITE_LINKS.map(([h, t]) => `<a href="${h}">${t}</a>`).join("")}</span>
-    </nav>`;
+    </div>`;
 const SWITCH_SCRIPT = `<script>(function(){var l=document.querySelectorAll(".switch a");function s(){for(var i=0;i<l.length;i++){l[i].hash=location.hash}}s();addEventListener("hashchange",s)})()</script>`;
 
 function renderPage(skin) {
