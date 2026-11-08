@@ -3,7 +3,7 @@
 // Diagrams: content/marketing-101/diagrams/*.svg (rendered once by bin/render-diagrams.mjs).
 // Look: the Pedal Design System night lane, tokens vendored from pearmill/pedal origin/main
 // creative/Pedal-Design-System/tokens (2026-11-04). No dependencies.
-import { chromeHead, siteHeader, bookButton, NAV_SCRIPT } from "./src/chrome.mjs";
+import { chromeHead, siteHeader, bookLink, NAV_SCRIPT } from "./src/chrome.mjs";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 
 const ROOT = new URL("./content/marketing-101/", import.meta.url);
@@ -110,7 +110,7 @@ const page = `<!doctype html>
       <p class="next">${s.n < sessions.length ? `<a href="#s${s.n + 1}">Next: ${esc(short[s.n])} →</a>` : `<a href="#top">Back to the top ↑</a>`}</p>
     </section>`).join("")}
   </main>
-  <footer class="site-footer"><div class="wrap"><p>Built by <a href="/">Justin Griffiths</a>. Every case study links its sources in its session.</p>${bookButton("btn-sm")}</div></footer>
+  <footer class="site-footer"><div class="wrap"><p>Built by <a href="/">Justin Griffiths</a>. Every case study links its sources in its session.</p>${bookLink()}</div></footer>
   ${NAV_SCRIPT}
 </body>
 </html>

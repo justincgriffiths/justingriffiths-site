@@ -3,7 +3,7 @@
 // A null accuracy value renders as a marked "pending" slot (mycroft#668, skill-library#560), never a zero.
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { disclosure, quietLink } from "./src/disclosure.mjs";
-import { chromeHead, siteHeader, bookButton, NAV_SCRIPT } from "./src/chrome.mjs";
+import { chromeHead, siteHeader, bookLink, NAV_SCRIPT } from "./src/chrome.mjs";
 
 const data = JSON.parse(readFileSync(new URL("./content/qwen/data.json", import.meta.url), "utf8"));
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -111,7 +111,7 @@ ${disclosure({ id: "data", title: "Data", open: true, summaryExtra: fresh, body:
 ${ASOF_SCRIPT}
 <p class="learn-more">${quietLink("/#about", "Learn more")}</p>
 </main>
-<footer class="site-footer"><div class="wrap"><p>Part of the <a href="/#lab">Lab</a>. Aggregates only: counts, dollars and milliseconds.</p>${bookButton("btn-sm")}</div></footer>
+<footer class="site-footer"><div class="wrap"><p>Part of the <a href="/#lab">Lab</a>. Aggregates only: counts, dollars and milliseconds.</p>${bookLink()}</div></footer>
 ${NAV_SCRIPT}
 </body></html>
 `;

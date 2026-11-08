@@ -95,21 +95,24 @@
         {
           "label": "Location",
           "from": "location"
-        },
-        {
-          "label": "Contact",
-          "from": "links.0"
         }
       ]
     },
     "sections": [
       {
-        "id": "profile",
-        "title": "Profile",
+        "id": "about",
+        "title": "About",
         "blocks": [
           {
             "type": "prose",
             "from": "bio.long"
+          },
+          {
+            "type": "quiet-links",
+            "from": "links",
+            "only": [
+              "Book a call"
+            ]
           }
         ]
       },
@@ -182,7 +185,10 @@
         "blocks": [
           {
             "type": "facts",
-            "from": "links"
+            "from": "links",
+            "omit": [
+              "Book a call"
+            ]
           }
         ]
       }

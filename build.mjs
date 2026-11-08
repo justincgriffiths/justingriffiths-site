@@ -5,7 +5,8 @@
 // text (name, headline, bios, work, links, people) stays in the top-level keys, and
 // blocks point at it with `from`. The block types are documented in the README.
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync, cpSync } from "node:fs";
-import { chromeHead, siteHeader, bookButton, NAV_SCRIPT, ICON } from "./src/chrome.mjs";
+import { quietCta } from "./src/quiet-cta.mjs";
+import { chromeHead, siteHeader, bookLink, NAV_SCRIPT, ICON } from "./src/chrome.mjs";
 
 const bio = JSON.parse(readFileSync(new URL("./bio.json", import.meta.url), "utf8"));
 const REPO = "https://github.com/justincgriffiths/justingriffiths-site";
@@ -87,7 +88,13 @@ const blocks = {
     return (Array.isArray(v) ? v : [v]).map((p) => `
         <p class="prose">${esc(p)}</p>`).join("");
   },
-  facts: (b) => facts(items(b)),
+  facts: (b) => facts(items(b).filter((x) => !(b.omit ?? []).includes(x.label))),
+  // Plain text links (src/quiet-cta.mjs): the quietest way to offer an action (site#67). `only` picks labels.
+  "quiet-links": (b) => `
+        <p class="quiet-links">${items(b)
+          .filter((l) => !b.only || b.only.includes(l.label))
+          .map((l) => quietCta(l.url, l.label, { external: !l.url.startsWith("/") }))
+          .join("")}</p>`,
   entries: (b) => `
         <ul class="entries">${items(b)
           .map((e) => `
@@ -137,22 +144,14 @@ const SKINS = {
   pedal: { path: "/pedal-design/", site: "/pedal-design/site.css", css: "/pedal-design/style.css", current: "pedal-design" },
 };
 
-// The hero visual: a DS card with an illustration slot. bio.json can set dossier.cover.visual
-// ({ src, alt }); until it does, the card shows a drawn JG mark labelled as a slot for Justin.
+// The hero visual: a DS card holding a picture. bio.json can set dossier.cover.visual ({ src, alt, caption }).
+// Until it does the hero shows no mark and no slot: the big JG logo is gone (site#67).
 const coverVisual = (v) => {
-  const art = v?.src
-    ? `<img src="${esc(v.src)}" alt="${esc(v.alt ?? "")}" loading="eager" decoding="async">`
-    : `<svg class="mark" viewBox="0 0 320 240" role="img" aria-label="JG monogram, standing in for an illustration">
-              <circle class="mark-dot" cx="52" cy="48" r="10"/><circle class="mark-dot" cx="276" cy="196" r="14"/><circle class="mark-ring" cx="262" cy="56" r="18"/>
-              <circle class="mark-shadow" cx="168" cy="128" r="78"/><circle class="mark-disc" cx="160" cy="120" r="78"/>
-              <text class="mark-text" x="160" y="122" text-anchor="middle" dominant-baseline="central">JG</text>
-            </svg>`;
-  const note = v?.src
-    ? (v.caption ? `<figcaption class="visual-note">${esc(v.caption)}</figcaption>` : "")
-    : `<figcaption class="visual-note">Illustration slot for Justin: set <code>dossier.cover.visual</code> in bio.json to replace the mark.</figcaption>`;
+  if (!v?.src) return "";
+  const note = v.caption ? `<figcaption class="visual-note">${esc(v.caption)}</figcaption>` : "";
   return `
         <figure class="cover-visual${F(" fit")}">
-          <div class="visual-card"><div class="visual-art">${art}</div></div>${note}
+          <div class="visual-card"><div class="visual-art"><img src="${esc(v.src)}" alt="${esc(v.alt ?? "")}" loading="eager" decoding="async"></div></div>${note}
         </figure>`;
 };
 
@@ -171,8 +170,7 @@ function renderPage(skin) {
             <h1 id="subject"${F(' class="t-display"')}>${esc(bio.name)}</h1>
             ${cover.lede ? `<p class="lede${F(" fit")}">${esc(get(cover.lede))}</p>` : ""}
             <div class="cover-actions${F(" cluster")}">
-              ${bookButton("btn-lg")}${labId ? `
-              <a class="cover-more" href="#${labId}">See what I am building${ICON.arrow}</a>` : ""}
+              ${labId ? `<a class="cover-more" href="#${labId}">See what I am building${ICON.arrow}</a>` : ""}
             </div>
             ${cover.facts ? facts(cover.facts) : ""}
           </div>${cover.portrait ? "" : coverVisual(cover.visual)}
@@ -231,7 +229,7 @@ function renderPage(skin) {
 
     <footer class="footer${F(" band cluster")}">
       <p>Set from ${a(`${REPO}/blob/main/bio.json`, "bio.json")}, the same text I use on every profile. Updated <time datetime="${updated}">${updated}</time>.</p>
-      ${bookButton("btn-sm")}
+      ${bookLink()}
     </footer>
     ${NAV_SCRIPT}
   </body>
