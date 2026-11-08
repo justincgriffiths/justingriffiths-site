@@ -44,7 +44,7 @@ h1 { font-weight: var(--weight-bold); font-size: clamp(var(--text-h1), 7vw, var(
 /* The hero visual card, smaller here: the facts card is this page's feature */
 .cover-visual { display: grid; gap: var(--space-2); max-width: 20rem; }
 .visual-card { background: var(--site-box); border: var(--border-width-thick) solid var(--site-box-line); border-radius: var(--radius-sticker-md); box-shadow: var(--site-shadow-lg); padding: var(--space-2); }
-.visual-art { aspect-ratio: 4 / 3; background: var(--site-art); border-radius: var(--radius-sticker-sm); overflow: hidden; }
+.visual-art { aspect-ratio: 4 / 3; color: var(--site-box-text); background: var(--site-art); border-radius: var(--radius-sticker-sm); overflow: hidden; }
 .visual-art img, .mark { display: block; width: 100%; height: 100%; object-fit: cover; }
 .mark-dot, .mark-shadow { fill: var(--site-box-line); }
 .mark-ring { fill: none; stroke: var(--site-box-line); stroke-width: 4; }

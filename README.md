@@ -10,10 +10,13 @@ The one-page hub at **justingriffiths.com**. A Cloudflare Worker serves it from 
 |---|---|
 | `bio.json` | Canonical text: headline, `bio.short` / `medium` / `long`, work, links (incl. Blossom tutoring), people |
 | `build.mjs` | Renders `dist/index.html` from `bio.json`, no dependencies. Fails the build on an unknown block type or a `from` path that does not resolve |
-| `public/` | CSS, favicon, robots.txt, copied into `dist/` |
+| `src/tokens.css` | The one token layer (site#51): DS colors, type and spacing copied from pearmill/pedal origin/main, then the `--site-*` aliases every page reads. Dark only (the DS night lane). A re-theme is the commented `[data-theme="jg"]` block |
+| `src/chrome.mjs`, `src/chrome.css` | The shared header every page uses: nav (Home, Lab: Qwen/Fleet/Flows, Pedal Design, Marketing 101, Archive) and the Book a call button, plus base styles and buttons. `build.mjs` ships `tokens.css` + `chrome.css` as `/site.css` |
+| `src/style.css`, `src/pedal-design.css` | The hub's rules (`/style.css`) and the `/pedal-design/` skin. Tokens only: no hex, no font names |
+| `public/` | favicon, robots.txt, copied into `dist/` |
 | `content/marketing-101/` | The Marketing 101 lesson at `/marketing-101/`: `src/` (Claude Doc export), `rewrite/` (ChatGPT's second-person copy, what ships), `diagrams/` (JSX + rendered SVG), `page.css` (Pedal night lane). Built by `build-marketing.mjs`. Re-render diagrams with `bin/render-diagrams.mjs`; check a rewrite with `bin/fidelity.py` |
 | `fleet/` | (also `fleet/battle-school/`, the `/fleet/battle-school/` page: `PAGE=battle-school bin/fleet-build.sh`) The `/fleet/` scene (Rune, Rust, WebGPU): battle school and the Bike Factory from one fleet-state JSON. `bin/fleet-state.sh` exports live state to `~/.local/state/fleet-scene/state.json` (never committed; `fleet/fixture.json` is the masked copy); `bin/fleet-build.sh` builds `dist/fleet/`, `--snap` writes `docs/fleet-n1.png` headlessly. Page map draft: `docs/fleet-page-map.md` |
-| `archive/` | Static snapshot of justingriffiths.info (186 pages, scripts stripped, `noindex`), unlinked from nav, home and sitemap. Re-take with `node bin/archive-snap.mjs --list` / `node bin/archive-snap.mjs <paths>`; `build.mjs` copies it to `dist/archive/` |
+| `archive/` | Static snapshot of justingriffiths.info (186 pages, scripts stripped, `noindex`). `build-archive.mjs` renders the `/archive/` landing (the nav's Archive link) on the site chrome; the snapshot pages are unchanged. Re-take with `node bin/archive-snap.mjs --list` / `node bin/archive-snap.mjs <paths>`; `build.mjs` copies it to `dist/archive/` |
 | `src/worker.js` | Serves the hub, 301s `www` to the apex, forwards `/learn/...` to the `blossom` Worker (Blossom Tutoring courses, repo `blossom-tutoring-lessons`) over a service binding, serves `/archive/*` (noindex), and 301s every other path to the same path under `/archive/` |
 
 People are listed by name and work only, with no "why" lines (decided 2026-10-28).
@@ -53,7 +56,9 @@ An exhibit is `{ type, src, alt, caption, credit, credit_url, aspect, placeholde
 - `type`: `image`, `video` (add `poster`), `audio`, or `embed` (an iframe, e.g. a YouTube or Loom embed URL).
 - Images render black and white by CSS filter. Set `"color": true` to keep color.
 - `aspect` overrides the frame ratio (`"4 / 5"` for photos, `"16 / 9"` for video and embeds by default).
-- `"placeholder": true`, or no `src`, renders a marked "Placeholder · pending approval" box. Logos work the same way.
+- `"placeholder": true`, or no `src`, renders a marked "Placeholder · pending approval" box. Logos do not: a placeholder logo is not rendered at all, and a strip with no real logo renders nothing.
+
+The hero's visual card reads `dossier.cover.visual` (`{ "src", "alt", "caption" }`). Until it is set, the card shows a drawn JG mark labelled as an illustration slot.
 
 Media served from this site needs one Worker change first: `src/worker.js` only serves the paths in `HUB_PATHS` and 301s everything else to justingriffiths.info, so a local file such as `/media/portrait.jpg` would redirect. Until that changes, use absolute `https://` URLs or keep placeholders. Photo and logo candidates sit in `candidates/` (gitignored, with `SOURCES.txt`) until approved.
 

@@ -17,10 +17,11 @@ const PAGES = [
   ["pedal-design/index.html", "pedal-design"],
   ["qwen/index.html", "qwen"],
   ["marketing-101/index.html", "marketing-101"],
+  ["archive/index.html", "archive"],
 ];
 
 test("every page stylesheet reads tokens only: no hex outside src/tokens.css (site#51 verify grep)", () => {
-  const files = ["src/style.css", "src/chrome.css", "src/pedal-design.css", "content/qwen/page.css", "content/marketing-101/page.css"];
+  const files = ["src/style.css", "src/chrome.css", "src/pedal-design.css", "content/qwen/page.css", "content/marketing-101/page.css", "content/archive/page.css"];
   for (const f of files) {
     const css = readFileSync(new URL(f, root), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
     assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/, f);
@@ -59,8 +60,20 @@ const assets = { fetch: async (req) => {
 } };
 
 test("the public nav targets and /site.css answer 200 through the Worker", async () => {
-  for (const path of ["/", "/site.css", "/qwen/", "/pedal-design/", "/marketing-101/"]) {
+  for (const path of ["/", "/site.css", "/qwen/", "/pedal-design/", "/marketing-101/", "/archive/"]) {
     const r = await worker.fetch(new Request(`https://justingriffiths.com${path}`), { ASSETS: assets });
     assert.equal(r.status, 200, path);
   }
+});
+
+test("/fleet/meta/ (gated) carries the site header too", async () => {
+  const { page } = await import("../build-fleet-meta.mjs");
+  const html = page(JSON.parse(readFileSync(new URL("fleet/meta-fixture.json", root), "utf8")));
+  assert.match(html, /<header class="site-header"/);
+  assert.doesNotMatch(html, /#[0-9a-fA-F]{6}\b/);
+});
+
+test("/archive/ lists every snapshot collection and links each one", () => {
+  const html = readFileSync(dist("archive/index.html"), "utf8");
+  for (const d of ["articles", "briefings", "microloans-ubi", "self-hosting"]) assert.match(html, new RegExp(`href="/archive/research/${d}/"`));
 });

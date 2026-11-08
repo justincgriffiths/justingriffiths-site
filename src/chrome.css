@@ -30,6 +30,7 @@ a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
   padding: var(--space-2) var(--space-3); font-weight: var(--weight-bold);
 }
 .skip:focus { left: var(--space-2); }
+.skip:hover { color: var(--site-box-text); background: var(--site-box-alt); }
 .icon { display: block; flex: none; }
 
 /* ---- Buttons: a box on the ground, so paper-light rules: ink border, shadow into the void.

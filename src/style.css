@@ -59,7 +59,7 @@ h1 {
   background: var(--site-box); border: var(--site-box-border); border-radius: var(--radius-sticker-md);
   box-shadow: var(--site-shadow-lg); padding: var(--space-3);
 }
-.visual-art { aspect-ratio: 4 / 3; background: var(--site-art); border-radius: var(--radius-sticker-sm); overflow: hidden; display: grid; place-items: center; }
+.visual-art { aspect-ratio: 4 / 3; color: var(--site-box-text); background: var(--site-art); border-radius: var(--radius-sticker-sm); overflow: hidden; display: grid; place-items: center; }
 .visual-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .mark { display: block; width: 100%; height: 100%; }
 .mark-dot { fill: var(--site-box-line); }

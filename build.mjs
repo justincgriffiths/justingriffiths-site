@@ -260,6 +260,9 @@ if (existsSync(new URL("./archive/", import.meta.url))) {
 }
 console.log(`built dist/index.html (${html.length} bytes, ${dossier.sections.length} sections, ${exhibitCount} exhibits)`);
 
+// The /archive/ landing, after the snapshot copy above (see build-archive.mjs).
+await import("./build-archive.mjs");
+
 // The Marketing 101 lesson at /marketing-101/ (see build-marketing.mjs).
 await import("./build-marketing.mjs");
 

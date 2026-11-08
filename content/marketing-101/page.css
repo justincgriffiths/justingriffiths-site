@@ -26,7 +26,7 @@ p, ul, ol { margin: 0 0 16px; max-width: 68ch; }
 strong { font-weight: 700; }
 .big { font-size: var(--text-h3); line-height: var(--leading-snug); color: var(--paper); margin-bottom: 24px; }
 .big strong { color: var(--accent-on-night); }
-blockquote { margin: 24px 0; padding: 4px 0 4px 20px; border-left: 4px solid var(--teal-500); font-size: var(--text-h3); line-height: var(--leading-snug); max-width: 40ch; }
+blockquote { margin: 24px 0; padding: 16px 0 0; border-top: 2px solid var(--accent-on-night); font-size: var(--text-h3); line-height: var(--leading-snug); max-width: 40ch; }
 
 .hero { padding-top: 72px; padding-bottom: 24px; }
 .hero > p:first-of-type + h1 + p { color: var(--text-muted-on-night); }
