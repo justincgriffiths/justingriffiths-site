@@ -1,0 +1,9 @@
+{
+  "generated_at": "2026-11-07T17:00:00Z",
+  "masked": true,
+  "clients": [
+    {"label": "Client A", "state": "active", "built": true, "verified": true, "live": true, "first_hour": {"impressions": 4120, "delivering": true}, "issues": []},
+    {"label": "Client B", "state": "paused", "built": true, "verified": true, "live": false, "first_hour": {"impressions": 0, "delivering": false}, "issues": []},
+    {"label": "Client C", "state": "error", "built": false, "verified": false, "live": false, "first_hour": {"impressions": 0, "delivering": false}, "issues": ["ACCESS_ERROR"]}
+  ]
+}
