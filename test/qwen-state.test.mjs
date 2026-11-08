@@ -85,6 +85,7 @@ const prFile = jl("prsweep.jsonl", [
   { ts: "2026-11-01T09:00:00Z", worked: 3, cost_usd: 1.5, rc: 0, stop_reason: "SENTINEL_PR_STOP", turns: 9, model: "sonnet", budget_usd: 6, repo: "SENTINEL_PR_REPO" },
   { ts: "2026-11-05T09:00:00Z", worked: 1, cost_usd: 0.25, rc: 0, stop_reason: "end_turn", turns: 4, model: "SENTINEL_MODEL_ROW" },
   { ts: "2026-11-08T09:00:00Z", worked: 1, cost_usd: 0.5, rc: 0, stop_reason: "end_turn", turns: 4, model: "claude-opus-5-5" },
+  { ts: "2026-11-08T10:00:00Z", worked: 0, cost_usd: 0.1, rc: 0, stop_reason: "end_turn", turns: 2, model: "sonnet" },   // site#117: worked no PR: not a run, its dollars still count
 ]);
 const finishLog = join(dir, "finish.log"), sweepLog = join(dir, "sweep.log");
 // site#117: the finish job fires hourly. Two idle checks and a dry run are fires, not work; only the two status=apply lines are runs.
@@ -95,7 +96,7 @@ writeFileSync(finishLog, [
   `[2026-11-08T07:00:00Z] argv=[] exit=0 status=apply body="2 session(s), 3 action(s), 1 applied, 1 mechanically clean, 0 need the session"`,
   `[2026-11-08T08:00:00Z] argv=[] exit=0 status=apply body="1 session(s), 1 action(s), 0 applied, 0 mechanically clean, 1 need the session"`,
 ].join("\n") + "\n");
-writeFileSync(sweepLog, `[2026-11-08T08:00:00Z] argv=[--max 10] exit=0 status=ok body="SENTINEL_SWEEP_BODY"\n[2026-11-08T09:00:00Z] argv=[--dry-run] exit=0 status=dry-run body="x"\n`.replace(/\\n/g, "\n"));
+writeFileSync(sweepLog, `[2026-11-08T08:00:00Z] argv=[--max 10] exit=0 status=ok tombstoned=2 refused=0 removed=0 laned=1 drafted=0 body="SENTINEL_SWEEP_BODY"\n[2026-11-08T08:30:00Z] argv=[--max 10] exit=0 status=ok tombstoned=0 refused=0 removed=0 laned=0 drafted=0 body="all zero"\n[2026-11-08T09:00:00Z] argv=[--dry-run] exit=0 status=dry-run body="x"\n`.replace(/\\n/g, "\n"));
 const wfEnv = { QWEN_CRON_RUNS: cronFile, QWEN_DECLUTTER: declutterFile, QWEN_REAP: reapFile, QWEN_LEARN: learnFile, QWEN_AS_OF: "2026-11-08T15:00:00Z",
   QWEN_WRAP_DIR: wrapDir, QWEN_PR_SWEEP: prFile, QWEN_SESSION_FINISH: finishLog, QWEN_DECLUTTER_SWEEP: sweepLog };
 
@@ -186,9 +187,10 @@ test("a ramp cap is capped, not a fallback, and a day Qwen answered nothing is n
 
 test("cron triage, declutter and session-reap are counted as workflows, counts only", () => {
   const w = JSON.parse(out).workflows;
-  assert.deepEqual(w["cron-triage"].share_by_day.map((r) => [r.day, r.answered, r.fell_back, r.runs]), [["2026-11-08", 5, 7, 3], ["2026-11-09", 3, 0, 1]]);
-  assert.equal(w["cron-triage"].answered, 8); assert.equal(w["cron-triage"].runs, 4); assert.equal(w["cron-triage"].first_logged, "2026-11-08");
-  assert.deepEqual(w["cron-triage"].latency_ms, { n: 3, p50: 30000, p90: 40000, unit: "run" });   // the run that flagged nothing logged 0 ms
+  assert.deepEqual(w["cron-triage"].share_by_day.map((r) => [r.day, r.answered, r.fell_back, r.runs]), [["2026-11-08", 5, 7, 2], ["2026-11-09", 3, 0, 1]]);
+  assert.equal(w["cron-triage"].answered, 8); assert.equal(w["cron-triage"].runs, 3); assert.equal(w["cron-triage"].no_flag_runs, 1);   // site#117: the jobs_flagged=0 row is not a run
+  assert.equal(w["cron-triage"].first_logged, "2026-11-08");
+  assert.deepEqual(w["cron-triage"].latency_ms, { n: 3, p50: 30000, p90: 40000, unit: "run" });   // the jobs_flagged=0 row is not counted, so no 0 ms enters
   assert.equal(w["cron-triage"].usd, 0.008);
   assert.equal(w.declutter.first_logged, "2026-11-07");
   assert.equal(w.declutter.runs, 2);   // 23:16:58, 23:16:58 and 23:17:20 are one sweep (gaps under 2 minutes); 07:00 the next day is another
@@ -222,7 +224,7 @@ test("the page renders one chart per job with runs and says so for a job with no
   const d = JSON.parse(out);
   const html = renderData({ ...base, workflows: { ...d.workflows, declutter: { ...d.workflows.declutter, runs: 0, share_by_day: [] } } });
   const sec = html.slice(html.indexOf('id="workflows"'), html.indexOf('id="calls"'));
-  assert.match(sec, /Cron triage<\/h3><p class="note">first logged 2026-11-08 · 4 runs · 8 answered by Qwen · 7 fell back to Claude/);
+  assert.match(sec, /Cron triage<\/h3><p class="note">first logged 2026-11-08 · 3 runs · 8 answered by Qwen · 7 fell back to Claude · 1 triage flagged no job and is not counted/);
   assert.match(sec, /Declutter<\/h3><p class="empty">No runs logged\.<\/p>/);
   assert.match(sec, /held back by rule \(needs-del 1, needs-name 2\)/);
   assert.equal((sec.match(/<svg /g) || []).length, 1);                           // the one job with 2+ days draws a chart
@@ -308,20 +310,21 @@ test("history: run counts match the sources, dollars sum, a day with no record i
   const h = hist();
   assert.equal(h.wrap.runs, 5); assert.deepEqual(h.wrap.days.map((d) => [d.day, d.runs]), [["2026-11-01", 2], ["2026-11-03", 2], ["2026-11-05", 1]]);   // log from its first day, JSON before it
   assert.equal(h.wrap.usd, null); assert.deepEqual(h.wrap.days[0].models, { "not logged": 2 });
-  assert.equal(h["pr-sweep"].runs, 3); assert.equal(h["pr-sweep"].usd, 2.25);
-  assert.deepEqual(h["pr-sweep"].days.map((d) => d.usd_models), [{ sonnet: 1.5 }, { other: 0.25 }, { opus: 0.5 }]);
-  assert.deepEqual(h["pr-sweep"].days.map((d) => d.models), [{ sonnet: 1 }, { other: 1 }, { opus: 1 }]);   // an unknown model string is "other"
-  assert.equal(h["session-cleanup"].runs, 3);                                                              // 2 apply lines + 1 sweep ok; idle and dry lines are not runs
-  assert.deepEqual(h["session-cleanup"].days.find((d) => d.day === "2026-11-08").models, { script: 3 });
+  assert.equal(h["pr-sweep"].runs, 3); assert.equal(h["pr-sweep"].usd, 2.35); assert.deepEqual(h["pr-sweep"].unchanged, { pr_sweep: 1 });   // 4 rows, worked=0 one is not a run but its $0.10 is in the day
+  assert.deepEqual(h["pr-sweep"].days.map((d) => d.usd_models), [{ sonnet: 1.5 }, { other: 0.25 }, { opus: 0.5, sonnet: 0.1 }]);
+  assert.deepEqual(h["pr-sweep"].days.map((d) => d.models), [{ sonnet: 1 }, { other: 1 }, { opus: 1 }]);   // the worked=0 sweep adds no model count; an unknown model string is "other"
+  assert.equal(h["session-cleanup"].runs, 2);                                                              // 1 apply line with K>0 + 1 sweep ok with an action; the 0-applied apply, the all-zero sweep, idle and dry lines are not runs
+  assert.deepEqual(h["session-cleanup"].days.find((d) => d.day === "2026-11-08").models, { script: 2 });
 });
 
 // site#117: only work becomes bars. Idle checks and dry runs are counted once, from the log, and never appear as a day.
 test("session cleanup: idle checks and dry runs are not bars; sessions and actions come from the line's own fields", () => {
   const c = hist()["session-cleanup"];
   assert.deepEqual(c.days.map((d) => d.day), ["2026-11-08"]);                                  // 11-06 had only idle + dry lines: no bar, no zero
-  assert.equal(c.idle_checks, 2); assert.equal(c.dry_runs, 2);                                  // 2 clean + (1 finish dry, 1 sweep dry-run)
-  assert.deepEqual(c.work, { sessions: 3, actions: 4, applied: 1, runs_applied_any: 1 });       // 2 apply runs, only 1 applied anything: both counts shown
-  assert.deepEqual(c.days[0].work, { sessions: 3, actions: 4, applied: 1, runs_applied_any: 1 });
+  assert.equal(c.idle_checks, 2); assert.equal(c.dry_runs, 2); assert.deepEqual(c.unchanged, { finish: 1, sweep: 1 });   // 0 applied, and an all-zero sweep: counted in the note, not drawn
+                                   // 2 clean + (1 finish dry, 1 sweep dry-run)
+  assert.deepEqual(c.work, { sessions: 2, actions: 3, applied: 1 });                          // only the K>0 finish line
+  assert.deepEqual(c.days[0].work, { sessions: 2, actions: 3, applied: 1 });
   assert.deepEqual(c.stale_sources, []);                                                        // idle fires keep the source alive
 });
 
@@ -329,13 +332,14 @@ test("session cleanup chart: the note says the idle count once and no bar is dra
   const { renderData } = await import("../src/qwen-render.mjs");
   const page = renderData(JSON.parse(out)), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="fallbacks"'));
   assert.match(sec, /2 scheduled checks found no idle session to work and are not drawn/);
-  assert.match(sec, /handled 3 sessions and applied 1 action of 4 planned; 1 of those runs applied at least one/);
+  assert.match(sec, /1 finish run and 1 sweep changed nothing and are not drawn\. The drawn finish runs handled 2 sessions and applied 1 action of 3 planned/);
+  assert.match(sec, /1 sweep worked no PR and is not counted as a run\. Dollars per day include every sweep's cost/);
   assert.doesNotMatch(sec, /2026-11-06 Script/);
 });
 
 test("history: 7-day savings compares the last 7 days with the 7 before; no logged cost says so", () => {
   const h = hist();
-  assert.deepEqual(h["pr-sweep"].savings, { cost_logged: true, last7_runs: 2, last7_usd: 0.75, prior7_runs: 1, prior7_usd: 1.5 });
+  assert.deepEqual(h["pr-sweep"].savings, { cost_logged: true, last7_runs: 2, last7_usd: 0.85, prior7_runs: 1, prior7_usd: 1.5 });
   assert.equal(h.wrap.savings.cost_logged, false); assert.equal(h.wrap.savings.last7_usd, null);
   assert.equal(h["session-cleanup"].marker.day, "2026-11-07");   // first day a Qwen answer landed in declutter or session-reap
   assert.equal(h.wrap.marker, null);
@@ -349,7 +353,7 @@ test("history charts: empty days drawn, one day is a number, no savings guess wi
   const { renderData } = await import("../src/qwen-render.mjs");
   const h = JSON.parse(out), page = renderData(h), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="fallbacks"'));
   assert.match(sec, /Cost not logged, so no savings figure/);
-  assert.match(sec, /\$0\.75 over 2 runs, against \$1\.50 over 1 run\b/);
+  assert.match(sec, /\$0\.85 over 2 runs, against \$1\.50 over 1 run\b/);
   assert.match(sec, /2026-11-02: no runs/);
   assert.doesNotMatch(sec, /NaN|undefined/);
   const one = { ...h, history: { through: "2026-11-08", commands: [{ ...h.history.commands[0], days: [h.history.commands[0].days[0]], runs: 2 }] } };

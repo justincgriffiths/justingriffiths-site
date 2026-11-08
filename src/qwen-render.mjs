@@ -47,6 +47,7 @@ function workflowBlock(key, w) {
   const parts = [`first logged ${esc(w.first_logged)}`, `${w.runs} ${w.runs === 1 ? "run" : "runs"}`, `${w.answered} answered by Qwen`, `${w.fell_back} fell back to Claude`];
   if (w.capped) parts.push(`${w.capped} capped`);
   if (w.policy) parts.push(`${w.policy} held back by rule (${Object.entries(w.policy_reasons).map(([k, n]) => `${esc(k)} ${n}`).join(", ")})`);
+  if (w.no_flag_runs) parts.push(`${w.no_flag_runs} ${w.no_flag_runs === 1 ? "triage" : "triages"} flagged no job and ${w.no_flag_runs === 1 ? "is" : "are"} not counted`);
   parts.push(`$${w.usd}`);
   if (l.n) parts.push(`median ${l.p50} ms, 90th percentile ${l.p90} ms ${per}`);
   return `<div><h3>${esc(name)}</h3><p class="note">${parts.join(" · ")}.</p>${stacked(w.share_by_day, `${name} items per day by who answered`)}</div>`;
@@ -204,16 +205,24 @@ function interactiveLine(i) {
 function cleanupLine(c) {
   if (c.idle_checks == null) return "";
   const w = c.work || {}, n = (v, one, many) => `${v} ${v === 1 ? one : many}`;
-  return `<p class="note cleanup-count">${n(c.idle_checks, "scheduled check", "scheduled checks")} found no idle session to work and ${c.idle_checks === 1 ? "is" : "are"} not drawn. ${n(c.dry_runs || 0, "dry run", "dry runs")} changed nothing and ${c.dry_runs === 1 ? "is" : "are"} not drawn. The finish runs handled ${n(w.sessions || 0, "session", "sessions")} and applied ${n(w.applied || 0, "action", "actions")} of ${w.actions || 0} planned; ${w.runs_applied_any || 0} of those runs applied at least one.</p>`;
+  const u = c.unchanged || {};
+  return `<p class="note cleanup-count">${n(c.idle_checks, "scheduled check", "scheduled checks")} found no idle session to work and ${c.idle_checks === 1 ? "is" : "are"} not drawn. ${n(c.dry_runs || 0, "dry run", "dry runs")} changed nothing and ${c.dry_runs === 1 ? "is" : "are"} not drawn. ${n(u.finish || 0, "finish run", "finish runs")} and ${n(u.sweep || 0, "sweep", "sweeps")} changed nothing and are not drawn. The drawn finish runs handled ${n(w.sessions || 0, "session", "sessions")} and applied ${n(w.applied || 0, "action", "actions")} of ${w.actions || 0} planned.</p>`;
+}
+
+// PR sweeps (site#117): a sweep that worked no PR is not a run. Its cost is still in the dollars.
+function sweepLine(c) {
+  const k = c.unchanged && c.unchanged.pr_sweep;
+  if (k == null) return "";
+  return `<p class="note sweep-count">${k} ${k === 1 ? "sweep" : "sweeps"} worked no PR and ${k === 1 ? "is" : "are"} not counted as a run. Dollars per day include every sweep's cost, those included.</p>`;
 }
 
 function historyOne(c, last) {
   const name = HNAMES[c.command] || c.command;
-  if (!c.days.length) return `<div class="callsjob"><h3>${esc(name)}</h3>${cleanupLine(c)}${interactiveLine(c.interactive)}${empty("No runs logged.")}</div>`;
+  if (!c.days.length) return `<div class="callsjob"><h3>${esc(name)}</h3>${cleanupLine(c)}${sweepLine(c)}${interactiveLine(c.interactive)}${empty("No runs logged.")}</div>`;
   const by = Object.fromEntries(c.days.map((r) => [r.day, r])), first = c.days[0].day;
-  const used = [...new Set(c.days.flatMap((r) => Object.keys(r.models)))], keys = Object.keys(HM).filter((k) => used.includes(k)).concat(used.filter((k) => !HM[k]));
+  const used = [...new Set(c.days.flatMap((r) => [...Object.keys(r.models), ...Object.keys(r.usd_models || {})]))], keys = Object.keys(HM).filter((k) => used.includes(k)).concat(used.filter((k) => !HM[k]));
   const lab = (k) => (HM[k] || [k, C.capped])[0], col = (k) => (HM[k] || [k, C.capped])[1];
-  const head = `<h3>${esc(name)}</h3>${savingsLine(c.savings)}${cleanupLine(c)}${interactiveLine(c.interactive)}${(c.stale_sources || []).map((x) => `<p class="note stale-source">${x.covered ? `Source ${esc(x.source)} stopped on ${esc(x.last_day)}; runs since then come from the command's other source.` : `Source ${esc(x.source)} has no record since ${esc(x.last_day)}.`}</p>`).join("")}`;
+  const head = `<h3>${esc(name)}</h3>${savingsLine(c.savings)}${cleanupLine(c)}${sweepLine(c)}${interactiveLine(c.interactive)}${(c.stale_sources || []).map((x) => `<p class="note stale-source">${x.covered ? `Source ${esc(x.source)} stopped on ${esc(x.last_day)}; runs since then come from the command's other source.` : `Source ${esc(x.source)} has no record since ${esc(x.last_day)}.`}</p>`).join("")}`;
   const note = (extra) => `<p class="note">first logged ${esc(first)} · ${c.runs} ${c.runs === 1 ? "run" : "runs"}${c.usd == null ? " · cost not logged" : ` · ${usd(c.usd)} spent`}${extra}.</p>`;
   const mk = c.marker && c.marker.day ? ` · ${esc(c.marker.label)} since ${esc(c.marker.day)}` : "";
   if (c.days.length === 1) {

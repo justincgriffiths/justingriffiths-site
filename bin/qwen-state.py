@@ -205,19 +205,20 @@ def _num(v):
 
 
 def wf_cron():
-    """Cron triage (brain#1171): one row per run in cron-triage/runs.jsonl. Reads only counts and the started day;
+    """Cron triage (brain#1171): one row per run in cron-triage/runs.jsonl; a run counts only if jobs_flagged > 0 (site#117). Reads only counts and the started day;
     the run id and the flagged jobs' names are never read into the output."""
     share = defaultdict(lambda: {"answered": 0, "fell_back": 0, "capped": 0, "policy": 0, "runs": 0, "usd": 0.0})
-    lat, first, usd, runs = [], None, 0.0, 0
+    lat, first, usd, runs, nochange = [], None, 0.0, 0, 0
     for r in rows(CRON_RUNS):
         dy = day(r.get("started"))
         if not dy: continue
+        if _num(r.get("jobs_flagged")) <= 0: nochange += 1; continue  # site#117: a run that flagged no job changed nothing; counted in the note only
         esc = r.get("escalated") if isinstance(r.get("escalated"), dict) else {}
         s = share[dy]
         s["runs"] += 1; s["answered"] += int(_num(r.get("qwen_ok"))); s["fell_back"] += sum(int(_num(n)) for n in esc.values()); s["usd"] += _num(r.get("usd"))
         if _num(r.get("latency_ms")) > 0: lat.append(_num(r["latency_ms"]))
         runs += 1; usd += _num(r.get("usd")); first = min(first, dy) if first else dy
-    return finish(share, lat, first, runs, usd, "run")
+    return {**finish(share, lat, first, runs, usd, "run"), "no_flag_runs": nochange}
 
 
 def wf_qwen_jsonl(paths):
@@ -376,18 +377,26 @@ def hist_wrap():
     return out
 
 
+UNCHANGED = {"pr_sweep": 0, "finish": 0, "sweep": 0}  # site#117: runs that looked and changed nothing; said once in a note, never drawn
+
+
 def hist_pr_sweep():
+    """PR sweeps (site#117): a run counts only if worked > 0. Every row's cost_usd is still added to its day, because spend is spend."""
+    UNCHANGED["pr_sweep"] = 0
     out = defaultdict(lambda: {"runs": 0, "models": defaultdict(int), "usd": 0.0, "usd_models": defaultdict(float)})
     for r in rows(PR_SWEEP):
         dy = day(r.get("ts"))
         if not dy: continue
         seen("pr-sweep", "pr-sweep runs", dy)
         mb = model_bucket(r.get("model"))
-        out[dy]["runs"] += 1; out[dy]["models"][mb] += 1; out[dy]["usd"] += _num(r.get("cost_usd")); out[dy]["usd_models"][mb] += _num(r.get("cost_usd"))
+        out[dy]["usd"] += _num(r.get("cost_usd")); out[dy]["usd_models"][mb] += _num(r.get("cost_usd"))
+        if _num(r.get("worked")) <= 0: UNCHANGED["pr_sweep"] += 1; continue
+        out[dy]["runs"] += 1; out[dy]["models"][mb] += 1
     return out
 
 
 IDLE_CHECKS = {"idle": 0, "dry": 0}  # filled by hist_cleanup(): lines that are scheduler fires or dry runs, shown once in the note, never as bars
+SWEEP_FIELDS = ("tombstoned", "removed", "laned", "drafted", "refused")
 
 
 def _field(pat, line):
@@ -396,14 +405,14 @@ def _field(pat, line):
 
 
 def hist_cleanup():
-    """Session cleanup (site#117): a run is a line that did work, never a scheduler fire.
-    session-finish.log fires hourly: status=apply handled at least one session (a run), status=clean found no idle AGT_ session
-    (an idle check, counted in IDLE_CHECKS, not a run), status=dry is a dry run (not work, not a run).
-    "sessions handled" and "actions applied" are read from the line's own "N session(s), N action(s), N applied" fields.
-    declutter-sweep/sweep.log: status=ok lines stay counted as runs, a zero-action line included, because a run with 0 items
-    is Justin's call (see the PR audit); dry-run lines are dropped. Neither log records a model or a cost. Line bodies are never copied."""
-    IDLE_CHECKS["idle"] = IDLE_CHECKS["dry"] = 0
-    out = defaultdict(lambda: {"runs": 0, "models": {"script": 0}, "usd": None, "work": {"sessions": 0, "actions": 0, "applied": 0, "runs_applied_any": 0}})
+    """Session cleanup (site#117): a run is a line that changed something, never a scheduler fire.
+    session-finish.log fires hourly: status=apply with "K applied" K > 0 is a run; K = 0 is a run that changed nothing (UNCHANGED["finish"]),
+    status=clean found no idle AGT_ session (IDLE_CHECKS, not a run), status=dry is a dry run (IDLE_CHECKS, not a run).
+    declutter-sweep/sweep.log: status=ok counts only if any of tombstoned/removed/laned/drafted/refused is > 0, else UNCHANGED["sweep"]; dry-run lines
+    are dropped. "sessions handled" and "actions applied" are read from the counted finish lines' own "N session(s), N action(s), N applied" fields.
+    Neither log records a model or a cost. Line bodies are never copied."""
+    IDLE_CHECKS["idle"] = IDLE_CHECKS["dry"] = UNCHANGED["finish"] = UNCHANGED["sweep"] = 0
+    out = defaultdict(lambda: {"runs": 0, "models": {"script": 0}, "usd": None, "work": {"sessions": 0, "actions": 0, "applied": 0}})
     for p in CLEANUP_LOGS:
         try: lines = open(p).read().splitlines()
         except OSError: continue
@@ -415,10 +424,12 @@ def hist_cleanup():
             seen("session-cleanup", src, m[1])  # a fire proves the source is alive, so an idle stretch is not "stopped writing"
             if status in ("dry", "dry-run") or "--dry-run" in line: IDLE_CHECKS["dry"] += 1; continue
             if status == "clean": IDLE_CHECKS["idle"] += 1; continue
+            sweep = src.startswith("sweep")
+            if (sweep and sum(_field(rf"\b{f}=(\d+)", line) for f in SWEEP_FIELDS) == 0) or (not sweep and _field(r"(\d+) applied", line) == 0):
+                UNCHANGED["sweep" if sweep else "finish"] += 1; continue
             out[m[1]]["runs"] += 1; out[m[1]]["models"]["script"] += 1
             w = out[m[1]]["work"]
-            w["sessions"] += _field(r"(\d+) session\(s\)", line); w["actions"] += _field(r"(\d+) action\(s\)", line); w["applied"] += _field(r"(\d+) applied", line)
-            w["runs_applied_any"] += 1 if status == "apply" and _field(r"(\d+) applied", line) > 0 else 0  # both counts shown: whether a 0-applied run is work is Justin's call
+            if not sweep: w["sessions"] += _field(r"(\d+) session\(s\)", line); w["actions"] += _field(r"(\d+) action\(s\)", line); w["applied"] += _field(r"(\d+) applied", line)
     return out
 
 
@@ -517,7 +528,7 @@ def history(now_day, qwen_first, sc=None):
         days = [{"day": d, "runs": v["runs"], "models": {k: n for k, n in v["models"].items() if n},
                  "usd": None if v["usd"] is None else round(v["usd"], 4),
                  **({"usd_models": {k: round(x, 4) for k, x in v["usd_models"].items() if x}} if v.get("usd_models") else {}),
-                 **({"work": v["work"]} if v.get("work") else {})} for d, v in sorted(by.items()) if v["runs"]]
+                 **({"work": v["work"]} if v.get("work") else {})} for d, v in sorted(by.items()) if v["runs"] or v["usd"]]
         logged = any(r["usd"] is not None for r in days)
         win = lambda lo, hi: [r for r in days if addd(now_day, lo) <= r["day"] <= addd(now_day, hi)]
         last, prior = win(-6, 0), win(-13, -7)
@@ -528,8 +539,9 @@ def history(now_day, qwen_first, sc=None):
                     "usd": round(sum(r["usd"] or 0 for r in days), 4) if logged else None,
                     "marker": {"day": marker, "label": "Qwen live"} if marker else None, "savings": sv,
                     "stale_sources": stale_sources(key, now_day),
-                    **({"idle_checks": IDLE_CHECKS["idle"], "dry_runs": IDLE_CHECKS["dry"],
-                        "work": {k: sum(r["work"][k] for r in days) for k in ("sessions", "actions", "applied", "runs_applied_any")}} if key == "session-cleanup" else {}),
+                    **({"idle_checks": IDLE_CHECKS["idle"], "dry_runs": IDLE_CHECKS["dry"], "unchanged": {"finish": UNCHANGED["finish"], "sweep": UNCHANGED["sweep"]},
+                        "work": {k: sum(r["work"][k] for r in days) for k in ("sessions", "actions", "applied")}} if key == "session-cleanup" else {}),
+                    **({"unchanged": {"pr_sweep": UNCHANGED["pr_sweep"]}} if key == "pr-sweep" else {}),
                     "interactive": interactive(key, sc, now_day), "days": days})
     return {"through": now_day, "commands": out}
 
