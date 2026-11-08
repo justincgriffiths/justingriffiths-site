@@ -121,89 +121,125 @@ const renderBlock = (b) => {
   return fn(b);
 };
 
-const updated = new Date().toISOString().slice(0, 10);
-const { cover = {} } = dossier;
+const CLASSIC_FONTS = `<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">`;
+const PEDAL_FONTS = `<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">`;
+// The same dossier renders in two skins: Classic at / and the Pedal Design System at
+// /pedal-design/ (public/pedal.css). One bio.json, one renderer; only the shell differs.
+const SKINS = {
+  classic: { path: "/", css: "/style.css", other: "pedal" },
+  pedal: { path: "/pedal-design/", css: "/pedal-design/style.css", other: "classic" },
+};
+const SWITCH_LABEL = { classic: "Classic", pedal: "Pedal" };
+const SITE_LINKS = [["/qwen/", "Qwen"], ["/fleet/", "Fleet"]];
 
-const coverSheet = `
-    <header class="cover" aria-labelledby="subject">
-      <div class="cover-file">
-        <span>Personal file</span>
-        <span>Updated <time datetime="${updated}">${updated}</time></span>
-      </div>
-      <div class="cover-body">
-        ${cover.portrait ? exhibit(cover.portrait, "portrait") : ""}
-        <div class="cover-id">
-          <p class="kicker">Subject</p>
-          <h1 id="subject">${esc(bio.name)}</h1>
-          ${cover.lede ? `<p class="lede">${esc(get(cover.lede))}</p>` : ""}
-          ${cover.facts ? facts(cover.facts) : ""}
+// The shared nav: a Classic | Pedal switch (it keeps the section anchor, see the inline script)
+// plus the other pages. The switch is a plain link first, so it works with scripts off.
+const siteNav = (skin) => `<nav class="site-nav" aria-label="Site">
+      <span class="switch" role="group" aria-label="Version">${["classic", "pedal"]
+        .map((k) => (k === skin
+          ? `<a href="${SKINS[k].path}" data-skin="${k}" aria-current="page">${SWITCH_LABEL[k]}</a>`
+          : `<a href="${SKINS[k].path}" data-skin="${k}">${SWITCH_LABEL[k]}</a>`))
+        .join("")}</span>
+      <span class="site-links">${SITE_LINKS.map(([h, t]) => `<a href="${h}">${t}</a>`).join("")}</span>
+    </nav>`;
+const SWITCH_SCRIPT = `<script>(function(){var l=document.querySelectorAll(".switch a");function s(){for(var i=0;i<l.length;i++){l[i].hash=location.hash}}s();addEventListener("hashchange",s)})()</script>`;
+
+function renderPage(skin) {
+  exhibitCount = 0;
+  const updated = new Date().toISOString().slice(0, 10);
+  const { cover = {} } = dossier;
+
+  const coverSheet = `
+      <header class="cover" aria-labelledby="subject">
+        <div class="cover-file">
+          <span>Personal file</span>
+          <span>Updated <time datetime="${updated}">${updated}</time></span>
         </div>
-      </div>
-      <nav class="index" aria-label="Contents">
-        <h2 class="kicker">Index</h2>
-        <ol>${dossier.sections
-          .map((s, i) => `
-          <li><a href="#${esc(s.id)}"><span class="num">${pad(i + 1)}</span><span class="title">${esc(s.title)}</span></a></li>`)
-          .join("")}
-        </ol>
-      </nav>
-    </header>`;
+        <div class="cover-body">
+          ${cover.portrait ? exhibit(cover.portrait, "portrait") : ""}
+          <div class="cover-id">
+            <p class="kicker">Subject</p>
+            <h1 id="subject">${esc(bio.name)}</h1>
+            ${cover.lede ? `<p class="lede">${esc(get(cover.lede))}</p>` : ""}
+            ${cover.facts ? facts(cover.facts) : ""}
+          </div>
+        </div>
+        <nav class="index" aria-label="Contents">
+          <h2 class="kicker">Index</h2>
+          <ol>${dossier.sections
+            .map((s, i) => `
+            <li><a href="#${esc(s.id)}"><span class="num">${pad(i + 1)}</span><span class="title">${esc(s.title)}</span></a></li>`)
+            .join("")}
+          </ol>
+        </nav>
+      </header>`;
 
-const sections = dossier.sections
-  .map(
-    (s, i) => `
-    <section class="section" id="${esc(s.id)}" aria-labelledby="${esc(s.id)}-title">
-      <h2 class="section-title" id="${esc(s.id)}-title"><span class="num">${pad(i + 1)}</span>${esc(s.title)}</h2>
-      <div class="section-body">${s.blocks.map(renderBlock).join("")}
-      </div>
-    </section>`
-  )
-  .join("");
+  const sections = dossier.sections
+    .map(
+      (s, i) => `
+      <section class="section" id="${esc(s.id)}" aria-labelledby="${esc(s.id)}-title">
+        <h2 class="section-title" id="${esc(s.id)}-title"><span class="num">${pad(i + 1)}</span>${esc(s.title)}</h2>
+        <div class="section-body">${s.blocks.map(renderBlock).join("")}
+        </div>
+      </section>`
+    )
+    .join("");
 
-const html = `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${esc(bio.name)}</title>
-  <meta name="description" content="${esc(bio.bio.short)}">
-  <link rel="canonical" href="https://justingriffiths.com/">
-  <meta property="og:title" content="${esc(bio.name)}">
-  <meta property="og:description" content="${esc(bio.headline)}">
-  <meta property="og:url" content="https://justingriffiths.com/">
-  <meta property="og:type" content="profile">
-  <meta name="color-scheme" content="light">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
-  <script type="application/ld+json">${JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: bio.name,
-    url: "https://justingriffiths.com",
-    jobTitle: bio.work.map((w) => `${w.role}, ${w.name}`),
-    homeLocation: bio.location,
-    sameAs: bio.links.filter((l) => l.url.startsWith("https://") && !l.url.includes("justingriffiths.com")).map((l) => l.url),
-  }).replace(/</g, "\\u003c")}</script>
-  <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-  <a class="skip" href="#${esc(dossier.sections[0].id)}">Skip to ${esc(dossier.sections[0].title)}</a>
-  <div class="sheet">${coverSheet}
-    <main>${sections}
-    </main>
+  const html = `<!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${esc(bio.name)}</title>
+    <meta name="description" content="${esc(bio.bio.short)}">
+    <link rel="canonical" href="https://justingriffiths.com${SKINS[skin].path}">
+    <meta property="og:title" content="${esc(bio.name)}">
+    <meta property="og:description" content="${esc(bio.headline)}">
+    <meta property="og:url" content="https://justingriffiths.com${SKINS[skin].path}">
+    <meta property="og:type" content="profile">
+    <meta name="color-scheme" content="light">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    ${skin === "pedal" ? PEDAL_FONTS : CLASSIC_FONTS}
+    <script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name: bio.name,
+      url: "https://justingriffiths.com",
+      jobTitle: bio.work.map((w) => `${w.role}, ${w.name}`),
+      homeLocation: bio.location,
+      sameAs: bio.links.filter((l) => l.url.startsWith("https://") && !l.url.includes("justingriffiths.com")).map((l) => l.url),
+    }).replace(/</g, "\\u003c")}</script>
+    <link rel="stylesheet" href="${SKINS[skin].css}">
+  </head>
+  <body class="skin-${skin}">
+    <a class="skip" href="#${esc(dossier.sections[0].id)}">Skip to ${esc(dossier.sections[0].title)}</a>
+    ${siteNav(skin)}
+    <div class="sheet">${coverSheet}
+      <main>${sections}
+      </main>
 
-    <footer class="footer">
-      <p>End of file. Set from ${a(`${REPO}/blob/main/bio.json`, "bio.json")}, the same text I use on every profile.</p>
-    </footer>
-  </div>
-</body>
-</html>
-`;
+      <footer class="footer">
+        <p>End of file. Set from ${a(`${REPO}/blob/main/bio.json`, "bio.json")}, the same text I use on every profile.</p>
+      </footer>
+    </div>
+    ${SWITCH_SCRIPT}
+  </body>
+  </html>
+  `;
+  return html;
+}
+
+const classicHtml = renderPage("classic");
+const pedalHtml = renderPage("pedal");
+const html = classicHtml;
 
 mkdirSync(new URL("./dist/", import.meta.url), { recursive: true });
-writeFileSync(new URL("./dist/index.html", import.meta.url), html);
+writeFileSync(new URL("./dist/index.html", import.meta.url), classicHtml);
+mkdirSync(new URL("./dist/pedal-design/", import.meta.url), { recursive: true });
+writeFileSync(new URL("./dist/pedal-design/index.html", import.meta.url), pedalHtml);
+copyFileSync(new URL("./public/pedal.css", import.meta.url), new URL("./dist/pedal-design/style.css", import.meta.url));
 for (const f of ["style.css", "favicon.svg", "robots.txt"]) {
   const src = new URL(`./public/${f}`, import.meta.url);
   if (existsSync(src)) copyFileSync(src, new URL(`./dist/${f}`, import.meta.url));
