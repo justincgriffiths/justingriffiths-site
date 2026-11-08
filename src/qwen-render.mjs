@@ -4,7 +4,7 @@
 let data;
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 // Series colors are tokens (src/shallan.css --site-series-*), applied as style="fill:var(...)".
-const C = { answered: "var(--site-series-1)", fell_back: "var(--site-series-2)", capped: "var(--site-series-3)", qwen: "var(--site-series-1)", haiku: "var(--site-series-4)", sonnet: "var(--site-series-5)" };
+const C = { answered: "var(--site-series-1)", fell_back: "var(--site-series-2)", capped: "var(--site-series-3)", policy: "var(--site-series-5)", qwen: "var(--site-series-1)", haiku: "var(--site-series-4)", sonnet: "var(--site-series-5)" };
 const W = 560, H = 190, P = { l: 44, r: 12, t: 12, b: 28 };
 
 const empty = (msg) => `<p class="empty">${esc(msg)}</p>`;
@@ -21,7 +21,7 @@ function axisY(max, fmt = (v) => v) {
 // Stacked daily columns: answered / fell back / capped, one per day.
 function stacked(rows, label) {
   if (!rows.length) return empty("No live runs yet. Dry runs are not counted.");
-  const keys = ["answered", "fell_back", "capped"];
+  const hasPolicy = rows.some((r) => r.policy), keys = ["answered", "fell_back", "capped", ...(hasPolicy ? ["policy"] : [])];
   const max = Math.max(1, ...rows.map((r) => keys.reduce((s, k) => s + r[k], 0)));
   const bw = Math.min(40, (W - P.l - P.r) / rows.length - 6), step = (W - P.l - P.r) / rows.length;
   const bars = rows.map((r, i) => {
@@ -29,7 +29,22 @@ function stacked(rows, label) {
     const segs = keys.map((k) => { const h = (r[k] / max) * (H - P.t - P.b); y -= h; return h ? `<rect x="${x}" y="${y}" width="${bw}" height="${h}" style="fill:${C[k]}"><title>${esc(r.day)} ${k}: ${r[k]}</title></rect>` : ""; }).join("");
     return segs + `<text x="${x + bw / 2}" y="${H - 10}" text-anchor="middle">${esc(r.day.slice(5))}</text>`;
   }).join("");
-  return legend([["answered by Qwen", C.answered], ["fell back to Claude", C.fell_back], ["capped (not offered to Qwen)", C.capped]]) + svg(label, axisY(max) + bars);
+  return legend([["answered by Qwen", C.answered], ["fell back to Claude", C.fell_back], ["capped (not offered to Qwen)", C.capped], ...(hasPolicy ? [["held back by rule", C.policy]] : [])]) + svg(label, axisY(max) + bars);
+}
+
+const WORKFLOW_NAMES = { "cron-triage": "Cron triage", declutter: "Declutter", "session-reap": "Session reap" };
+// One block per job that uses Qwen (site#79): first logged, run count, totals, and a share-by-day chart. A job with no rows
+// says so, never a 0%.
+function workflowBlock(key, w) {
+  const name = WORKFLOW_NAMES[key] || key;
+  if (!w || !w.runs) return `<div><h3>${esc(name)}</h3>${empty("No runs logged.")}</div>`;
+  const l = w.latency_ms, per = l.unit === "run" ? "per run" : "per item";
+  const parts = [`first logged ${esc(w.first_logged)}`, `${w.runs} ${w.runs === 1 ? "run" : "runs"}`, `${w.answered} answered by Qwen`, `${w.fell_back} fell back to Claude`];
+  if (w.capped) parts.push(`${w.capped} capped`);
+  if (w.policy) parts.push(`${w.policy} held back by rule (${Object.entries(w.policy_reasons).map(([k, n]) => `${esc(k)} ${n}`).join(", ")})`);
+  parts.push(`$${w.usd}`);
+  if (l.n) parts.push(`median ${l.p50} ms, 90th percentile ${l.p90} ms ${per}`);
+  return `<div><h3>${esc(name)}</h3><p class="note">${parts.join(" · ")}.</p>${stacked(w.share_by_day, `${name} items per day by who answered`)}</div>`;
 }
 
 function horizontal(obj, label, color = C.qwen) {
@@ -85,6 +100,8 @@ export function renderData(d) {
   const bd = data.breakdowns;
   return `${section("share", "Share on Qwen", "How much of the work Qwen took each day, and how much went back to Claude. This shows the ramp from 1 item to all.",
   `<div class="cols grid"><div><h3>Inbox triage</h3>${stacked(data.share_by_day.triage, "Triage items per day by who answered")}</div><div><h3>Issue labels</h3>${stacked(data.share_by_day["issue-tag"], "Issue-tag items per day by who answered")}</div></div>`)}
+${section("workflows", "Every job that uses Qwen", "Each job's own counts by day, with when its log starts. A job with no runs logged shows that, not a rate.",
+  `<div class="cols grid">${Object.keys(WORKFLOW_NAMES).map((k) => workflowBlock(k, (data.workflows || {})[k])).join("")}</div>`)}
 ${section("fallbacks", "Fallback reasons", "Why Qwen's answer was thrown out and Claude did the item instead.", horizontal(data.fallback_reasons, "Fallbacks by reason", C.fell_back))}
 ${section("cost", "Cost per run", "Dollars per triage run over time, against the average before Qwen.", costChart())}
 ${section("latency", "Latency", "How long Qwen takes per item, next to Haiku.", latency())}

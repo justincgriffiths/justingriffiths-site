@@ -7,6 +7,7 @@ Never exported: message ids, subjects, senders, issue titles, issue numbers, rep
 
 Sources (override with env for tests): QWEN_RUNS (cos/runs dir), QWEN_COST_DB (cos/state/cost.db),
 QWEN_TAG_LOG / QWEN_TAG_JSONL (the canonical issue-tag.{log,jsonl} in ~/.local/state/issue-tag, or ISSUE_TAG_STATE; skill-library#564).
+QWEN_CRON_RUNS (cron-triage runs.jsonl), QWEN_DECLUTTER / QWEN_REAP (their qwen.jsonl); each may be a colon-separated list (site#79).
 Usage: bin/qwen-state.py [--now ISO]
 """
 import glob, json, os, re, sqlite3, sys
@@ -20,6 +21,13 @@ TAG_DIR = os.environ.get("ISSUE_TAG_STATE", f"{HOME}/.local/state/issue-tag")
 # Paths may be a colon-separated list; the tagger now logs to one canonical dir whatever checkout runs it (skill-library#564).
 TAG_LOGS = os.environ.get("QWEN_TAG_LOG", f"{TAG_DIR}/issue-tag.log").split(":")
 TAG_JSONLS = os.environ.get("QWEN_TAG_JSONL", f"{TAG_DIR}/issue-tag.jsonl").split(":")
+
+STATE = f"{HOME}/.local/state"
+CRON_RUNS = os.environ.get("QWEN_CRON_RUNS", f"{STATE}/cron-triage/runs.jsonl").split(":")
+DECLUTTER = os.environ.get("QWEN_DECLUTTER", f"{STATE}/declutter/qwen.jsonl").split(":")
+REAP = os.environ.get("QWEN_REAP", f"{STATE}/session-reap/qwen.jsonl").split(":")
+# Escalation reasons that are a design rule, not a Qwen failure (skill-library#583): reported apart from fallbacks.
+POLICY = ("needs-name", "needs-del")
 
 LABELS = {"reply", "task", "fyi", "archive"}  # triage task labels (fixed set; anything else -> other)
 REASONS = ["bad-class", "timeout", "exit-N", "no-ql", "other"]
@@ -173,6 +181,78 @@ def triage_accuracy(answered):
     return agree, clean
 
 
+def pct(vals, p):
+    return vals[min(int(len(vals) * p), len(vals) - 1)] if vals else None
+
+
+def lat_summary(lat, unit):
+    lat = sorted(lat)
+    return {"n": len(lat), "p50": pct(lat, 0.5), "p90": pct(lat, 0.9), "unit": unit}
+
+
+def _num(v):
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else 0.0
+
+
+def wf_cron():
+    """Cron triage (brain#1171): one row per run in cron-triage/runs.jsonl. Reads only counts and the started day;
+    the run id and the flagged jobs' names are never read into the output."""
+    share = defaultdict(lambda: {"answered": 0, "fell_back": 0, "capped": 0, "policy": 0, "runs": 0, "usd": 0.0})
+    lat, first, usd, runs = [], None, 0.0, 0
+    for r in rows(CRON_RUNS):
+        dy = day(r.get("started"))
+        if not dy: continue
+        esc = r.get("escalated") if isinstance(r.get("escalated"), dict) else {}
+        s = share[dy]
+        s["runs"] += 1; s["answered"] += int(_num(r.get("qwen_ok"))); s["fell_back"] += sum(int(_num(n)) for n in esc.values()); s["usd"] += _num(r.get("usd"))
+        if _num(r.get("latency_ms")) > 0: lat.append(_num(r["latency_ms"]))
+        runs += 1; usd += _num(r.get("usd")); first = min(first, dy) if first else dy
+    return finish(share, lat, first, runs, usd, "run")
+
+
+def wf_qwen_jsonl(paths):
+    """Declutter and session-reap: one row per item sent to the rung. A run is a cluster of rows (the rows of a sweep
+    share a timestamp). Escalations are split into policy (a fixed rule), capped (the ramp) and fell_back (a failure)."""
+    share = defaultdict(lambda: {"answered": 0, "fell_back": 0, "capped": 0, "policy": 0, "runs": 0, "usd": 0.0})
+    lat, first, usd, stamps = [], None, 0.0, []
+    for r in rows(paths):
+        dy = day(r.get("ts"))
+        if not dy: continue
+        s = share[dy]; stamps.append(str(r.get("ts"))); usd += _num(r.get("usd")); s["usd"] += _num(r.get("usd")); first = min(first, dy) if first else dy
+        reason = str(r.get("reason") or "")
+        if not r.get("escalated"):
+            s["answered"] += 1
+            if _num(r.get("latency_ms")) > 0: lat.append(_num(r["latency_ms"]))
+        elif reason in POLICY: s["policy"] += 1; s.setdefault("policy_reasons", {}); s["policy_reasons"][reason] = s["policy_reasons"].get(reason, 0) + 1
+        elif reason == "cap": s["capped"] += 1
+        else: s["fell_back"] += 1
+    starts, prev = [], None
+    for t in sorted(stamps):
+        try: now = datetime.fromisoformat(t.replace("Z", "+00:00")).timestamp()
+        except ValueError: continue
+        if prev is None or now - prev > 120: starts.append(t)
+        prev = now
+    for t in starts: share[t[:10]]["runs"] += 1
+    return finish(share, lat, first, len(starts), usd, "item")
+
+
+def finish(share, lat, first, runs, usd, unit):
+    days = [{"day": d, **{k: (round(v, 4) if k == "usd" else v) for k, v in share[d].items()}} for d in sorted(share)]
+    tot = lambda k: sum(r[k] for r in days)
+    reasons = defaultdict(int)
+    for r in days:
+        for k, n in r.get("policy_reasons", {}).items(): reasons[k] += n
+    return {"first_logged": first, "runs": runs, "answered": tot("answered"), "fell_back": tot("fell_back"), "capped": tot("capped"),
+            "policy": tot("policy"), "policy_reasons": dict(sorted(reasons.items())), "usd": round(usd, 4), "latency_ms": lat_summary(lat, unit),
+            "share_by_day": [{k: v for k, v in r.items() if k != "policy_reasons"} for r in days]}
+
+
+def workflows():
+    """Every job that uses Qwen, counts only. A workflow with no rows has runs 0 and first_logged null: the page says
+    "no runs logged" instead of a rate (skill-library#583)."""
+    return {"cron-triage": wf_cron(), "declutter": wf_qwen_jsonl(DECLUTTER), "session-reap": wf_qwen_jsonl(REAP)}
+
+
 def series(share):
     return [{"day": d, **share[d]} for d in sorted(share)]
 
@@ -190,6 +270,7 @@ def build():
     post = [v for d, v in c.items() if d in qdays]
     avg = lambda vs: (round(sum(v["usd"] for v in vs) / max(sum(v["runs"] for v in vs), 1), 4) if vs else None)
     pctl = lambda p: (lat[min(int(len(lat) * p), len(lat) - 1)] if lat else None)
+    wf = workflows()
     return {
         "schema": 1,
         "model": "qwen3-coder:30b",
@@ -197,6 +278,7 @@ def build():
         # QWEN_AS_OF pins it for tests.
         "as_of": os.environ.get("QWEN_AS_OF") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "share_by_day": {"triage": series(t_share), "issue-tag": series(i_share)},
+        "workflows": wf,
         "fallback_reasons": reasons,
         "cost_per_run": {
             "triage_by_day": [{"day": d, "runs": c[d]["runs"], "usd_per_run": round(c[d]["usd"] / c[d]["runs"], 4), "qwen_era": d in qdays} for d in sorted(c)],
@@ -210,7 +292,8 @@ def build():
         },
         "breakdowns": {
             "by_workflow": {w: {"answered": sum(r["answered"] for r in s), "fell_back": sum(r["fell_back"] for r in s), "capped": sum(r["capped"] for r in s)}
-                            for w, s in (("triage", series(t_share)), ("issue-tag", series(i_share)))},
+                            for w, s in (("triage", series(t_share)), ("issue-tag", series(i_share)))}
+                           | {w: {"answered": v["answered"], "fell_back": v["fell_back"], "capped": v["capped"]} for w, v in wf.items()},
             "by_tool_call": {"qwen_classify": len(lat)},
             "by_task_label": labels,
         },
