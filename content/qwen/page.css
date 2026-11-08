@@ -15,7 +15,7 @@
 .qwen .gridline { stroke: var(--site-hairline); }
 .qwen .trend { stroke: var(--site-text-soft); stroke-width: 1.5; }
 .qwen table { width: 100%; border-collapse: collapse; font-size: var(--text-body-sm); font-variant-numeric: tabular-nums; margin-top: var(--space-3); }
-.qwen th, .qwen td { text-align: left; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--site-hairline); }
+.qwen th, .qwen td { overflow-wrap: anywhere; text-align: left; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--site-hairline); }
 .qwen thead th { font-size: var(--text-overline); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--site-text-soft); border-bottom: var(--border-width) solid var(--site-line); }
 .pending, .empty { color: var(--site-pending); font-size: var(--text-body-sm); }
 .empty { padding: var(--space-3) 0; }

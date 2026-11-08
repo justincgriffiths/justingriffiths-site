@@ -37,7 +37,7 @@ h1 {
 .fact { padding-block: var(--space-3); border-bottom: 1px solid var(--site-hairline); }
 .fact dd { overflow-wrap: break-word; }
 .fact .line { display: block; }
-.fact dd a { display: inline-flex; align-items: center; min-height: var(--tap); margin-block: calc((var(--tap) - 1lh) / -2); }
+.fact dd a { display: inline-flex; align-items: center; min-height: var(--tap); min-width: 0; overflow-wrap: anywhere; margin-block: calc((var(--tap) - 1lh) / -2); }
 
 /* The hero visual: the one featured box. Paper card, ink rule, hard offset into the void (the
    DS "box stays light on night"); the art sits on a teal wash inside it. */

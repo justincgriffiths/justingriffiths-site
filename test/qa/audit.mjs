@@ -8,7 +8,12 @@ export async function audit(page, { tap = true } = {}) {
   return page.evaluate(({ tap, TAP_MIN }) => {
     const vw = window.innerWidth;
     const label = (el) => `${el.tagName.toLowerCase()}${el.className && typeof el.className === "string" ? "." + el.className.trim().split(/\s+/).join(".") : ""} "${(el.textContent || el.getAttribute("aria-label") || "").trim().replace(/\s+/g, " ").slice(0, 40)}"`;
-    const shown = (el) => el.checkVisibility({ checkOpacity: false, checkVisibilityCSS: true }) && !el.closest(".sr-only, .skip:not(:focus)");
+    // Visually hidden on purpose (sr-only, a 1px clipped box) is not on screen, so it cannot clip or overlap.
+    const shown = (el) => {
+      if (!el.checkVisibility({ checkOpacity: false, checkVisibilityCSS: true }) || el.closest(".sr-only, .skip:not(:focus)")) return false;
+      const r = el.getBoundingClientRect();
+      return !(r.width <= 1 && r.height <= 1);
+    };
     const inScroller = (el) => {
       for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
         const o = getComputedStyle(p).overflowX;
@@ -17,17 +22,19 @@ export async function audit(page, { tap = true } = {}) {
       return false;
     };
     const ownText = (el) => [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent.trim());
-    const textRect = (el) => {
+    // One rect per line of text, so a link that wraps is not judged by the box around all its lines.
+    const lineRects = (el) => {
       const r = document.createRange();
-      let box = null;
+      const out = [];
       for (const n of ownText(el)) {
         r.selectNodeContents(n);
-        for (const q of r.getClientRects()) {
-          if (q.width < 1 || q.height < 1) continue;
-          box = box ? { left: Math.min(box.left, q.left), top: Math.min(box.top, q.top), right: Math.max(box.right, q.right), bottom: Math.max(box.bottom, q.bottom) } : { left: q.left, top: q.top, right: q.right, bottom: q.bottom };
-        }
+        for (const q of r.getClientRects()) if (q.width >= 1 && q.height >= 1) out.push({ left: q.left, top: q.top, right: q.right, bottom: q.bottom });
       }
-      return box;
+      return out;
+    };
+    const textRect = (el) => {
+      const rs = lineRects(el);
+      return rs.length ? { left: Math.min(...rs.map((q) => q.left)), right: Math.max(...rs.map((q) => q.right)) } : null;
     };
 
     const out = { hscroll: null, clipped: [], overlap: [], tap: [] };
@@ -45,15 +52,18 @@ export async function audit(page, { tap = true } = {}) {
 
     const boxes = texty
       .filter((el) => !inScroller(el) && !el.closest("[hidden]"))
-      .map((el) => ({ el, t: textRect(el), pos: getComputedStyle(el).position }))
-      .filter((b) => b.t && b.pos !== "fixed" && b.pos !== "sticky" && !b.el.closest(".site-header"));
+      .map((el) => ({ el, t: lineRects(el), pos: getComputedStyle(el).position }))
+      .filter((b) => b.t.length && b.pos !== "fixed" && b.pos !== "sticky" && !b.el.closest(".site-header"));
     for (let i = 0; i < boxes.length; i++)
       for (let j = i + 1; j < boxes.length; j++) {
         const a = boxes[i], b = boxes[j];
         if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
-        const w = Math.min(a.t.right, b.t.right) - Math.max(a.t.left, b.t.left);
-        const h = Math.min(a.t.bottom, b.t.bottom) - Math.max(a.t.top, b.t.top);
-        if (w > 2 && h > 3) out.overlap.push(`${label(a.el)} over ${label(b.el)} (${Math.round(w)}x${Math.round(h)}px)`);
+        for (const p of a.t)
+          for (const q of b.t) {
+            const w = Math.min(p.right, q.right) - Math.max(p.left, q.left);
+            const h = Math.min(p.bottom, q.bottom) - Math.max(p.top, q.top);
+            if (w > 2 && h > 3) out.overlap.push(`${label(a.el)} over ${label(b.el)} (${Math.round(w)}x${Math.round(h)}px)`);
+          }
       }
 
     if (tap) {

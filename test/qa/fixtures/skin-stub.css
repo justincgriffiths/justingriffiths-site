@@ -1,0 +1,37 @@
+/* A stand-in skin for the geometry check (site#62). It redefines every semantic name a skin owns: a serif
+   for titles, a monospace for sentences, square boxes, pill controls, no shadows, a different ground and
+   accent. The frame must not move a box when this replaces the real skin. Lives here, not in src/, until the
+   Shallan skin (#60) lands in src/shallan.css; then this can load that file and the Pedal night lane instead. */
+:root {
+  --site-font: Georgia, "Times New Roman", serif;
+  --site-heading-font: Georgia, "Times New Roman", serif;
+  --site-prose-font: "Courier New", Courier, monospace;
+  --site-radius-box: 0;
+  --site-radius-inner: 0;
+  --site-radius-control: 999px;
+  --site-radius-tick: 0;
+  --site-card-border: 1px dashed #ffffff;
+  --site-bg: #ffffff;
+  --site-bg-alt: #f0f0f0;
+  --site-grid-line: transparent;
+  --site-text: #111111;
+  --site-text-soft: #555555;
+  --site-link: #0033cc;
+  --site-link-hover: #000000;
+  --site-line: #111111;
+  --site-hairline: #cccccc;
+  --site-hover: #eeeeee;
+  --site-accent: #cc3300;
+  --site-accent-hover: #ff5500;
+  --site-accent-ink: #ffffff;
+  --site-box: #ffffee;
+  --site-box-alt: #ffffcc;
+  --site-box-text: #000000;
+  --site-box-soft: #444444;
+  --site-box-link: #0033cc;
+  --site-box-line: #000000;
+  --site-shadow-sm: none;
+  --site-shadow: none;
+  --site-shadow-lg: none;
+  --site-art: #dddddd;
+}

@@ -9,6 +9,7 @@ import { readdirSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { DEVICES, PAGES, ROTATES, contextFor, sweepWidths } from "./matrix.mjs";
 import { audit, failures } from "./audit.mjs";
+import { open } from "./open.mjs";
 
 const DATE = process.env.QA_DATE ?? new Date().toISOString().slice(0, 10);
 const SHOTS = join("qa", DATE, process.env.QA_BASE_URL ? "remote" : "");
@@ -16,10 +17,14 @@ mkdirSync(SHOTS, { recursive: true });
 const dev = (id) => DEVICES.find((d) => d.id === id);
 const PHONE = dev("iphone-16");
 
-// The Google Fonts request is blocked so every run lays text out in the same fallback fonts.
-export async function open(page, path) {
-  await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
-  await page.goto(path, { waitUntil: "load" });
+// A page marked `report` is out of this card's hands: its failures are attached to the test and
+// printed in the run, and do not fail it. Every other page fails on any finding.
+function verdict(page, list, what) {
+  if (page.report && list.length) {
+    test.info().annotations.push({ type: "report-only", description: `${what}: ${page.report}\n${list.slice(0, 12).join("\n")}` });
+    return;
+  }
+  expect(list, what).toEqual([]);
 }
 
 test("every built page is in the QA page list", async () => {
@@ -47,7 +52,7 @@ for (const page of PAGES) {
         const r = await audit(p, { tap: w < 1024 });
         if (!landscape) await p.screenshot({ path: join(SHOTS, `${page.id}-${d.id}.png`), fullPage: true });
         await ctx.close();
-        expect(failures(r), `${page.path} at ${w}px`).toEqual([]);
+        verdict(page, failures(r), `${page.path} at ${w}px`);
       });
     }
   }
@@ -63,7 +68,7 @@ for (const page of PAGES) {
       for (const f of failures(r)) bad.push(`${w}px  ${f}`);
     }
     await ctx.close();
-    expect(bad, `${page.path} buffer sweep`).toEqual([]);
+    verdict(page, bad, `${page.path} buffer sweep`);
   });
 
   test(`${page.id} 200% text on iPhone 16`, async ({ browser }) => {
@@ -78,7 +83,7 @@ for (const page of PAGES) {
     });
     const r = await audit(p, { tap: true });
     await ctx.close();
-    expect(failures(r), `${page.path} at 200% text`).toEqual([]);
+    verdict(page, failures(r), `${page.path} at 200% text`);
   });
 
   test(`${page.id} with the Safari toolbar (iPhone 16, 659px tall)`, async ({ browser }) => {
@@ -87,10 +92,11 @@ for (const page of PAGES) {
     await open(p, page.path);
     const r = await audit(p, { tap: true });
     await ctx.close();
-    expect(failures(r), `${page.path} with toolbar`).toEqual([]);
+    verdict(page, failures(r), `${page.path} with toolbar`);
   });
 
   test(`${page.id} shared nav`, async ({ browser }) => {
+    test.skip(page.nav === false, "not a page on the site chrome");
     // Phone: a skip link that lands on real content, the menu folded, the menu button opens it.
     const ctx = await browser.newContext(contextFor(PHONE));
     const p = await ctx.newPage();

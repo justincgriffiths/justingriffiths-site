@@ -71,7 +71,7 @@ details.answer p { margin-top: 16px; }
 
 nav.sessions { position: sticky; top: var(--header-h); z-index: 5; background: var(--night-900); border-bottom: 2px solid var(--night-600); }
 nav.sessions .wrap { display: flex; gap: 8px; overflow-x: auto; padding-top: 12px; padding-bottom: 12px; scrollbar-width: none; }
-nav.sessions a { flex: none; display: inline-flex; gap: 8px; align-items: center; font-size: var(--text-caption); font-weight: 700; color: var(--paper); text-decoration: none; border: 2px solid var(--border-on-night); border-radius: var(--site-radius-control); padding: 4px 14px 4px 6px; }
+nav.sessions a { flex: none; min-height: var(--tap); display: inline-flex; gap: 8px; align-items: center; font-size: var(--text-caption); font-weight: 700; color: var(--paper); text-decoration: none; border: 2px solid var(--border-on-night); border-radius: var(--site-radius-control); padding: 4px 14px 4px 6px; }
 nav.sessions a span { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: var(--site-radius-inner); background: var(--teal-500); color: var(--night-800); }
 nav.sessions a:hover { background: var(--night-700); }
 

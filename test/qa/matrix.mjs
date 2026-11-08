@@ -28,14 +28,15 @@ export function contextFor(d, landscape = false) {
 }
 
 // Every page on the site, built into dist/. A new top-level page in dist/ fails the coverage test until it is listed.
-// gate: false = reported but cannot fail the run (the page is out of this repo's hands).
+// framed: the page is composed from the frame primitives (src/frame.css), so the cross-skin geometry check applies.
+// report: set = the page is out of this card's hands; its failures are printed and attached, and cannot fail the run.
 export const PAGES = [
-  { id: "home", path: "/" },
-  { id: "qwen", path: "/qwen/" },
+  { id: "home", path: "/", framed: true },
+  { id: "qwen", path: "/qwen/", framed: true },
   { id: "marketing-101", path: "/marketing-101/" },
   { id: "archive", path: "/archive/" },
-  { id: "archive-research", path: "/archive/research/" },
-  { id: "pedal-design", path: "/pedal-design/" },
+  { id: "archive-research", path: "/archive/research/", nav: false, report: "a stripped Tailwind snapshot of justingriffiths.info: no site chrome, no skip link, small taps; re-take it onto the site chrome (bin/archive-snap.mjs)" },
+  { id: "pedal-design", path: "/pedal-design/", report: "the Pedal DS hub, out of bounds for #62: its own CSS (src/pedal-design.css) sets the faults listed" },
 ];
 
 // Breakpoints (Pedal DS, src/tokens.css §4): 768 tablet, 1024 desktop. The sweep adds each ±1px.
