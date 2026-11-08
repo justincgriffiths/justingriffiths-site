@@ -235,7 +235,7 @@ function renderPage(skin) {
     </main>
 
     <footer class="footer${F(" band cluster")}">
-      <p>Set from ${a(`${REPO}/blob/main/bio.json`, "bio.json")}, the same text I use on every profile. Updated <time datetime="${updated}">${updated}</time>.</p>
+      <!-- Set from bio.json, the same text Justin uses on every profile. --><p>Updated <time datetime="${updated}">${updated}</time>.</p>
       ${bookLink()}
     </footer>
     ${NAV_SCRIPT}
