@@ -8,14 +8,24 @@ const root = new URL("..", import.meta.url);
 const read = (p) => readFileSync(new URL(p, root), "utf8");
 before(() => execFileSync("node", ["build.mjs"], { cwd: root, stdio: "ignore" }));
 
-test("src/style.css carries no hex colors or font names; tokens.css owns them", () => {
-  const css = read("src/style.css").replace(/\/\*[\s\S]*?\*\//g, "");
-  assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/);
-  assert.doesNotMatch(css, /Google Sans|IBM Plex|Source Serif|rgba?\(/);
+test("src/style.css and src/chrome.css carry no hex colors or font names; tokens.css owns them", () => {
+  for (const f of ["src/style.css", "src/chrome.css"]) {
+    const css = read(f).replace(/\/\*[\s\S]*?\*\//g, "");
+    assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/, f);
+    assert.doesNotMatch(css, /Google Sans|IBM Plex|Source Serif|rgba?\(/, f);
+  }
 });
 
-test("dist/style.css is tokens.css followed by style.css", () => {
-  assert.equal(read("dist/style.css"), read("src/tokens.css") + "\n" + read("src/style.css"));
+test("dist/site.css is tokens.css followed by chrome.css; dist/style.css is the hub rules", () => {
+  assert.equal(read("dist/site.css"), read("src/tokens.css") + "\n" + read("src/chrome.css"));
+  assert.equal(read("dist/style.css"), read("src/style.css"));
+});
+
+test("dark only: one night default, no light lane alias, no theme switch (Justin, 2026-11-08)", () => {
+  const t = read("src/tokens.css");
+  assert.match(t, /--site-bg:\s+var\(--surface-night\)/);
+  assert.match(t, /color-scheme: dark/);
+  assert.doesNotMatch(read("dist/index.html"), /class="switch"|Light<\/a>|Night<\/a>/);
 });
 
 test("tokens.css ships the Pedal defaults and a commented jg theme stub", () => {
@@ -24,14 +34,18 @@ test("tokens.css ships the Pedal defaults and a commented jg theme stub", () => 
   assert.match(t, /\/\*[^]*\[data-theme="jg"\][^]*\*\//);
 });
 
-test("site#49: with no portrait, the cover has no portrait column; the two-column grid is gated on :has(.portrait)", () => {
+test("site#49: no empty cover column. Without a portrait the second column is the hero visual card; the portrait column is gated on :has(.portrait)", () => {
   const bio = JSON.parse(read("bio.json"));
   const html = read("dist/index.html");
-  if (!bio.dossier.cover?.portrait) assert.doesNotMatch(html, /class="exhibit[^"]*portrait/);
+  const cover = html.slice(html.indexOf('<div class="cover-body">'), html.indexOf('<nav class="index"'));
+  if (!bio.dossier.cover?.portrait) {
+    assert.doesNotMatch(html, /class="exhibit[^"]*portrait/);
+    assert.match(cover, /class="cover-visual"/); // the column is filled
+  }
   const css = read("src/style.css");
-  const coverGrids = [...css.matchAll(/([^{}]*\.cover-body[^{}]*)\{[^}]*grid-template-columns/g)].map((m) => m[1].trim());
-  assert.ok(coverGrids.length > 0);
-  for (const sel of coverGrids) assert.match(sel, /:has\(\.portrait\)/, sel);
+  const portraitCols = [...css.matchAll(/([^{}]*\.cover-body[^{}]*)\{[^}]*grid-template-columns:\s*minmax\(12rem/g)].map((m) => m[1].trim());
+  assert.ok(portraitCols.length > 0);
+  for (const sel of portraitCols) assert.match(sel, /:has\(\.portrait\)/, sel);
 });
 
 test("the hub loads Google Sans, not the retired classic faces", () => {

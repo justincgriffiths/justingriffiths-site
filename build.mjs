@@ -5,6 +5,7 @@
 // text (name, headline, bios, work, links, people) stays in the top-level keys, and
 // blocks point at it with `from`. The block types are documented in the README.
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync, cpSync } from "node:fs";
+import { chromeHead, siteHeader, bookButton, NAV_SCRIPT, ICON } from "./src/chrome.mjs";
 
 const bio = JSON.parse(readFileSync(new URL("./bio.json", import.meta.url), "utf8"));
 const REPO = "https://github.com/justincgriffiths/justingriffiths-site";
@@ -102,18 +103,21 @@ const blocks = {
   exhibits: (b) => `
         <div class="exhibits">${items(b).map((x) => exhibit(x)).join("")}
         </div>`,
-  logos: (b) => `
-        <ul class="logos" aria-label="${esc(b.label ?? "Organizations")}">${items(b)
+  // Only real logos render. A placeholder (or an item with no src) is skipped, and a strip with
+  // nothing real in it renders nothing at all: no "logo pending" tiles on a live page (site#51).
+  logos: (b) => {
+    const real = items(b).filter((l) => l.src && !l.placeholder);
+    if (!real.length) return "";
+    return `
+        <ul class="logos" aria-label="${esc(b.label ?? "Organizations")}">${real
           .map((l) => {
-            const mark =
-              l.placeholder || !l.src
-                ? `<span class="logo-ph" role="img" aria-label="Placeholder: ${esc(l.name)} logo"><span>${esc(l.name)}</span><small>Logo pending</small></span>`
-                : `<img src="${esc(l.src)}" alt="${esc(l.name)}" loading="lazy">`;
+            const mark = `<img src="${esc(l.src)}" alt="${esc(l.name)}" loading="lazy">`;
             return `
           <li>${l.url ? a(l.url, mark) : mark}</li>`;
           })
           .join("")}
-        </ul>`,
+        </ul>`;
+  },
 };
 const renderBlock = (b) => {
   const fn = blocks[b.type];
@@ -121,48 +125,52 @@ const renderBlock = (b) => {
   return fn(b);
 };
 
-const PEDAL_FONTS = `<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">`;
-// The same dossier renders in two skins, both Pedal Design System: the light lane at / (src/tokens.css +
-// src/style.css, site#51) and the night lane at /pedal-design/ (public/pedal.css). One bio.json, one renderer.
-// The skin keys stay "classic"/"pedal" so existing links and data-skin hooks keep working.
+// The same dossier renders on two pages, both on the shared chrome (src/chrome.mjs) and /site.css:
+// the hub at / (src/style.css) and /pedal-design/ (public/pedal.css). One bio.json, one renderer.
+// Dark only since 2026-11-08 (Justin): the Light | Night switch is gone; both pages are the night lane.
 const SKINS = {
-  classic: { path: "/", css: "/style.css", other: "pedal" },
-  pedal: { path: "/pedal-design/", css: "/pedal-design/style.css", other: "classic" },
+  classic: { path: "/", css: "/style.css", current: "home" },
+  pedal: { path: "/pedal-design/", css: "/pedal-design/style.css", current: "pedal-design" },
 };
-const SWITCH_LABEL = { classic: "Light", pedal: "Night" };
-const SITE_LINKS = [["/qwen/", "Qwen"], ["/fleet/", "Fleet"]];
 
-// The shared nav: a Light | Night switch (it keeps the section anchor, see the inline script)
-// plus the other pages. A div with role=navigation, not a <nav>: test/hub.test.mjs slices the page at the first </nav>. The switch is a plain link first, so it works with scripts off.
-const siteNav = (skin) => `<div class="site-nav" role="navigation" aria-label="Site">
-      <span class="switch" role="group" aria-label="Version">${["classic", "pedal"]
-        .map((k) => (k === skin
-          ? `<a href="${SKINS[k].path}" data-skin="${k}" aria-current="page">${SWITCH_LABEL[k]}</a>`
-          : `<a href="${SKINS[k].path}" data-skin="${k}">${SWITCH_LABEL[k]}</a>`))
-        .join("")}</span>
-      <span class="site-links">${SITE_LINKS.map(([h, t]) => `<a href="${h}">${t}</a>`).join("")}</span>
-    </div>`;
-const SWITCH_SCRIPT = `<script>(function(){var l=document.querySelectorAll(".switch a");function s(){for(var i=0;i<l.length;i++){l[i].hash=location.hash}}s();addEventListener("hashchange",s)})()</script>`;
+// The hero visual: a DS card with an illustration slot. bio.json can set dossier.cover.visual
+// ({ src, alt }); until it does, the card shows a drawn JG mark labelled as a slot for Justin.
+const coverVisual = (v) => {
+  const art = v?.src
+    ? `<img src="${esc(v.src)}" alt="${esc(v.alt ?? "")}" loading="eager" decoding="async">`
+    : `<svg class="mark" viewBox="0 0 320 240" role="img" aria-label="JG monogram, standing in for an illustration">
+              <circle class="mark-dot" cx="52" cy="48" r="10"/><circle class="mark-dot" cx="276" cy="196" r="14"/><circle class="mark-ring" cx="262" cy="56" r="18"/>
+              <circle class="mark-shadow" cx="168" cy="128" r="78"/><circle class="mark-disc" cx="160" cy="120" r="78"/>
+              <text class="mark-text" x="160" y="122" text-anchor="middle" dominant-baseline="central">JG</text>
+            </svg>`;
+  const note = v?.src
+    ? (v.caption ? `<figcaption class="visual-note">${esc(v.caption)}</figcaption>` : "")
+    : `<figcaption class="visual-note">Illustration slot for Justin: set <code>dossier.cover.visual</code> in bio.json to replace the mark.</figcaption>`;
+  return `
+        <figure class="cover-visual">
+          <div class="visual-card"><div class="visual-art">${art}</div></div>${note}
+        </figure>`;
+};
 
 function renderPage(skin) {
   exhibitCount = 0;
   const updated = new Date().toISOString().slice(0, 10);
   const { cover = {} } = dossier;
+  const labId = dossier.sections.find((s) => s.id === "lab") ? "lab" : null;
 
   const coverSheet = `
-      <header class="cover" aria-labelledby="subject">
-        <div class="cover-file">
-          <span>Personal file</span>
-          <span>Updated <time datetime="${updated}">${updated}</time></span>
-        </div>
+      <section class="cover" aria-labelledby="subject">
         <div class="cover-body">
           ${cover.portrait ? exhibit(cover.portrait, "portrait") : ""}
           <div class="cover-id">
-            <p class="kicker">Subject</p>
             <h1 id="subject">${esc(bio.name)}</h1>
             ${cover.lede ? `<p class="lede">${esc(get(cover.lede))}</p>` : ""}
+            <div class="cover-actions">
+              ${bookButton("btn-lg")}${labId ? `
+              <a class="cover-more" href="#${labId}">See what I am building${ICON.arrow}</a>` : ""}
+            </div>
             ${cover.facts ? facts(cover.facts) : ""}
-          </div>
+          </div>${cover.portrait ? "" : coverVisual(cover.visual)}
         </div>
         <nav class="index" aria-label="Contents">
           <h2 class="kicker">Index</h2>
@@ -172,7 +180,7 @@ function renderPage(skin) {
             .join("")}
           </ol>
         </nav>
-      </header>`;
+      </section>`;
 
   const sections = dossier.sections
     .map(
@@ -197,11 +205,8 @@ function renderPage(skin) {
     <meta property="og:description" content="${esc(bio.headline)}">
     <meta property="og:url" content="https://justingriffiths.com${SKINS[skin].path}">
     <meta property="og:type" content="profile">
-    <meta name="color-scheme" content="light">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    ${PEDAL_FONTS}
+    ${chromeHead()}
     <script type="application/ld+json">${JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Person",
@@ -214,17 +219,16 @@ function renderPage(skin) {
     <link rel="stylesheet" href="${SKINS[skin].css}">
   </head>
   <body class="skin-${skin}">
-    <a class="skip" href="#${esc(dossier.sections[0].id)}">Skip to ${esc(dossier.sections[0].title)}</a>
-    ${siteNav(skin)}
-    <div class="sheet">${coverSheet}
-      <main>${sections}
-      </main>
+    <a class="skip" href="#main">Skip to content</a>
+    ${siteHeader(SKINS[skin].current)}
+    <main id="main" class="sheet">${coverSheet}${sections}
+    </main>
 
-      <footer class="footer">
-        <p>End of file. Set from ${a(`${REPO}/blob/main/bio.json`, "bio.json")}, the same text I use on every profile.</p>
-      </footer>
-    </div>
-    ${SWITCH_SCRIPT}
+    <footer class="footer">
+      <p>Set from ${a(`${REPO}/blob/main/bio.json`, "bio.json")}, the same text I use on every profile. Updated <time datetime="${updated}">${updated}</time>.</p>
+      ${bookButton("btn-sm")}
+    </footer>
+    ${NAV_SCRIPT}
   </body>
   </html>
   `;
@@ -240,11 +244,12 @@ writeFileSync(new URL("./dist/index.html", import.meta.url), classicHtml);
 mkdirSync(new URL("./dist/pedal-design/", import.meta.url), { recursive: true });
 writeFileSync(new URL("./dist/pedal-design/index.html", import.meta.url), pedalHtml);
 copyFileSync(new URL("./public/pedal.css", import.meta.url), new URL("./dist/pedal-design/style.css", import.meta.url));
-// The hub stylesheet is the token layer plus the hub rules, one file, one request.
+// /site.css is the token layer plus the shared chrome; every page loads it. /style.css is the hub's own rules.
 writeFileSync(
-  new URL("./dist/style.css", import.meta.url),
-  readFileSync(new URL("./src/tokens.css", import.meta.url), "utf8") + "\n" + readFileSync(new URL("./src/style.css", import.meta.url), "utf8")
+  new URL("./dist/site.css", import.meta.url),
+  readFileSync(new URL("./src/tokens.css", import.meta.url), "utf8") + "\n" + readFileSync(new URL("./src/chrome.css", import.meta.url), "utf8")
 );
+copyFileSync(new URL("./src/style.css", import.meta.url), new URL("./dist/style.css", import.meta.url));
 for (const f of ["favicon.svg", "robots.txt"]) {
   const src = new URL(`./public/${f}`, import.meta.url);
   if (existsSync(src)) copyFileSync(src, new URL(`./dist/${f}`, import.meta.url));

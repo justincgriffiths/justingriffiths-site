@@ -370,10 +370,18 @@
   --container-wide: 1440px;
 }
 
-/* ---- 4. Site layout aliases (justingriffiths.com only) ----
+/* ---- 4. Site aliases (justingriffiths.com only) ----
    Mobile-first, the breakpoints pedal-performance.com uses: 768px (tablet), 1024px (desktop).
-   Media queries cannot read custom properties, so those two numbers also appear in style.css. */
+   Media queries cannot read custom properties, so those two numbers also appear in the CSS.
+
+   One theme: the DS night lane (Justin, 2026-11-08, "dark theme only"). Every page reads
+   these --site-* names, never the ramps, so a re-theme is one block (section 5).
+   Night-lane rules (DS readme): the ground is --surface-night with the 5% paper lattice;
+   anything sitting directly on the ground takes a PAPER border; muted text is night-200;
+   hard shadows offset into night-900. A box (card, button, menu) stays LIGHT: paper fill,
+   night ink rule, hard offset into night-900. */
 :root {
+  color-scheme: dark;
   --site-max: var(--container-max);                  /* 1200px content column */
   --site-gutter: var(--space-5);                     /* 20px on phones */
   --site-gutter-wide: var(--space-10);               /* 40px from 768px */
@@ -381,47 +389,71 @@
   --band-pad-wide: var(--space-24);                  /* section band, desktop */
   --measure: 65ch;
   --tap: 44px;                                       /* minimum tap target */
+  --header-h: 72px;                                  /* sticky header, as pedal-performance.com */
+
   --site-font: var(--font-sans);
   --site-heading-font: var(--font-display);
-  --site-bg: var(--surface-page);
-  --site-bg-alt: var(--surface-sunken);
-  --site-text: var(--text-primary);
-  --site-text-soft: var(--text-secondary);
-  --site-link: var(--text-link);
-  --site-line: var(--border-default);
-  --site-hairline: var(--border-soft);
-  --site-accent: var(--accent);
-  --site-accent-ink: var(--accent-contrast);
-  --site-band-dark: var(--surface-navy);
-  --site-on-dark: var(--text-on-night);
-  --site-on-dark-soft: var(--text-muted-on-night);
-  --site-on-dark-link: var(--accent-on-night-hover);
-  --site-selection: var(--teal-100);
+
+  /* The ground */
+  --site-bg: var(--surface-night);                   /* night-800 */
+  --site-bg-alt: var(--surface-night-canvas);        /* night-900: alternate bands, the footer */
+  --site-grid-line: var(--night-grid-line);
+  --site-grid-size: var(--night-grid-size);
+  --site-text: var(--text-on-night);                 /* paper */
+  --site-text-soft: var(--text-muted-on-night);      /* night-200 */
+  --site-link: var(--accent-on-night-hover);         /* teal-400 */
+  --site-link-hover: var(--text-on-night);
+  --site-line: var(--border-on-night);               /* paper: rules and outlines on the ground */
+  --site-hairline: var(--night-600);
+  --site-hover: var(--surface-night-raised);         /* night-700: ghost hover on the ground */
+  --site-selection: var(--teal-700);
+  --site-selection-text: var(--text-on-night);
+  --site-focus: var(--accent-on-night);
+
+  /* The accent (primary button, current page) */
+  --site-accent: var(--accent-on-night);             /* teal-500 */
+  --site-accent-hover: var(--accent-on-night-hover);
+  --site-accent-ink: var(--accent-on-night-contrast);/* night-800 on teal, AA */
+
+  /* A box on the ground: paper, ink rule, offset into the void */
+  --site-box: var(--paper);
+  --site-box-alt: var(--sand);
+  --site-box-text: var(--text-primary);
+  --site-box-soft: var(--text-secondary);
+  --site-box-link: var(--text-link);
+  --site-box-line: var(--border-default);
+  --site-box-hairline: var(--border-soft);
+  --site-box-border: var(--border-width) solid var(--site-box-line);
+  --site-shadow-sm: var(--shadow-hard-night-sm);
+  --site-shadow: var(--shadow-hard-night);
+  --site-shadow-lg: var(--shadow-hard-night-lg);
+  --site-art: var(--surface-accent);                 /* teal-100 field behind an illustration */
 }
 
 /* ---- 5. Re-theme stub (Justin's call; ship the Pedal defaults) ----
    To recolor or re-font the whole site, uncomment and set values here, then put
    data-theme="jg" on <html>. Nothing else needs to change: every page reads the
-   --site-* aliases and the DS semantic tokens above.
+   --site-* aliases above.
 
 [data-theme="jg"] {
+  color-scheme: dark;
   --site-font: "Your Body Face", system-ui, sans-serif;
   --site-heading-font: "Your Display Face", var(--site-font);
-  --site-bg: #FFFFFF;
-  --site-bg-alt: #F5F5F0;
-  --site-text: #111111;
-  --site-text-soft: #444444;
-  --site-link: #0B5CAD;
-  --site-line: #111111;
-  --site-hairline: #DDDDDD;
-  --site-accent: #0B5CAD;
-  --site-accent-ink: #FFFFFF;
-  --site-band-dark: #111111;
-  --site-on-dark: #FFFFFF;
-  --site-on-dark-soft: #BBBBBB;
-  --site-on-dark-link: #8CC4FF;
-  --site-selection: #DCEBFA;
-  --shadow-hard-sm: 2px 2px 0 var(--site-line);
-  --shadow-hard: 4px 4px 0 var(--site-line);
+  --site-bg: #101418;
+  --site-bg-alt: #0A0D10;
+  --site-text: #F4F1EA;
+  --site-text-soft: #B9B4AA;
+  --site-link: #8CC4FF;
+  --site-line: #F4F1EA;
+  --site-hairline: #2B3138;
+  --site-hover: #1B2026;
+  --site-accent: #8CC4FF;
+  --site-accent-hover: #B5D9FF;
+  --site-accent-ink: #0A0D10;
+  --site-box: #F4F1EA;
+  --site-box-text: #101418;
+  --site-box-line: #101418;
+  --site-shadow-sm: 2px 2px 0 #000000;
+  --site-shadow: 4px 4px 0 #000000;
 }
 */
