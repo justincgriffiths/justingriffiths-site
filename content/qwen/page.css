@@ -41,3 +41,4 @@
 .qwen .disclosure .why { margin-top: 0; font-size: var(--text-body-lg); color: var(--site-text); }
 .qwen .disclosure-body > section:first-child { border-top: 0; padding-top: var(--space-2); }
 .learn-more { border-top: var(--border-width) solid var(--site-line); margin-top: 0; padding-top: var(--space-4); }
+.qwen .disclosure ul.why { padding-inline-start: 1.25em; }
