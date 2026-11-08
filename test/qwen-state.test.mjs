@@ -191,7 +191,7 @@ test("the page renders one chart per job with runs and says so for a job with no
   const base = JSON.parse(readFileSync("content/qwen/data.json", "utf8"));
   const d = JSON.parse(out);
   const html = renderData({ ...base, workflows: { ...d.workflows, declutter: { ...d.workflows.declutter, runs: 0, share_by_day: [] } } });
-  const sec = html.slice(html.indexOf('id="workflows"'), html.indexOf('id="fallbacks"'));
+  const sec = html.slice(html.indexOf('id="workflows"'), html.indexOf('id="calls"'));
   assert.match(sec, /Cron triage<\/h3><p class="note">first logged 2026-11-08 · 4 runs · 8 answered by Qwen · 7 fell back to Claude/);
   assert.match(sec, /Declutter<\/h3><p class="empty">No runs logged\.<\/p>/);
   assert.match(sec, /held back by rule \(needs-del 1, needs-name 2\)/);
