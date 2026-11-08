@@ -38,7 +38,7 @@ test("/qwen/ prints its as-of time; a missing stamp says so instead of hiding", 
   const data = JSON.parse(read("content/qwen/data.json"));
   assert.match(data.as_of, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
   const html = read("dist/qwen/index.html");
-  assert.match(html, new RegExp(`<p class="asof" data-asof="${data.as_of}">`));
+  assert.match(html, new RegExp(`<span class="asof" data-asof="${data.as_of}">`));
   assert.match(html, /Data as of <time datetime="[^"]+">[A-Z][a-z]{2} \d{1,2}, \d{1,2}:\d\d [AP]M E[SD]T<\/time>/);
   assert.match(html, /labeling GitHub issues/);
 });
@@ -48,4 +48,15 @@ test("qwen-state.py stamps as_of (pinnable for tests); the refresh runs every tw
   assert.equal(JSON.parse(out).as_of, "2026-01-02T03:04:05Z");
   const hours = [...read("bin/com.justin.qwen-refresh.plist").matchAll(/<key>Hour<\/key><integer>(\d+)<\/integer>/g)].map((m) => +m[1]);
   assert.deepEqual(hours, [8, 10, 12, 14, 16, 18, 20, 22]);
+});
+
+test("/qwen/ has collapsible Background (closed) and Data (open, as-of in summary) and a quiet Learn more (site#68)", () => {
+  const html = readFileSync(new URL("../dist/qwen/index.html", import.meta.url), "utf8");
+  assert.match(html, /<details class="disclosure" id="background">/);
+  assert.match(html, /<details class="disclosure" id="data" open>/);
+  const dataSummary = html.slice(html.indexOf('id="data"'), html.indexOf("</summary>", html.indexOf('id="data"')));
+  assert.match(dataSummary, /Data as of <time/);
+  assert.ok(html.indexOf('id="background"') < html.indexOf('id="data"'));
+  assert.match(html, /<a class="quiet-link" href="\/#about">Learn more<\/a>/);
+  assert.ok(html.indexOf("Learn more") > html.indexOf('id="breakdowns"'));
 });
