@@ -193,5 +193,108 @@
         ]
       }
     ]
+  },
+  "resume": {
+    "positions": [
+      {
+        "company": "Pearmill",
+        "roles": [
+          {
+            "title": "Senior Director, Agency Enablement",
+            "dates": "Mar 2026 – Present"
+          }
+        ]
+      },
+      {
+        "company": "Pedal Performance",
+        "roles": [
+          {
+            "title": "General Manager",
+            "dates": "Nov 2025 – Present"
+          }
+        ]
+      },
+      {
+        "company": "TONE Exclusive",
+        "roles": [
+          {
+            "title": "Senior Director, Ecommerce",
+            "dates": "Jan 2025 – Dec 2025"
+          }
+        ]
+      },
+      {
+        "company": "Ophelia",
+        "roles": [
+          {
+            "title": "Senior Director, Growth",
+            "dates": "Jan 2023 – Sep 2024"
+          },
+          {
+            "title": "Director of Growth",
+            "dates": "Aug 2021 – Mar 2023"
+          }
+        ]
+      },
+      {
+        "company": "Nuts.com",
+        "roles": [
+          {
+            "title": "Director of Marketing",
+            "dates": "Sep 2020 – Sep 2021"
+          },
+          {
+            "title": "Head of Marketing, Retention",
+            "dates": "Aug 2019 – Sep 2020"
+          },
+          {
+            "title": "Senior Manager, Special Operations",
+            "dates": "Apr 2019 – Aug 2019"
+          }
+        ]
+      },
+      {
+        "company": "Phillips Pet Food & Supplies",
+        "roles": [
+          {
+            "title": "Senior Manager, Strategic Analytics",
+            "dates": "Jul 2018 – Apr 2019",
+            "description": "Led the Business Intelligence team responsible for reporting and empowering the organization with data. Managed the Phillips CRM platform, including feature prototyping, implementation and QA, end-user training, and outcome reporting. Proposed and led the Salesforce rollout for the Sales and Customer Care organizations, approximately 200 employees responsible for $800MM in revenue. Led procurement decisions, integration-partner selection and management, and platform setup."
+          }
+        ]
+      },
+      {
+        "company": "PHIDO (a Phillips company)",
+        "roles": [
+          {
+            "title": "Product Manager, Data & BI",
+            "dates": "Feb 2017 – Apr 2019",
+            "description": "Led discovery, selection, and implementation of BI and analytics solutions for PHIDO's Endless Aisles third-party fulfillment platform; selected ETL and visualization tools; defined KPIs with leadership and onboarding; built initial dashboards; trained team members; and selected and implemented Nutshell CRM workflows for sales, customer-support, and inside-sales processes."
+          }
+        ]
+      },
+      {
+        "company": "PetFlow (acquired by Phillips, Feb 2017)",
+        "roles": [
+          {
+            "title": "Senior Business Analyst",
+            "dates": "Sep 2016 – Sep 2017"
+          }
+        ]
+      }
+    ],
+    "education": [
+      {
+        "school": "Oberlin College",
+        "degree": "B.A. with High Honors in English, English Literature",
+        "dates": "2009–2013",
+        "activity": "Varsity Men's Soccer (Captain 2012)"
+      },
+      {
+        "school": "Regis High School",
+        "dates": "2005–2009",
+        "activity": "Varsity Men's Soccer (Captain 2008)"
+      }
+    ]
   }
 }

@@ -1,0 +1,15 @@
+/* /resume/ (site#82): full titles, one entry per role, grouped by company. Loaded after /site.css;
+   tokens only. A reading column on the night lane, like /qwen/. Role titles stay on one line at 375px. */
+.resume { --center-max: 48rem; --stack-gap: 0; padding-block: var(--space-10) var(--space-16); }
+.resume h1 { font-size: clamp(var(--text-h1), 6vw, var(--text-display)); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); font-weight: var(--weight-bold); margin-bottom: var(--space-4); }
+.resume .lede { font-size: var(--text-body-lg); color: var(--site-text); max-width: var(--measure); margin-bottom: var(--space-8); }
+.resume section { border-top: var(--border-width) solid var(--site-line); padding-block: var(--space-8); }
+.resume h2 { font-size: var(--text-overline); font-weight: var(--weight-bold); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--site-text-soft); margin-bottom: var(--space-4); }
+.company { padding-block: var(--space-4); border-bottom: 1px solid var(--site-hairline); }
+.company:last-child { border-bottom: 0; }
+.company h3 { font-size: var(--text-h4); line-height: var(--leading-snug); font-weight: var(--weight-bold); margin-bottom: var(--space-2); overflow-wrap: break-word; }
+.roles { list-style: none; padding: 0; margin: 0; }
+.role { padding-block: var(--space-2); }
+.role-title { font-size: var(--text-body); line-height: var(--leading-snug); font-weight: var(--weight-bold); margin: 0; }
+.role-dates { color: var(--site-text-soft); font-size: var(--text-body-sm); font-variant-numeric: tabular-nums; margin: 0; }
+.role-note { color: var(--site-text); font-size: var(--text-body-sm); line-height: var(--leading-normal); max-width: var(--measure); margin: var(--space-2) 0 0; }
