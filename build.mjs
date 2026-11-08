@@ -39,6 +39,11 @@ const factValue = (v) => {
 // Frame classes (src/frame.css) go on the hub only; /pedal-design/ shares this renderer and keeps its own layout.
 let currentSkin = "classic";
 const F = (cls) => (currentSkin === "classic" ? cls : "");
+// The cover lede is one sentence per line, so a job title never breaks across two (Justin,
+// 2026-11-08: "Sr." alone at the end of a line on mobile). "Sr." is not a sentence end, and
+// it stays glued to the next word.
+const ledeLines = (text) => text.split(/(?<!\b(?:Sr|Jr|Dr|Mr|Ms|St)\.)(?<=\.)\s+(?=[A-Z])/)
+  .map((s) => `<span class="lede-line">${esc(s).replace(/\b(Sr|Jr|Dr)\. /g, "$1.&nbsp;")}</span>`).join(" ");
 
 const facts = (rows) => `
         <dl class="facts${F(" cq")}">${rows
@@ -168,7 +173,7 @@ function renderPage(skin) {
           ${cover.portrait ? exhibit(cover.portrait, "portrait") : ""}
           <div class="cover-id">
             <h1 id="subject"${F(' class="t-display"')}>${esc(bio.name)}</h1>
-            ${cover.lede ? `<p class="lede${F(" fit")}">${esc(get(cover.lede))}</p>` : ""}
+            ${cover.lede ? `<p class="lede${F(" fit")}">${ledeLines(get(cover.lede))}</p>` : ""}
             <div class="cover-actions${F(" cluster")}">
               ${labId ? `<a class="cover-more" href="#${labId}">See what I am building${ICON.arrow}</a>` : ""}
             </div>
