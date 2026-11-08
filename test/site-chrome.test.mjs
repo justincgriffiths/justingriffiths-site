@@ -69,10 +69,15 @@ const assets = { fetch: async (req) => {
 } };
 
 test("the public nav targets and /site.css answer 200 through the Worker", async () => {
-  for (const path of ["/", "/site.css", "/qwen/", "/resume/", "/pedal-design/", "/marketing-101/", "/archive/"]) {
+  for (const path of ["/", "/site.css", "/qwen/", "/resume/", "/pedal-design/", "/archive/"]) {
     const r = await worker.fetch(new Request(`https://justingriffiths.com${path}`), { ASSETS: assets });
     assert.equal(r.status, 200, path);
   }
+});
+
+test("/marketing-101/ is behind the Fleet Access sign-in: no token, no page (2026-11-08)", async () => {
+  const r = await worker.fetch(new Request("https://justingriffiths.com/marketing-101/"), { ASSETS: assets });
+  assert.equal(r.status, 404);
 });
 
 test("/fleet/meta/ (gated) carries the site header too", async () => {

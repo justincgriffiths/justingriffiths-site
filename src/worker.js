@@ -114,6 +114,8 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     if (url.pathname === "/marketing-101/" || url.pathname === "/marketing-101/index.html") {
+      // Behind the Fleet Access app (destination added 2026-11-08): no valid token, no page.
+      if (!(await verifyAccessJwt(request, env))) return new Response("Not found", { status: 404 });
       return env.ASSETS.fetch(request);
     }
 

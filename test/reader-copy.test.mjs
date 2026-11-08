@@ -13,6 +13,9 @@ const AGENT_NOTES = [
   [/\bslot for\b/i, "a slot handed to someone to fill"],
   [/\bfor Justin\b/i, "a note addressed to Justin"],
   [/\b(set|edit|change|update)\b[^.]{0,40}\bin [\w./-]+\.(json|ya?ml|md|mjs|js|toml)\b/i, "an instruction to edit a source file"],
+  // Any source file named in reader text is a build note ("Set from bio.json, the same text I use on every
+  // profile", live on the hub until 2026-11-08, slipped past the line above).
+  [/\b[\w-]+\.(json|ya?ml|mjs|toml)\b/i, "a source file named in page text"],
   [/\b[a-z_]+\.[a-z_]+\.[a-z_]+\b/, "a dotted config key"],
   [/\bto replace the (mark|placeholder|image|copy)\b/i, "a replace-me instruction"],
   [/\b(TODO|FIXME|TBD|XXX)\b/, "a work marker"],

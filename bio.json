@@ -41,11 +41,6 @@
       "label": "Research",
       "value": "justingriffiths.com/archive",
       "url": "/archive/"
-    },
-    {
-      "label": "Tutoring",
-      "value": "Blossom tutoring",
-      "url": "https://justingriffiths.com/learn/marketing/marketing-101/"
     }
   ],
   "people": [
@@ -135,11 +130,6 @@
               {
                 "name": "Pearmill",
                 "url": "https://pearmill.com",
-                "placeholder": true
-              },
-              {
-                "name": "Blossom tutoring",
-                "url": "https://justingriffiths.com/learn/marketing/marketing-101/",
                 "placeholder": true
               }
             ]
