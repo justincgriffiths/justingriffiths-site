@@ -121,18 +121,18 @@ const renderBlock = (b) => {
   return fn(b);
 };
 
-const CLASSIC_FONTS = `<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">`;
 const PEDAL_FONTS = `<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">`;
-// The same dossier renders in two skins: Classic at / and the Pedal Design System at
-// /pedal-design/ (public/pedal.css). One bio.json, one renderer; only the shell differs.
+// The same dossier renders in two skins, both Pedal Design System: the light lane at / (src/tokens.css +
+// src/style.css, site#51) and the night lane at /pedal-design/ (public/pedal.css). One bio.json, one renderer.
+// The skin keys stay "classic"/"pedal" so existing links and data-skin hooks keep working.
 const SKINS = {
   classic: { path: "/", css: "/style.css", other: "pedal" },
   pedal: { path: "/pedal-design/", css: "/pedal-design/style.css", other: "classic" },
 };
-const SWITCH_LABEL = { classic: "Classic", pedal: "Pedal" };
+const SWITCH_LABEL = { classic: "Light", pedal: "Night" };
 const SITE_LINKS = [["/qwen/", "Qwen"], ["/fleet/", "Fleet"]];
 
-// The shared nav: a Classic | Pedal switch (it keeps the section anchor, see the inline script)
+// The shared nav: a Light | Night switch (it keeps the section anchor, see the inline script)
 // plus the other pages. A div with role=navigation, not a <nav>: test/hub.test.mjs slices the page at the first </nav>. The switch is a plain link first, so it works with scripts off.
 const siteNav = (skin) => `<div class="site-nav" role="navigation" aria-label="Site">
       <span class="switch" role="group" aria-label="Version">${["classic", "pedal"]
@@ -201,7 +201,7 @@ function renderPage(skin) {
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    ${skin === "pedal" ? PEDAL_FONTS : CLASSIC_FONTS}
+    ${PEDAL_FONTS}
     <script type="application/ld+json">${JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Person",
@@ -240,7 +240,12 @@ writeFileSync(new URL("./dist/index.html", import.meta.url), classicHtml);
 mkdirSync(new URL("./dist/pedal-design/", import.meta.url), { recursive: true });
 writeFileSync(new URL("./dist/pedal-design/index.html", import.meta.url), pedalHtml);
 copyFileSync(new URL("./public/pedal.css", import.meta.url), new URL("./dist/pedal-design/style.css", import.meta.url));
-for (const f of ["style.css", "favicon.svg", "robots.txt"]) {
+// The hub stylesheet is the token layer plus the hub rules, one file, one request.
+writeFileSync(
+  new URL("./dist/style.css", import.meta.url),
+  readFileSync(new URL("./src/tokens.css", import.meta.url), "utf8") + "\n" + readFileSync(new URL("./src/style.css", import.meta.url), "utf8")
+);
+for (const f of ["favicon.svg", "robots.txt"]) {
   const src = new URL(`./public/${f}`, import.meta.url);
   if (existsSync(src)) copyFileSync(src, new URL(`./dist/${f}`, import.meta.url));
 }

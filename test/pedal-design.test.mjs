@@ -1,4 +1,4 @@
-// The hub renders twice (Classic at /, Pedal at /pedal-design/) and the two are linked by a switch.
+// The hub renders twice (light lane at /, night lane at /pedal-design/) and the two are linked by a switch.
 // These tests build into dist/ and check that every switch and site-nav link resolves through the Worker.
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
@@ -24,7 +24,7 @@ const assets = { fetch: async (req) => {
 } };
 const get = (path) => worker.fetch(new Request(`https://justingriffiths.com${path}`), { ASSETS: assets });
 
-test("both versions carry the Classic | Pedal switch, the current one marked", () => {
+test("both versions carry the Light | Night switch, the current one marked", () => {
   assert.deepEqual(hrefs(classic(), "switch"), ["/", "/pedal-design/"]);
   assert.deepEqual(hrefs(pedal(), "switch"), ["/", "/pedal-design/"]);
   assert.match(classic(), /<a href="\/" data-skin="classic" aria-current="page">/);
@@ -59,7 +59,7 @@ test("the switch keeps the section anchor (script updates the hash on both links
   assert.match(pedal(), /hashchange/);
 });
 
-test("pedal version uses the Pedal stylesheet, not the classic one", () => {
+test("pedal version uses the Pedal stylesheet, not the hub one", () => {
   assert.match(pedal(), /href="\/pedal-design\/style\.css"/);
   assert.doesNotMatch(pedal(), /href="\/style\.css"/);
 });
