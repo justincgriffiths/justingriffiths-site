@@ -22,6 +22,7 @@ h1 {
   letter-spacing: var(--tracking-tight); text-wrap: balance;
 }
 .lede { --fit: 30ch; font-size: var(--text-h3); line-height: var(--leading-snug); letter-spacing: var(--tracking-snug); text-wrap: pretty; }
+.lede-line { display: block; }
 .cover-actions { --cluster-gap: var(--space-4) var(--space-6); }
 .cover-more {
   font-family: var(--site-font); display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap);
