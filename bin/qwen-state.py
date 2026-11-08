@@ -326,7 +326,8 @@ def model_bucket(m):
 
 
 # site#94: newest record day per source, per command. A source with no record in STALE_DAYS while another source of the same
-# command is still writing is flagged in history[].stale_sources (name and last-seen day only), never charted as a drop to zero.
+# command is still writing is flagged in history[].stale_sources (name, last-seen day, covered = another source still writes);
+# a command whose sources have all gone quiet is flagged too, covered false. Never charted as a drop to zero.
 STALE_DAYS = 3
 SEEN = defaultdict(dict)
 
@@ -338,7 +339,7 @@ def seen(cmd, src, dy):
 def stale_sources(cmd, now_day):
     src = SEEN.get(cmd, {}); cut = addd(now_day, -STALE_DAYS)
     live = {n for n, d in src.items() if d >= cut}
-    return [{"source": n, "last_day": d} for n, d in sorted(src.items()) if d < cut and live]
+    return [{"source": n, "last_day": d, "covered": bool(live)} for n, d in sorted(src.items()) if d < cut]
 
 
 def hist_wrap():
