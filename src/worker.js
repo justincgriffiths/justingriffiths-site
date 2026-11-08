@@ -9,6 +9,9 @@
 import { verifyAccessJwt } from "./access.js";
 
 const APEX = "justingriffiths.com";
+// true: every .com path except /fleet and /media answers with public/construction.html (site#56).
+// false puts .com back on the full site. The full site stays on the workers.dev staging host either way.
+const CONSTRUCTION = true;
 const ARCHIVE_PREFIX = "/archive";
 const HUB_PATHS = new Set(["/", "/index.html", "/site.css", "/style.css", "/favicon.svg", "/robots.txt"]);
 const GATED_PREFIX = "/fleet";
@@ -37,6 +40,25 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
 
+    if (CONSTRUCTION && url.hostname === APEX && url.pathname !== GATED_PREFIX && !url.pathname.startsWith(`${GATED_PREFIX}/`) && url.pathname !== "/media" && !url.pathname.startsWith("/media/")) {
+      const res = await env.ASSETS.fetch(new Request(new URL("/construction.html", url), request));
+      return new Response(res.body, { status: res.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" } });
+    }
+
+    // Staging (any host but the apex): noindex every page. HTML gets the meta tag, everything gets the header.
+    if (url.hostname !== APEX) {
+      const res = await this.route(request, env, url);
+      const out = new Response(res.body, res);
+      out.headers.set("X-Robots-Tag", "noindex, nofollow");
+      if (!(out.headers.get("Content-Type") || "").includes("text/html") || res.status !== 200) return out;
+      const html = (await out.text()).replace("</head>", '<meta name="robots" content="noindex"></head>');
+      out.headers.delete("Content-Length");
+      return new Response(html, out);
+    }
+    return this.route(request, env, url);
+  },
+
+  async route(request, env, url) {
     if (url.pathname === "/learn" || url.pathname.startsWith("/learn/")) {
       return env.BLOSSOM.fetch(request);
     }

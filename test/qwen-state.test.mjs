@@ -94,10 +94,10 @@ test("accuracy comes from the #561 (issue-tag) and #670 (triage) rows", () => {
 });
 
 const assets = { fetch: async (r) => new Response(`asset:${new URL(r.url).pathname}`) };
-const hit = (p) => worker.fetch(new Request(`https://justingriffiths.com${p}`), { ASSETS: assets });
+const hit = (p) => worker.fetch(new Request(`https://justingriffiths-site.jg-personal.workers.dev${p}`), { ASSETS: assets });
 test("worker: /qwen/ serves the page, not the .info catch-all", async () => {
   assert.equal(await (await hit("/qwen/")).text(), "asset:/qwen/");
   assert.equal(await (await hit("/qwen/data.json")).text(), "asset:/qwen/data.json");
   const r = await hit("/qwen");
-  assert.equal(r.status, 301); assert.equal(r.headers.get("location"), "https://justingriffiths.com/qwen/");
+  assert.equal(r.status, 301); assert.equal(r.headers.get("location"), "https://justingriffiths-site.jg-personal.workers.dev/qwen/");
 });

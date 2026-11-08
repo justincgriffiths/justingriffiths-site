@@ -250,7 +250,7 @@ writeFileSync(
   readFileSync(new URL("./src/tokens.css", import.meta.url), "utf8") + "\n" + readFileSync(new URL("./src/chrome.css", import.meta.url), "utf8")
 );
 copyFileSync(new URL("./src/style.css", import.meta.url), new URL("./dist/style.css", import.meta.url));
-for (const f of ["favicon.svg", "robots.txt"]) {
+for (const f of ["favicon.svg", "robots.txt", "construction.html"]) {
   const src = new URL(`./public/${f}`, import.meta.url);
   if (existsSync(src)) copyFileSync(src, new URL(`./dist/${f}`, import.meta.url));
 }
