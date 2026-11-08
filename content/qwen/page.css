@@ -36,3 +36,9 @@
 .asof .age { color: var(--site-text-soft); }
 .asof.stale .age { color: var(--site-pending); }
 .qwen table { font-family: var(--site-font); }
+
+/* Collapsibles (site#68): the as-of line now sits in the Data summary; it keeps its look, minus the bottom margin. */
+.disclosure-extra .asof { margin-bottom: 0; }
+.qwen .disclosure .why { margin-top: 0; font-size: var(--text-body-lg); color: var(--site-text); }
+.qwen .disclosure-body > section:first-child { border-top: 0; padding-top: var(--space-2); }
+.learn-more { border-top: var(--border-width) solid var(--site-line); margin-top: 0; padding-top: var(--space-4); }
