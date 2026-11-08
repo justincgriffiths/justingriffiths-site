@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync, mkdtempSync, chmodSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, chmodSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -56,9 +56,15 @@ test("the CLI exits 1 on a failing text file and 0 on a clean one", () => {
 });
 
 test("the built site passes: --all, with the waived existing lines in voice/known-fails.tsv", () => {
-  execFileSync("node", ["build.mjs"], { cwd: root, stdio: "ignore" });
+  // Same dist as bin/site-build.sh, /fleet/ pages included (#105: #102 tested without them and a /fleet/game/ line broke the deploy).
+  // The node-built fleet pages only; the Rust ones (landing, bike-factory, seats, battle-school) need the wasm toolchain.
+  for (const script of ["build.mjs", "build-fleet-meta.mjs", "build-fleet-flows.mjs", "build-fleet-game.mjs"]) {
+    execFileSync("node", [script], { cwd: root, stdio: "ignore" });
+  }
   // The /qwen/ Background is raw until #99 lands; every other page must be clean or waived.
   const r = spawnSync("node", ["bin/copygate", "--all"], { cwd: root, encoding: "utf8" });
+  // Leave dist/ as build.mjs alone makes it: the changed-only run after this test builds its base that way, so stray fleet pages would read as new copy.
+  for (const d of ["meta", "flows", "game"]) rmSync(join(root, "dist/fleet", d), { recursive: true, force: true });
   const left = r.stdout.split("\n").filter((l) => l.startsWith("FAIL") && !l.includes(": /qwen/:"));
   assert.deepEqual(left, []);
 });
