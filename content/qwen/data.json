@@ -27,7 +27,7 @@
    "label": "Pre-production trial, 4 items"
   }
  },
- "as_of": "2026-11-08T16:16:00Z",
+ "as_of": "2026-11-08T17:08:58Z",
  "breakdowns": {
   "by_task_label": {
    "archive": 6,
@@ -41,7 +41,7 @@
   },
   "by_workflow": {
    "cron-triage": {
-    "answered": 43,
+    "answered": 48,
     "capped": 0,
     "fell_back": 11
    },
@@ -67,6 +67,63 @@
    }
   }
  },
+ "calls_by_day": [
+  {
+   "calls": 59,
+   "day": "2026-11-08",
+   "haiku_capped": 0,
+   "haiku_fallback": 11,
+   "haiku_shadow": 0,
+   "job": "cron-triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 48
+  },
+  {
+   "calls": 13,
+   "day": "2026-11-08",
+   "haiku_capped": 1,
+   "haiku_fallback": 1,
+   "haiku_shadow": 11,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 11
+  },
+  {
+   "calls": 4,
+   "day": "2026-11-07",
+   "haiku_capped": 2,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "declutter",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 2
+  },
+  {
+   "calls": 10,
+   "day": "2026-11-07",
+   "haiku_capped": 0,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "issue-tag",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 10
+  },
+  {
+   "calls": 5,
+   "day": "2026-11-07",
+   "haiku_capped": 5,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "session-reap",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  }
+ ],
  "cost_per_run": {
   "issue_tag_usd_per_item": {
    "haiku": 0.0063,
@@ -204,27 +261,27 @@
  },
  "workflows": {
   "cron-triage": {
-   "answered": 43,
+   "answered": 48,
    "capped": 0,
    "fell_back": 11,
    "first_logged": "2026-11-08",
    "latency_ms": {
-    "n": 9,
+    "n": 10,
     "p50": 37930.0,
     "p90": 42089.0,
     "unit": "run"
    },
    "policy": 0,
    "policy_reasons": {},
-   "runs": 10,
+   "runs": 11,
    "share_by_day": [
     {
-     "answered": 43,
+     "answered": 48,
      "capped": 0,
      "day": "2026-11-08",
      "fell_back": 11,
      "policy": 0,
-     "runs": 10,
+     "runs": 11,
      "usd": 0.0134
     }
    ],

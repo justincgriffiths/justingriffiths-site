@@ -42,3 +42,7 @@
 .qwen .disclosure-body > section:first-child { border-top: 0; padding-top: var(--space-2); }
 .learn-more { border-top: var(--border-width) solid var(--site-line); margin-top: 0; padding-top: var(--space-4); }
 .qwen .disclosure ul.why { padding-inline-start: 1.25em; }
+.qwen details.calls summary { cursor: pointer; font-weight: 600; margin-top: var(--space-3); }
+.qwen details.calls table { font-size: var(--text-body-sm); }
+.qwen details.calls th, .qwen details.calls td { padding: var(--space-2); white-space: nowrap; }
+.qwen details.calls tr.total > * { font-weight: 600; background: var(--site-hairline); }

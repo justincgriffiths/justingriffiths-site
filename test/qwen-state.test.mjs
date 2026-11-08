@@ -7,7 +7,7 @@ import { join } from "node:path";
 import worker from "../src/worker.js";
 
 // PUBLIC page: poison every source with per-message fields; none may reach the exporter output.
-const SENTINELS = ["SENTINEL_CRON_JOB_NAME", "SENTINEL_CRON_RUNID", "SENTINEL_FLAGGED_TEXT", "SENTINEL_DECLUTTER_JOB", "SENTINEL_SESSION_NAME", "SENTINEL_REAP_JOB", "SENTINEL REASON declutter 5521", "SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841", "SENTINEL_LABEL_xyz", "secret-repo-sentinel2", "7771299", "SENTINEL_PAIR_LABEL", "SENTINEL_MSGID_PAIR", "SENTINEL_CORR_ISSUE_8842"];
+const SENTINELS = ["SENTINEL_CRON_JOB_NAME", "SENTINEL_CRON_RUNID", "SENTINEL_FLAGGED_TEXT", "SENTINEL_DECLUTTER_JOB", "SENTINEL_SESSION_NAME", "SENTINEL_REAP_JOB", "SENTINEL REASON declutter 5521", "SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841", "SENTINEL_LABEL_xyz", "secret-repo-sentinel2", "7771299", "SENTINEL_PAIR_LABEL", "SENTINEL_MSGID_PAIR", "SENTINEL_CORR_ISSUE_8842", "SENTINEL_LEARN_STORE", "SENTINEL_LEARN_REASON", "SENTINEL_MODEL_ROW"];
 const FORBIDDEN_KEYS = ["id", "ids", "subject", "sender", "from", "title", "number", "repo", "account", "labels", "pair", "haiku_add", "dimension", "from", "to", "model_of_origin", "applied_at", "qwen_label", "haiku_label", "from_label", "to_label", "issue", "match", "haiku_usd", "context", "input", "message_id", "email", "report"];
 
 const dir = mkdtempSync(join(tmpdir(), "qwen-"));
@@ -62,7 +62,12 @@ const reapFile = jl("reap.jsonl", [
   { ts: "2026-11-07T23:17:24+00:00", job: "SENTINEL_SESSION_NAME", tool: "qwen_classify", model: "claude-haiku-5-5", escalated: true, reason: "needs-del", latency_ms: 0 },
   { ts: "2026-11-07T23:17:25+00:00", job: "SENTINEL_SESSION_NAME", tool: "qwen_classify", model: "claude-haiku-5-5", escalated: true, reason: "needs-name", latency_ms: 0 },
 ]);
-const wfEnv = { QWEN_CRON_RUNS: cronFile, QWEN_DECLUTTER: declutterFile, QWEN_REAP: reapFile };
+// site#88: learn store-pick is a fourth qwen.jsonl source; its job names, reasons and per-row model strings are sentinels too.
+const learnFile = jl("learn.jsonl", [
+  { ts: "2026-11-08T12:00:00+00:00", job: "SENTINEL_LEARN_STORE", tool: "qwen_classify", model: "SENTINEL_MODEL_ROW", escalated: false, reason: "", latency_ms: 500 },
+  { ts: "2026-11-08T12:00:01+00:00", job: "SENTINEL_LEARN_STORE", tool: "qwen_classify", model: "SENTINEL_MODEL_ROW", escalated: true, reason: "SENTINEL_LEARN_REASON", latency_ms: 0 },
+]);
+const wfEnv = { QWEN_CRON_RUNS: cronFile, QWEN_DECLUTTER: declutterFile, QWEN_REAP: reapFile, QWEN_LEARN: learnFile };
 
 const out = execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env, ...wfEnv,
   QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"), QWEN_TAG_LOG: join(dir, "tag.log"), QWEN_TAG_JSONL: join(dir, "tag.jsonl") } });
@@ -188,4 +193,39 @@ test("the page renders one chart per job with runs and says so for a job with no
   assert.equal((sec.match(/<svg /g) || []).length, 2);
   assert.doesNotMatch(sec, /NaN|undefined|0%/);
   assert.doesNotMatch(renderData(base), /NaN|undefined/);   // the older snapshot without workflows still renders
+});
+
+test("calls by day: one row per (day, job) with calls, newest first, counts and fixed model names only", () => {
+  const rows = JSON.parse(out).calls_by_day;
+  const pick = (day, job) => rows.find((r) => r.day === day && r.job === job);
+  const n = (r) => [r.calls, r.qwen, r.haiku_fallback, r.haiku_capped, r.haiku_shadow];
+  assert.deepEqual(n(pick("2026-11-07", "triage")), [3, 1, 1, 1, 2]);          // seen 3: 1 answered, 1 escalated (exit-2), 1 not offered; both live pair rows land on the run's day
+  assert.deepEqual(n(pick("2026-11-07", "issue-tag")), [3, 1, 0, 2, 0]);       // apply=0 dry run dropped; pair rows carry no day
+  assert.deepEqual(n(pick("2026-11-08", "cron-triage")), [12, 5, 7, 0, 0]);
+  assert.deepEqual(n(pick("2026-11-07", "declutter")), [3, 1, 1, 1, 0]);
+  assert.deepEqual(n(pick("2026-11-07", "session-reap")), [3, 0, 0, 3, 0]);    // a fixed rule (needs-name/needs-del) counts under cap, not fallback
+  assert.deepEqual(n(pick("2026-11-08", "learn-store-pick")), [2, 1, 1, 0, 0]);
+  assert.equal(pick("2026-11-08", "triage"), undefined);                        // a job with no runs that day has no row, not zeros
+  const order = rows.map((r) => r.day);
+  assert.deepEqual(order, [...order].sort().reverse());
+  for (const r of rows) { assert.equal(r.calls, r.qwen + r.haiku_fallback + r.haiku_capped); assert.equal(r.model_qwen, "qwen3-coder:30b"); assert.equal(r.model_haiku, "claude-haiku-5-5"); }
+});
+
+test("a missing learn source adds no learn rows", () => {
+  const d = JSON.parse(execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env, ...wfEnv, QWEN_LEARN: none, QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"),
+    QWEN_TAG_LOG: join(dir, "tag.log"), QWEN_TAG_JSONL: join(dir, "tag.jsonl") } }));
+  assert.ok(d.calls_by_day.length && !d.calls_by_day.some((r) => r.job === "learn-store-pick"));
+});
+
+test("the page shows a Calls by day table: totals row per day, plain-words legend, no zero rows", async () => {
+  const { renderData } = await import("../src/qwen-render.mjs");
+  const base = JSON.parse(readFileSync("content/qwen/data.json", "utf8"));
+  const html = renderData({ ...base, calls_by_day: JSON.parse(out).calls_by_day });
+  const sec = html.slice(html.indexOf('id="calls"'), html.indexOf('id="fallbacks"'));
+  assert.match(sec, /<th>Day<\/th><th>Job<\/th><th>Calls<\/th><th>Qwen<\/th><th>Haiku \(fallback\)<\/th><th>Haiku \(cap\)<\/th><th>Haiku \(shadow\)<\/th>/);
+  assert.match(sec, /<tr class="total"><td>2026-11-08<\/td><th scope="row">All jobs<\/th><td>15<\/td><td>6<\/td><td>9<\/td><td>0<\/td><td>0<\/td>/);
+  assert.match(sec, /Haiku \(cap\): the ramp held this item back from Qwen on purpose/);
+  assert.equal((sec.match(/class="total"/g) || []).length, 3);                  // 11-09, 11-08, 11-07
+  assert.doesNotMatch(sec, /NaN|undefined/);
+  assert.doesNotMatch(renderData(base), /NaN|undefined/);                       // the older snapshot without calls_by_day still renders
 });

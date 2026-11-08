@@ -93,6 +93,22 @@ export function renderFresh(d) {
     : `<span class="asof stale"><span class="dot" aria-hidden="true"></span><span>Data time unknown: this snapshot carries no as-of stamp</span></span>`;
 }
 
+const JOB_NAMES = { triage: "Inbox triage", "issue-tag": "Issue labels", "cron-triage": "Cron triage", declutter: "Declutter", "session-reap": "Session reap", "learn-store-pick": "Learn store-pick" };
+// Calls by day (site#88): one row per (day, job) that had calls, newest day first, plus a totals row per day. A job with no
+// runs that day has no row. Counts only; the model names are fixed strings from the exporter.
+function callsTable(rows) {
+  if (!rows || !rows.length) return empty("No calls logged yet.");
+  const cols = ["calls", "qwen", "haiku_fallback", "haiku_capped", "haiku_shadow"], days = [...new Set(rows.map((r) => r.day))];
+  const body = days.map((d) => {
+    const rs = rows.filter((r) => r.day === d), tot = (k) => rs.reduce((s, r) => s + r[k], 0);
+    return rs.map((r) => `<tr><td>${esc(r.day)}</td><th scope="row">${esc(JOB_NAMES[r.job] || r.job)}</th>${cols.map((k) => `<td>${r[k]}</td>`).join("")}</tr>`).join("")
+      + `<tr class="total"><td>${esc(d)}</td><th scope="row">All jobs</th>${cols.map((k) => `<td>${tot(k)}</td>`).join("")}</tr>`;
+  }).join("");
+  const mq = rows[0].model_qwen, mh = rows[0].model_haiku;
+  return `<details class="calls" open><summary>Calls by day</summary><div class="table-scroll"><table><thead><tr><th>Day</th><th>Job</th><th>Calls</th><th>Qwen</th><th>Haiku (fallback)</th><th>Haiku (cap)</th><th>Haiku (shadow)</th></tr></thead><tbody>${body}</tbody></table></div>
+    <p class="note">Calls is items sent through the job. Qwen: answered by ${esc(mq)} on the local machine. Haiku (fallback): Qwen failed or its answer was thrown out, so ${esc(mh)} did the item. Haiku (cap): the ramp held this item back from Qwen on purpose, or a fixed rule sends it to Haiku. Haiku (shadow): a second Haiku call made only to compare with Qwen's answer, counted on top of Calls.</p></details>`;
+}
+
 const section = (id, title, why, body) => `<section id="${id}"><h2>${esc(title)}</h2><p class="why">${esc(why)}</p>${body}</section>`;
 
 export function renderData(d) {
@@ -102,6 +118,7 @@ export function renderData(d) {
   `<div class="cols grid"><div><h3>Inbox triage</h3>${stacked(data.share_by_day.triage, "Triage items per day by who answered")}</div><div><h3>Issue labels</h3>${stacked(data.share_by_day["issue-tag"], "Issue-tag items per day by who answered")}</div></div>`)}
 ${section("workflows", "Every job that uses Qwen", "Each job's own counts by day, with when its log starts. A job with no runs logged shows that, not a rate.",
   `<div class="cols grid">${Object.keys(WORKFLOW_NAMES).map((k) => workflowBlock(k, (data.workflows || {})[k])).join("")}</div>`)}
+${section("calls", "Calls by day", "How many calls each job made per day, and which model took them. Newest day first.", callsTable(data.calls_by_day))}
 ${section("fallbacks", "Fallback reasons", "Why Qwen's answer was thrown out and Claude did the item instead.", horizontal(data.fallback_reasons, "Fallbacks by reason", C.fell_back))}
 ${section("cost", "Cost per run", "Dollars per triage run over time, against the average before Qwen.", costChart())}
 ${section("latency", "Latency", "How long Qwen takes per item, next to Haiku.", latency())}

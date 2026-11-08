@@ -257,6 +257,37 @@ def series(share):
     return [{"day": d, **share[d]} for d in sorted(share)]
 
 
+MODEL_QWEN, MODEL_HAIKU = "qwen3-coder:30b", "claude-haiku-5-5"  # fixed names, never read from a row
+LEARN = os.environ.get("QWEN_LEARN", f"{STATE}/learn/qwen.jsonl").split(":")
+
+
+def triage_shadow():
+    """Per day: count of live qwen_pair rows (a second Haiku call made only to compare). Counts only."""
+    out = defaultdict(int)
+    for p in live_audits():
+        for r in rows(p):
+            if r.get("tool") == "qwen_pair": out[day(r.get("ts")) or day_of_run(p)] += 1
+    return out
+
+
+def calls_by_day(t_share, i_share, wf, shadow):
+    """One row per (day, job) that had calls. calls = items sent through the job (qwen + fallback + capped);
+    haiku_shadow is extra comparison calls on top. haiku_capped also holds items a fixed rule sent to Haiku
+    (needs-name / needs-del): both are Haiku on purpose, not a failure. Issue-tag pair rows carry no day, so its shadow is 0."""
+    jobs = {"triage": (series(t_share), shadow), "issue-tag": (series(i_share), {}),
+            "cron-triage": (wf["cron-triage"]["share_by_day"], {}), "declutter": (wf["declutter"]["share_by_day"], {}),
+            "session-reap": (wf["session-reap"]["share_by_day"], {}), "learn-store-pick": (wf_qwen_jsonl(LEARN)["share_by_day"], {})}
+    out = []
+    for job, (days, sh) in jobs.items():
+        for r in days:
+            q, fb, cap, shd = r["answered"], r["fell_back"], r["capped"] + r.get("policy", 0), sh.get(r["day"], 0)
+            if q + fb + cap + shd == 0: continue
+            out.append({"day": r["day"], "job": job, "calls": q + fb + cap, "qwen": q, "haiku_fallback": fb, "haiku_capped": cap,
+                        "haiku_shadow": shd, "model_qwen": MODEL_QWEN, "model_haiku": MODEL_HAIKU})
+    out.sort(key=lambda r: r["job"])
+    return sorted(out, key=lambda r: r["day"], reverse=True)  # newest day first, jobs A-Z within a day
+
+
 def build():
     t_share, reasons, labels, lat = triage()
     i_share, i_models = issue_tag()
@@ -279,6 +310,7 @@ def build():
         "as_of": os.environ.get("QWEN_AS_OF") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "share_by_day": {"triage": series(t_share), "issue-tag": series(i_share)},
         "workflows": wf,
+        "calls_by_day": calls_by_day(t_share, i_share, wf, triage_shadow()),
         "fallback_reasons": reasons,
         "cost_per_run": {
             "triage_by_day": [{"day": d, "runs": c[d]["runs"], "usd_per_run": round(c[d]["usd"] / c[d]["runs"], 4), "qwen_era": d in qdays} for d in sorted(c)],
