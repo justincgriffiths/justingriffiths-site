@@ -30,11 +30,11 @@ test("every page stylesheet reads tokens only: no hex outside src/tokens.css and
   assert.doesNotMatch(readFileSync(new URL("build-qwen.mjs", root), "utf8"), /#[0-9a-fA-F]{6}\b/);
 });
 const header = (html) => html.slice(html.indexOf('<header class="site-header"'), html.indexOf("</header>"));
-const EXPECTED = ["/", "/qwen/", "/fleet/", "/fleet/flows/", "/pedal-design/", "/marketing-101/", "/archive/"];
+const EXPECTED = ["/", "/qwen/", "/fleet/", "/fleet/game/", "/fleet/flows/", "/pedal-design/", "/marketing-101/", "/archive/"];
 
 test("the nav is Home, Lab (Qwen, Fleet, Flows), Pedal Design, Marketing 101, Archive", () => {
   assert.deepEqual(NAV.map((n) => n.label), ["Home", "Lab", "Pedal Design", "Marketing 101", "Archive"]);
-  assert.deepEqual(NAV[1].items.map((n) => n.label), ["Qwen", "Fleet", "Flows"]);
+  assert.deepEqual(NAV[1].items.map((n) => n.label), ["Qwen", "Fleet", "Game", "Flows"]);
 });
 
 for (const [file, current] of PAGES) {
