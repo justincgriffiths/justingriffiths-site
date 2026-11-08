@@ -151,11 +151,7 @@ const coverVisual = (v) => {
   const note = v.caption ? `<figcaption class="visual-note">${esc(v.caption)}</figcaption>` : "";
   return `
         <figure class="cover-visual${F(" fit")}">
-<<<<<<< ours
           <div class="visual-card"><div class="visual-art"><img src="${esc(v.src)}" alt="${esc(v.alt ?? "")}" loading="eager" decoding="async"></div></div>${note}
-=======
-          <div class="visual-card"><div class="visual-art">${art}</div></div>${note}
->>>>>>> theirs
         </figure>`;
 };
 
@@ -174,12 +170,7 @@ function renderPage(skin) {
             <h1 id="subject"${F(' class="t-display"')}>${esc(bio.name)}</h1>
             ${cover.lede ? `<p class="lede${F(" fit")}">${esc(get(cover.lede))}</p>` : ""}
             <div class="cover-actions${F(" cluster")}">
-<<<<<<< ours
               ${labId ? `<a class="cover-more" href="#${labId}">See what I am building${ICON.arrow}</a>` : ""}
-=======
-              ${bookButton("btn-lg")}${labId ? `
-              <a class="cover-more" href="#${labId}">See what I am building${ICON.arrow}</a>` : ""}
->>>>>>> theirs
             </div>
             ${cover.facts ? facts(cover.facts) : ""}
           </div>${cover.portrait ? "" : coverVisual(cover.visual)}

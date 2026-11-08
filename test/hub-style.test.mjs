@@ -41,12 +41,8 @@ test("site#49, #67: no empty cover column. Without a portrait or a visual the co
   const cover = html.slice(html.indexOf('<div class="cover-body'), html.indexOf('<nav class="index'));
   if (!bio.dossier.cover?.portrait) {
     assert.doesNotMatch(html, /class="exhibit[^"]*portrait/);
-<<<<<<< ours
     // no JG mark and no slot (site#67): the visual card renders only when bio.json sets dossier.cover.visual.src
     assert.equal(/class="cover-visual[ "]/.test(cover), Boolean(bio.dossier.cover?.visual?.src));
-=======
-    assert.match(cover, /class="cover-visual[ "]/); // the column is filled
->>>>>>> theirs
   }
   const css = read("src/style.css");
   // the portrait column is a dial change (--switcher-g1/g2) on .cover-body:has(.portrait), never on .cover-body itself

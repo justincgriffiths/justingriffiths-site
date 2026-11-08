@@ -3,11 +3,7 @@
    Reads only --site-* aliases and DS scale tokens; no hex, no font names.
    Layout follows pedal-performance.com: mobile-first, full-bleed bands with a 2px rule between them,
    a 1200px content column, 20px gutters on phones and 40px from 768px, steps at 768px and 1024px.
-<<<<<<< ours
    One box style: the paper card (hero visual, facts at 1024+). No buttons: actions are quiet text links (site#67). */
-=======
-   Two box styles: the paper card (hero visual, facts at 1024+) and the buttons. */
->>>>>>> theirs
 
 /* Overlines: the only all-caps, tiny and tracked */
 dt, .meta, .group, .tag, .placeholder span:first-child {
@@ -27,10 +23,6 @@ h1 {
 }
 .lede { --fit: 30ch; font-size: var(--text-h3); line-height: var(--leading-snug); letter-spacing: var(--tracking-snug); text-wrap: pretty; }
 .cover-actions { --cluster-gap: var(--space-4) var(--space-6); }
-<<<<<<< ours
-=======
-.btn-lg { padding: var(--space-4) var(--space-8); font-size: var(--text-body-lg); }
->>>>>>> theirs
 .cover-more {
   font-family: var(--site-font); display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap);
   font-weight: var(--weight-bold); color: var(--site-text); text-decoration: none;
