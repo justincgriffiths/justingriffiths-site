@@ -1,6 +1,7 @@
 // Serves the hub from static assets. /learn/... is the Blossom Tutoring course site, a separate
 // Worker (justincgriffiths/blossom-tutoring-lessons) reached over the BLOSSOM service binding.
 // /marketing-101/ is the Marketing 101 lesson page (build-marketing.mjs).
+// /pedal-design/ is the same hub in the Pedal Design System (build.mjs), public like /.
 // /fleet/... holds the visualization pages (live fleet state). Cloudflare Access gates them
 // (bin/access-login.sh); the Worker also checks the Access token itself and fails closed.
 // /archive/... is a static snapshot of the old research site (justingriffiths.info), unlinked and noindex.
@@ -81,6 +82,15 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     if (url.pathname === "/marketing-101/" || url.pathname === "/marketing-101/index.html") {
+      return env.ASSETS.fetch(request);
+    }
+
+    // /pedal-design/ is the hub in the Pedal Design System, served from dist/pedal-design/.
+    if (url.pathname === "/pedal-design") {
+      url.pathname = "/pedal-design/";
+      return Response.redirect(url.toString(), 301);
+    }
+    if (url.pathname === "/pedal-design/" || url.pathname === "/pedal-design/index.html" || url.pathname === "/pedal-design/style.css") {
       return env.ASSETS.fetch(request);
     }
 

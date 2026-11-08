@@ -233,3 +233,12 @@ h1 {
   .sheet { border: 0; box-shadow: none; max-width: none; }
   .skip { display: none; }
 }
+
+/* Shared nav: the Classic | Pedal switch and links to the other pages */
+.site-nav { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 1rem; max-width: 60rem; margin: 0 auto; padding: 0.6rem var(--gap); font: 500 0.8125rem/1.2 var(--mono); letter-spacing: 0.04em; background: var(--sheet); border-bottom: 1px solid var(--ink); }
+@media (min-width: 48rem) { .site-nav { margin-top: -2.5rem; border: 1px solid var(--rule); border-bottom-color: var(--ink); } body { padding-top: 2.5rem; } }
+.switch { display: inline-flex; border: 1px solid var(--ink); }
+.switch a, .site-links a { text-decoration: none; padding: 0.3rem 0.7rem; }
+.switch a[aria-current="page"] { background: var(--ink); color: var(--sheet); }
+.site-links { display: inline-flex; gap: 0.25rem; }
+.site-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
