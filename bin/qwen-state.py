@@ -29,6 +29,7 @@ CRON_RUNS = os.environ.get("QWEN_CRON_RUNS", f"{STATE}/cron-triage/runs.jsonl").
 DECLUTTER = os.environ.get("QWEN_DECLUTTER", f"{STATE}/declutter/qwen.jsonl").split(":")
 REAP = os.environ.get("QWEN_REAP", f"{STATE}/session-reap/qwen.jsonl").split(":")
 WRAP_DIR = os.environ.get("QWEN_WRAP_DIR", f"{STATE}/wrap")
+WRAP_ROW_LOG = os.environ.get("QWEN_WRAP_ROW_LOG", f"{WRAP_DIR}/wrap_row.log")
 PR_SWEEP = os.environ.get("QWEN_PR_SWEEP", f"{STATE}/pr-sweep/runs.jsonl").split(":")
 CLEANUP_LOGS = (os.environ.get("QWEN_SESSION_FINISH", f"{STATE}/session-finish/session-finish.log").split(":")
                 + os.environ.get("QWEN_DECLUTTER_SWEEP", f"{STATE}/declutter-sweep/sweep.log").split(":"))
@@ -325,22 +326,33 @@ def model_bucket(m):
 
 
 def hist_wrap():
-    """Wrap: one record per session in WRAP_DIR. The record has no timestamp, so the day is the file's modified day.
-    No model or cost is logged. Only the count and the day are read; the session id and the asks are never read."""
+    """Wrap: one line of wrap_row.log is one wrap (every line exit=0), so it is the count from its first day on. The per-session
+    JSON records stop on 2026-10-29 and carry no timestamp (day = file modified day); they count only for days before the log
+    begins, so nothing is counted twice. No model or cost is logged. Only counts and days are read, never the asks or ids."""
     out = defaultdict(lambda: {"runs": 0, "models": {NOT_LOGGED: 0}, "usd": None})
+    log = defaultdict(int)
+    try:
+        for line in open(WRAP_ROW_LOG).read().splitlines():
+            m = re.match(r"\[(\d{4}-\d{2}-\d{2})T", line)
+            if m: log[m[1]] += 1
+    except OSError: pass
+    first = min(log) if log else None
+    for dy, n in log.items(): out[dy]["runs"] += n; out[dy]["models"][NOT_LOGGED] += n
     for p in glob.glob(f"{WRAP_DIR}/*.json"):
         try: dy = datetime.fromtimestamp(os.path.getmtime(p), timezone.utc).strftime("%Y-%m-%d")
         except OSError: continue
+        if first and dy >= first: continue
         out[dy]["runs"] += 1; out[dy]["models"][NOT_LOGGED] += 1
     return out
 
 
 def hist_pr_sweep():
-    out = defaultdict(lambda: {"runs": 0, "models": defaultdict(int), "usd": 0.0})
+    out = defaultdict(lambda: {"runs": 0, "models": defaultdict(int), "usd": 0.0, "usd_models": defaultdict(float)})
     for r in rows(PR_SWEEP):
         dy = day(r.get("ts"))
         if not dy: continue
-        out[dy]["runs"] += 1; out[dy]["models"][model_bucket(r.get("model"))] += 1; out[dy]["usd"] += _num(r.get("cost_usd"))
+        mb = model_bucket(r.get("model"))
+        out[dy]["runs"] += 1; out[dy]["models"][mb] += 1; out[dy]["usd"] += _num(r.get("cost_usd")); out[dy]["usd_models"][mb] += _num(r.get("cost_usd"))
     return out
 
 
@@ -371,7 +383,8 @@ def history(now_day, qwen_first):
     out = []
     for key, by, marker in cmds:
         days = [{"day": d, "runs": v["runs"], "models": {k: n for k, n in v["models"].items() if n},
-                 "usd": None if v["usd"] is None else round(v["usd"], 4)} for d, v in sorted(by.items()) if v["runs"]]
+                 "usd": None if v["usd"] is None else round(v["usd"], 4),
+                 **({"usd_models": {k: round(x, 4) for k, x in v["usd_models"].items() if x}} if v.get("usd_models") else {})} for d, v in sorted(by.items()) if v["runs"]]
         logged = any(r["usd"] is not None for r in days)
         win = lambda lo, hi: [r for r in days if addd(now_day, lo) <= r["day"] <= addd(now_day, hi)]
         last, prior = win(-6, 0), win(-13, -7)

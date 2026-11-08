@@ -79,6 +79,8 @@ for (const [i, d] of [[1, "2026-11-01"], [2, "2026-11-01"], [3, "2026-11-03"]]) 
   writeFileSync(f, JSON.stringify({ session_id: "SENTINEL_WRAP_SESSION_ID", asks: [{ text: "SENTINEL_WRAP_ASK" }], claimed: "DONE" }));
   const t = new Date(`${d}T12:00:00Z`); utimesSync(f, t, t);
 }
+// wrap_row.log: one line per wrap, from 2026-11-03; the JSON record dated 11-03 must then not count (the log owns that day).
+writeFileSync(join(wrapDir, "wrap_row.log"), `[2026-11-03T08:00:00Z] argv=[] exit=0 SENTINEL_WRAP_ASK\n[2026-11-03T09:00:00Z] argv=[] exit=0\n[2026-11-05T09:00:00Z] argv=[] exit=0\n`.replace(/\\n/g, "\n"));
 const prFile = jl("prsweep.jsonl", [
   { ts: "2026-11-01T09:00:00Z", worked: 3, cost_usd: 1.5, rc: 0, stop_reason: "SENTINEL_PR_STOP", turns: 9, model: "sonnet", budget_usd: 6, repo: "SENTINEL_PR_REPO" },
   { ts: "2026-11-05T09:00:00Z", worked: 1, cost_usd: 0.25, rc: 0, stop_reason: "end_turn", turns: 4, model: "SENTINEL_MODEL_ROW" },
@@ -292,9 +294,10 @@ const hist = () => Object.fromEntries(JSON.parse(out).history.commands.map((c) =
 
 test("history: run counts match the sources, dollars sum, a day with no record is absent", () => {
   const h = hist();
-  assert.equal(h.wrap.runs, 3); assert.deepEqual(h.wrap.days.map((d) => [d.day, d.runs]), [["2026-11-01", 2], ["2026-11-03", 1]]);
+  assert.equal(h.wrap.runs, 5); assert.deepEqual(h.wrap.days.map((d) => [d.day, d.runs]), [["2026-11-01", 2], ["2026-11-03", 2], ["2026-11-05", 1]]);   // log from its first day, JSON before it
   assert.equal(h.wrap.usd, null); assert.deepEqual(h.wrap.days[0].models, { "not logged": 2 });
   assert.equal(h["pr-sweep"].runs, 3); assert.equal(h["pr-sweep"].usd, 2.25);
+  assert.deepEqual(h["pr-sweep"].days.map((d) => d.usd_models), [{ sonnet: 1.5 }, { other: 0.25 }, { opus: 0.5 }]);
   assert.deepEqual(h["pr-sweep"].days.map((d) => d.models), [{ sonnet: 1 }, { other: 1 }, { opus: 1 }]);   // an unknown model string is "other"
   assert.equal(h["session-cleanup"].runs, 3);                                                              // dry-run lines are not runs
   assert.deepEqual(h["session-cleanup"].days.find((d) => d.day === "2026-11-08").models, { script: 2 });
@@ -322,4 +325,11 @@ test("history charts: empty days drawn, one day is a number, no savings guess wi
   const one = { ...h, history: { through: "2026-11-08", commands: [{ ...h.history.commands[0], days: [h.history.commands[0].days[0]], runs: 2 }] } };
   const s1 = renderData(one); const sec1 = s1.slice(s1.indexOf('id="history"'), s1.indexOf('id="fallbacks"'));
   assert.match(sec1, /<span class="big">2<\/span> runs on 2026-11-01/); assert.doesNotMatch(sec1, /<rect/);
+});
+
+test("history charts: PR sweep bar height is dollars per day, other commands stay runs", async () => {
+  const { renderData } = await import("../src/qwen-render.mjs");
+  const page = renderData(JSON.parse(out)), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="fallbacks"'));
+  assert.match(sec, /PR sweeps dollars per day by model/); assert.match(sec, /bar height is dollars per day/);
+  assert.match(sec, /Wrap runs per day by model/); assert.match(sec, /2026-11-01 Sonnet: \$1\.50, 1 run/);
 });

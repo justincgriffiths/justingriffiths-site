@@ -172,26 +172,27 @@ function historyOne(c, last) {
     return `<div class="callsjob">${head}<p class="single"><span class="big">${r.runs}</span> ${r.runs === 1 ? "run" : "runs"} on ${esc(r.day)}</p>${note(`${mk}. First day logged, so there is no history to chart yet`)}</div>`;
   }
   const days = []; for (let d = first; d <= last; d = dayAdd(d, 1)) days.push(d);
-  const max = Math.max(1, ...c.days.map((r) => r.runs)), step = (W - P.l - P.r) / days.length, bw = Math.max(2, Math.min(28, step - 4)), ph = H - P.t - P.b, yv = (v) => (v / max) * ph;
-  const top = c.usd == null ? null : c.days.reduce((a, r) => ((r.usd || 0) > (a.usd || 0) ? r : a));
+  const money = c.days.every((r) => r.usd_models), val = (r, k) => (money ? r.usd_models[k] || 0 : r.models[k] || 0);
+  const max = money ? Math.max(0.01, ...c.days.map((r) => r.usd || 0)) : Math.max(1, ...c.days.map((r) => r.runs)), step = (W - P.l - P.r) / days.length, bw = Math.max(2, Math.min(28, step - 4)), ph = H - P.t - P.b, yv = (v) => (v / max) * ph;
+  const top = c.usd == null ? null : c.days.reduce((a, r) => ((r.usd || 0) > (a.usd || 0) ? r : a)), topv = (r) => (money ? r.usd : r.runs);
   const bars = days.map((d, i) => {
     const r = by[d], x = P.l + i * step + (step - bw) / 2; let y = H - P.b;
     if (!r) return `<rect x="${x}" y="${H - P.b - 1}" width="${bw}" height="1" class="gridline"><title>${esc(d)}: no runs</title></rect>`;
-    return keys.map((k) => { const n = r.models[k] || 0, h = yv(n); y -= h; return h ? `<rect x="${x}" y="${y}" width="${bw}" height="${h}" style="fill:${col(k)};stroke:var(--site-bg);stroke-width:1"><title>${esc(d)} ${esc(lab(k))}: ${n}${r.usd == null ? "" : `, ${usd(r.usd)}`}</title></rect>` : ""; }).join("");
+    return keys.map((k) => { const v = val(r, k), h = yv(v); y -= h; return h ? `<rect x="${x}" y="${y}" width="${bw}" height="${h}" style="fill:${col(k)};stroke:var(--site-bg);stroke-width:1"><title>${esc(d)} ${esc(lab(k))}: ${money ? usd(v) : v}${money ? `, ${runsOf(r.runs)}` : r.usd == null ? "" : `, ${usd(r.usd)}`}</title></rect>` : ""; }).join("");
   }).join("");
-  const peak = top && top.usd > 0 ? (() => { const i = days.indexOf(top.day), x = P.l + i * step + step / 2, anchor = i > days.length / 2 ? "end" : "start"; return `<text x="${x}" y="${H - P.b - yv(top.runs) - 4}" text-anchor="${anchor}">${usd(top.usd)}</text>`; })() : "";
+  const peak = top && top.usd > 0 ? (() => { const i = days.indexOf(top.day), x = P.l + i * step + step / 2, anchor = i > days.length / 2 ? "end" : "start"; return `<text x="${x}" y="${H - P.b - yv(topv(top)) - 4}" text-anchor="${anchor}">${usd(top.usd)}</text>`; })() : "";
   const mi = c.marker && c.marker.day ? days.indexOf(c.marker.day) : -1;
   const mark = mi >= 0 ? `<line x1="${P.l + mi * step + step / 2}" x2="${P.l + mi * step + step / 2}" y1="${P.t}" y2="${H - P.b}" class="trend" stroke-dasharray="4 3"/><text x="${P.l + mi * step + step / 2 + (mi > days.length / 2 ? -4 : 4)}" y="${P.t + 10}" text-anchor="${mi > days.length / 2 ? "end" : "start"}">${esc(c.marker.label)}</text>` : "";
   const idx = [...new Set([0, Math.floor((days.length - 1) / 2), days.length - 1])];
   const ticks = idx.map((i) => `<text x="${P.l + i * step + step / 2}" y="${H - 10}" text-anchor="${i === 0 ? "start" : i === days.length - 1 ? "end" : "middle"}">${esc(days[i].slice(5))}</text>`).join("");
-  const axis = [0, max].map((v) => { const y = H - P.b - yv(v); return `<line x1="${P.l}" x2="${W - P.r}" y1="${y}" y2="${y}" class="gridline"/><text x="${P.l - 6}" y="${y + 4}" text-anchor="end">${v}</text>`; }).join("");
-  return `<div class="callsjob">${head}${note(`${mk}${top && top.usd > 0 ? `; the label marks the costliest day, ${esc(top.day.slice(5))}` : ""}`)}${legend(keys.map((k) => [lab(k), col(k)]))}${svg(`${name} runs per day by model, ${days.length} days`, axis + bars + mark + peak + ticks)}</div>`;
+  const axis = [0, max].map((v) => { const y = H - P.b - yv(v); return `<line x1="${P.l}" x2="${W - P.r}" y1="${y}" y2="${y}" class="gridline"/><text x="${P.l - 6}" y="${y + 4}" text-anchor="end">${money ? (v === 0 ? "$0" : `$${v < 1 ? v.toFixed(2) : Math.round(v)}`) : v}</text>`; }).join("");
+  return `<div class="callsjob">${head}${note(`${mk}${top && top.usd > 0 ? `; the label marks the costliest day, ${esc(top.day.slice(5))}` : ""}${money ? "; bar height is dollars per day" : ""}`)}${legend(keys.map((k) => [lab(k), col(k)]))}${svg(`${name} ${money ? "dollars" : "runs"} per day by model, ${days.length} days`, axis + bars + mark + peak + ticks)}</div>`;
 }
 
 function historyCharts(h) {
   if (!h || !h.commands || !h.commands.some((c) => c.days.length)) return empty("No history logged yet.");
   return `<div class="cols grid">${h.commands.map((c) => historyOne(c, h.through)).join("")}</div>
-    <p class="note">Runs per day, from each command's first record; a day with no runs is an empty slot. Savings compares the last 7 days with the 7 before, from dollars the command's own log records. Where no cost is logged the page says so and does not estimate. Wrap's day is the day its record was written.</p>`;
+    <p class="note">Runs per day, from each command's first record; a day with no runs is an empty slot. Savings compares the last 7 days with the 7 before, from dollars the command's own log records. Where no cost is logged the page says so and does not estimate. Wrap is counted from its run log (one line per wrap, from 2026-10-12); the per-session records stop on 2026-10-29, so they count only the days before the log begins. Where the day is a file's modified day, that is the day the record was written. Bars show runs, except PR sweeps, where bar height is dollars per day and the runs are in the text.</p>`;
 }
 
 const section = (id, title, why, body) => `<section id="${id}"><h2>${esc(title)}</h2><p class="why">${esc(why)}</p>${body}</section>`;

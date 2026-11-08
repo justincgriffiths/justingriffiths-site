@@ -27,7 +27,7 @@
    "label": "Pre-production trial, 4 items"
   }
  },
- "as_of": "2026-11-08T18:43:25Z",
+ "as_of": "2026-11-08T18:47:16Z",
  "breakdowns": {
   "by_task_label": {
    "archive": 7,
@@ -564,17 +564,17 @@
      {
       "day": "2026-10-12",
       "models": {
-       "not logged": 8
+       "not logged": 6
       },
-      "runs": 8,
+      "runs": 6,
       "usd": null
      },
      {
       "day": "2026-10-13",
       "models": {
-       "not logged": 8
+       "not logged": 9
       },
-      "runs": 8,
+      "runs": 9,
       "usd": null
      },
      {
@@ -588,17 +588,17 @@
      {
       "day": "2026-10-15",
       "models": {
-       "not logged": 9
+       "not logged": 13
       },
-      "runs": 9,
+      "runs": 13,
       "usd": null
      },
      {
       "day": "2026-10-16",
       "models": {
-       "not logged": 3
+       "not logged": 4
       },
-      "runs": 3,
+      "runs": 4,
       "usd": null
      },
      {
@@ -612,25 +612,17 @@
      {
       "day": "2026-10-20",
       "models": {
-       "not logged": 7
+       "not logged": 8
       },
-      "runs": 7,
-      "usd": null
-     },
-     {
-      "day": "2026-10-21",
-      "models": {
-       "not logged": 1
-      },
-      "runs": 1,
+      "runs": 8,
       "usd": null
      },
      {
       "day": "2026-10-22",
       "models": {
-       "not logged": 2
+       "not logged": 4
       },
-      "runs": 2,
+      "runs": 4,
       "usd": null
      },
      {
@@ -644,9 +636,9 @@
      {
       "day": "2026-10-24",
       "models": {
-       "not logged": 7
+       "not logged": 9
       },
-      "runs": 7,
+      "runs": 9,
       "usd": null
      },
      {
@@ -668,28 +660,92 @@
      {
       "day": "2026-10-28",
       "models": {
+       "not logged": 13
+      },
+      "runs": 13,
+      "usd": null
+     },
+     {
+      "day": "2026-10-29",
+      "models": {
+       "not logged": 20
+      },
+      "runs": 20,
+      "usd": null
+     },
+     {
+      "day": "2026-10-30",
+      "models": {
+       "not logged": 8
+      },
+      "runs": 8,
+      "usd": null
+     },
+     {
+      "day": "2026-10-31",
+      "models": {
+       "not logged": 6
+      },
+      "runs": 6,
+      "usd": null
+     },
+     {
+      "day": "2026-11-03",
+      "models": {
+       "not logged": 6
+      },
+      "runs": 6,
+      "usd": null
+     },
+     {
+      "day": "2026-11-04",
+      "models": {
+       "not logged": 13
+      },
+      "runs": 13,
+      "usd": null
+     },
+     {
+      "day": "2026-11-05",
+      "models": {
        "not logged": 10
       },
       "runs": 10,
       "usd": null
      },
      {
-      "day": "2026-10-29",
+      "day": "2026-11-06",
       "models": {
-       "not logged": 13
+       "not logged": 21
       },
-      "runs": 13,
+      "runs": 21,
+      "usd": null
+     },
+     {
+      "day": "2026-11-07",
+      "models": {
+       "not logged": 5
+      },
+      "runs": 5,
+      "usd": null
+     },
+     {
+      "day": "2026-11-08",
+      "models": {
+       "not logged": 10
+      },
+      "runs": 10,
       "usd": null
      }
     ],
     "first_logged": "2026-09-29",
     "marker": null,
-    "runs": 152,
+    "runs": 249,
     "savings": {
      "cost_logged": false,
-     "last7_runs": 0,
+     "last7_runs": 65,
      "last7_usd": null,
-     "prior7_runs": 29,
+     "prior7_runs": 53,
      "prior7_usd": null
     },
     "usd": null
@@ -703,7 +759,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 1.9602
+      "usd": 1.9602,
+      "usd_models": {
+       "sonnet": 1.9602
+      }
      },
      {
       "day": "2026-09-23",
@@ -711,7 +770,8 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.0
+      "usd": 0.0,
+      "usd_models": {}
      },
      {
       "day": "2026-09-24",
@@ -719,7 +779,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.281
+      "usd": 0.281,
+      "usd_models": {
+       "sonnet": 0.281
+      }
      },
      {
       "day": "2026-09-25",
@@ -727,7 +790,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 4.9731
+      "usd": 4.9731,
+      "usd_models": {
+       "sonnet": 4.9731
+      }
      },
      {
       "day": "2026-09-26",
@@ -735,7 +801,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 5.232
+      "usd": 5.232,
+      "usd_models": {
+       "sonnet": 5.232
+      }
      },
      {
       "day": "2026-09-27",
@@ -743,7 +812,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 3.5243
+      "usd": 3.5243,
+      "usd_models": {
+       "sonnet": 3.5243
+      }
      },
      {
       "day": "2026-09-28",
@@ -751,7 +823,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.7239
+      "usd": 0.7239,
+      "usd_models": {
+       "sonnet": 0.7239
+      }
      },
      {
       "day": "2026-09-29",
@@ -759,7 +834,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 1.1938
+      "usd": 1.1938,
+      "usd_models": {
+       "sonnet": 1.1938
+      }
      },
      {
       "day": "2026-09-30",
@@ -767,7 +845,8 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.0
+      "usd": 0.0,
+      "usd_models": {}
      },
      {
       "day": "2026-10-01",
@@ -775,7 +854,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 1.2298
+      "usd": 1.2298,
+      "usd_models": {
+       "sonnet": 1.2298
+      }
      },
      {
       "day": "2026-10-05",
@@ -783,7 +865,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 1.4244
+      "usd": 1.4244,
+      "usd_models": {
+       "sonnet": 1.4244
+      }
      },
      {
       "day": "2026-10-08",
@@ -791,7 +876,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.5687
+      "usd": 0.5687,
+      "usd_models": {
+       "sonnet": 0.5687
+      }
      },
      {
       "day": "2026-10-16",
@@ -799,7 +887,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.5349
+      "usd": 0.5349,
+      "usd_models": {
+       "sonnet": 0.5349
+      }
      },
      {
       "day": "2026-10-25",
@@ -807,7 +898,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.7931
+      "usd": 0.7931,
+      "usd_models": {
+       "sonnet": 0.7931
+      }
      },
      {
       "day": "2026-10-27",
@@ -815,7 +909,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.47
+      "usd": 0.47,
+      "usd_models": {
+       "sonnet": 0.47
+      }
      },
      {
       "day": "2026-11-02",
@@ -823,7 +920,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.8012
+      "usd": 0.8012,
+      "usd_models": {
+       "sonnet": 0.8012
+      }
      },
      {
       "day": "2026-11-04",
@@ -831,7 +931,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.6022
+      "usd": 0.6022,
+      "usd_models": {
+       "sonnet": 0.6022
+      }
      },
      {
       "day": "2026-11-05",
@@ -839,7 +942,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.55
+      "usd": 0.55,
+      "usd_models": {
+       "sonnet": 0.55
+      }
      },
      {
       "day": "2026-11-06",
@@ -847,7 +953,10 @@
        "sonnet": 1
       },
       "runs": 1,
-      "usd": 0.9807
+      "usd": 0.9807,
+      "usd_models": {
+       "sonnet": 0.9807
+      }
      }
     ],
     "first_logged": "2026-09-22",
