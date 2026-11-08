@@ -217,16 +217,33 @@ test("a missing learn source adds no learn rows", () => {
   assert.ok(d.calls_by_day.length && !d.calls_by_day.some((r) => r.job === "learn-store-pick"));
 });
 
-test("the page shows a Calls by day table: totals row per day, plain-words legend, no zero rows", async () => {
+const row = (day, job, q, fb, cap, shd) => ({ day, job, calls: q + fb + cap, qwen: q, haiku_fallback: fb, haiku_capped: cap, haiku_shadow: shd, model_qwen: "qwen3-coder:30b", model_haiku: "claude-haiku-5-5" });
+const callsSec = async (rows) => {
   const { renderData } = await import("../src/qwen-render.mjs");
   const base = JSON.parse(readFileSync("content/qwen/data.json", "utf8"));
-  const html = renderData({ ...base, calls_by_day: JSON.parse(out).calls_by_day });
-  const sec = html.slice(html.indexOf('id="calls"'), html.indexOf('id="fallbacks"'));
-  assert.match(sec, /<th class="wide">Day<\/th><th>Job<\/th><th>Calls<\/th><th>Qwen<\/th><th class="wide">Haiku \(fallback\)<\/th><th class="wide">Haiku \(cap\)<\/th><th class="wide">Haiku \(shadow\)<\/th><th class="narrow">Haiku<\/th>/);
-  assert.match(sec, /<tr class="total"><td class="wide">2026-11-08<\/td><th scope="row">All jobs<\/th><td>15<\/td><td>6<\/td><td class="wide">9<\/td><td class="wide">0<\/td><td class="wide">0<\/td><td class="narrow">9 \(9 fb · 0 cap · 0 shadow\)<\/td>/);
-  assert.match(sec, /<tr class="dayhead narrow"><th colspan="5" scope="colgroup">2026-11-08<\/th>/);   // phone: Day moves to a heading row
-  assert.match(sec, /Haiku \(cap\): the ramp held this item back from Qwen on purpose/);
-  assert.equal((sec.match(/class="total"/g) || []).length, 3);                  // 11-09, 11-08, 11-07
+  const html = renderData({ ...base, calls_by_day: rows });
+  return html.slice(html.indexOf('id="calls"'), html.indexOf('id="fallbacks"'));
+};
+
+test("calls by day: no table; a job with one day of data is a single datapoint, not a bar", async () => {
+  const sec = await callsSec([row("2026-11-08", "cron-triage", 48, 11, 0, 0)]);
+  assert.doesNotMatch(sec, /<table|<details/);
+  assert.match(sec, /<span class="big">59<\/span> calls on 2026-11-08/);
+  assert.match(sec, /48 Qwen · 11 Haiku fallback · 0 Haiku cap/);
+  assert.doesNotMatch(sec, /<svg|<rect/);
+});
+
+test("calls by day: 2+ days draw one bar per day, empty days included, Haiku shadow a ring outside the stack", async () => {
+  const sec = await callsSec([row("2026-11-05", "triage", 2, 1, 0, 3), row("2026-11-08", "triage", 11, 1, 1, 11), row("2026-11-07", "declutter", 2, 0, 2, 0)]);
+  const triage = sec.slice(sec.indexOf("Inbox triage"), sec.indexOf("Declutter"));
+  assert.equal((triage.match(/<title>2026-1\d-\d\d(?: [^<]*)?<\/title>/g) || []).length >= 4, true);  // 11-05..11-08 = 4 days
+  assert.match(triage, /2026-11-06: no calls/);                                  // gap day drawn empty, not skipped
+  assert.match(triage, /2026-11-07: no calls/);
+  assert.equal((triage.match(/<circle /g) || []).length, 2);                    // one ring per day with shadow calls
+  assert.match(triage, /<text[^>]*>11-05<\/text>/);
+  assert.equal((triage.match(/<text[^>]*text-anchor="(?:start|middle|end)">\d\d-\d\d<\/text>/g) || []).length <= 3, true);   // few ticks for a phone
+  assert.match(sec, /<span class="big">4<\/span> calls on 2026-11-07/);           // declutter: one day only -> datapoint beside triage's chart
   assert.doesNotMatch(sec, /NaN|undefined/);
-  assert.doesNotMatch(renderData(base), /NaN|undefined/);                       // the older snapshot without calls_by_day still renders
+  const { renderData } = await import("../src/qwen-render.mjs");
+  assert.doesNotMatch(renderData(JSON.parse(readFileSync("content/qwen/data.json", "utf8"))), /NaN|undefined/);
 });

@@ -94,24 +94,50 @@ export function renderFresh(d) {
 }
 
 const JOB_NAMES = { triage: "Inbox triage", "issue-tag": "Issue labels", "cron-triage": "Cron triage", declutter: "Declutter", "session-reap": "Session reap", "learn-store-pick": "Learn store-pick" };
-// Calls by day (site#88): one row per (day, job) that had calls, newest day first, plus a totals row per day. A job with no
-// runs that day has no row. Counts only; the model names are fixed strings from the exporter.
-function callsTable(rows) {
-  if (!rows || !rows.length) return empty("No calls logged yet.");
-  const days = [...new Set(rows.map((r) => r.day))];
-  // Two layouts in one table, switched by CSS at 480px (page.css): wide shows Day and the three Haiku columns; phone drops
-  // Day under a per-day heading row and folds the three Haiku columns into one "12 (11 fb · 1 cap · 11 shadow)" cell.
-  const cells = (r) => `<td>${r.calls}</td><td>${r.qwen}</td><td class="wide">${r.haiku_fallback}</td><td class="wide">${r.haiku_capped}</td><td class="wide">${r.haiku_shadow}</td><td class="narrow">${r.haiku_fallback + r.haiku_capped} (${r.haiku_fallback} fb · ${r.haiku_capped} cap · ${r.haiku_shadow} shadow)</td>`;
-  const sum = (rs) => Object.fromEntries(["calls", "qwen", "haiku_fallback", "haiku_capped", "haiku_shadow"].map((k) => [k, rs.reduce((s, r) => s + r[k], 0)]));
-  const body = days.map((d) => {
-    const rs = rows.filter((r) => r.day === d);
-    return `<tr class="dayhead narrow"><th colspan="5" scope="colgroup">${esc(d)}</th></tr>`
-      + rs.map((r) => `<tr><td class="wide">${esc(r.day)}</td><th scope="row">${esc(JOB_NAMES[r.job] || r.job)}</th>${cells(r)}</tr>`).join("")
-      + `<tr class="total"><td class="wide">${esc(d)}</td><th scope="row">All jobs</th>${cells(sum(rs))}</tr>`;
+// Calls by day (site#88): one history chart per job. Every day from the job's first logged day to the newest day in the data
+// gets a bar, a day with no calls as an empty slot (zero height), never skipped. Stacked by model: Qwen, Haiku fallback,
+// Haiku cap. Haiku shadow is a hollow ring on the same axis, not part of the stack (it is on top of Calls). A job logged on
+// one day only is a single datapoint (big number and a model split), never a lone bar.
+const dayAdd = (d, n) => new Date(Date.parse(d + "T00:00:00Z") + n * 864e5).toISOString().slice(0, 10);
+const CALL_KEYS = [["qwen", "Qwen", C.qwen], ["haiku_fallback", "Haiku fallback", C.fell_back], ["haiku_capped", "Haiku cap", C.capped]];
+const callsLegend = (items) => `<p class="legend cluster">${items.map(([k, c, ring]) => `<span><i style="${ring ? `border:2px solid ${c}` : `background:${c}`}"></i>${esc(k)}</span>`).join("")}</p>`;
+
+function callsOne(name, rs, last) {
+  const by = Object.fromEntries(rs.map((r) => [r.day, r])), first = rs.map((r) => r.day).sort()[0];
+  const total = rs.reduce((s, r) => s + r.calls, 0), sh = rs.reduce((s, r) => s + r.haiku_shadow, 0);
+  const sum = (k) => rs.reduce((s, r) => s + r[k], 0);
+  if (rs.length === 1) {
+    const r = rs[0];
+    return `<div class="callsjob"><h3>${esc(name)}</h3><p class="single"><span class="big">${r.calls}</span> ${r.calls === 1 ? "call" : "calls"} on ${esc(r.day)}</p>
+      <p class="note">${r.qwen} Qwen · ${r.haiku_fallback} Haiku fallback · ${r.haiku_capped} Haiku cap${r.haiku_shadow ? ` · ${r.haiku_shadow} Haiku shadow (on top)` : ""}. First day logged, so there is no history to chart yet.</p></div>`;
+  }
+  const days = []; for (let d = first; d <= last; d = dayAdd(d, 1)) days.push(d);
+  const max = Math.max(1, ...days.map((d) => Math.max(by[d] ? by[d].calls : 0, by[d] ? by[d].haiku_shadow : 0)));
+  const step = (W - P.l - P.r) / days.length, bw = Math.max(2, Math.min(28, step - 4)), ph = H - P.t - P.b, yv = (v) => (v / max) * ph;
+  const bars = days.map((d, i) => {
+    const r = by[d], x = P.l + i * step + (step - bw) / 2; let y = H - P.b;
+    if (!r) return `<rect x="${x}" y="${H - P.b - 1}" width="${bw}" height="1" class="gridline"><title>${esc(d)}: no calls</title></rect>`;
+    const segs = CALL_KEYS.map(([k, lab, c]) => { const h = yv(r[k]); y -= h; return h ? `<rect x="${x}" y="${y}" width="${bw}" height="${h}" style="fill:${c};stroke:var(--site-bg);stroke-width:1"><title>${esc(d)} ${lab}: ${r[k]}</title></rect>` : ""; }).join("");
+    const ring = r.haiku_shadow ? `<circle cx="${x + bw / 2}" cy="${H - P.b - yv(r.haiku_shadow)}" r="5" fill="none" style="stroke:${C.haiku}" stroke-width="2"><title>${esc(d)} Haiku shadow: ${r.haiku_shadow}</title></circle>` : "";
+    return segs + ring;
   }).join("");
+  // At most 3 date labels (first, middle, last) so they stay legible at 390px.
+  const idx = [...new Set([0, Math.floor((days.length - 1) / 2), days.length - 1])];
+  const ticks = idx.map((i) => `<text x="${P.l + i * step + step / 2}" y="${H - 10}" text-anchor="${i === 0 ? "start" : i === days.length - 1 ? "end" : "middle"}">${esc(days[i].slice(5))}</text>`).join("");
+  const axis = [0, max].map((v) => { const y = H - P.b - yv(v); return `<line x1="${P.l}" x2="${W - P.r}" y1="${y}" y2="${y}" class="gridline"/><text x="${P.l - 6}" y="${y + 4}" text-anchor="end">${v}</text>`; }).join("");
+  const parts = [`first logged ${esc(first)}`, `${total} calls`, `${sum("qwen")} Qwen`, `${sum("haiku_fallback")} Haiku fallback`, `${sum("haiku_capped")} Haiku cap`];
+  if (sh) parts.push(`${sh} Haiku shadow (on top)`);
+  return `<div class="callsjob"><h3>${esc(name)}</h3><p class="note">${parts.join(" · ")}.</p>${svg(`${name} calls per day by model, ${days.length} days`, axis + bars + ticks)}</div>`;
+}
+
+function callsCharts(rows) {
+  if (!rows || !rows.length) return empty("No calls logged yet.");
+  const last = rows.map((r) => r.day).sort().pop();
+  const jobs = Object.keys(JOB_NAMES).filter((j) => rows.some((r) => r.job === j)).concat([...new Set(rows.map((r) => r.job))].filter((j) => !JOB_NAMES[j]));
   const mq = rows[0].model_qwen, mh = rows[0].model_haiku;
-  return `<details class="calls" open><summary>Calls by day</summary><div class="table-scroll"><table><thead><tr><th class="wide">Day</th><th>Job</th><th>Calls</th><th>Qwen</th><th class="wide">Haiku (fallback)</th><th class="wide">Haiku (cap)</th><th class="wide">Haiku (shadow)</th><th class="narrow">Haiku</th></tr></thead><tbody>${body}</tbody></table></div>
-    <p class="note">Calls is items sent through the job. Qwen: answered by ${esc(mq)} on the local machine. Haiku (fallback, fb): Qwen failed or its answer was thrown out, so ${esc(mh)} did the item. Haiku (cap): the ramp held this item back from Qwen on purpose, or a fixed rule sends it to Haiku. Haiku (shadow): a second Haiku call made only to compare with Qwen's answer, counted on top of Calls. On a phone the three Haiku columns share one cell: fallback plus cap, then each part.</p></details>`;
+  return callsLegend([["Qwen", C.qwen], ["Haiku fallback", C.fell_back], ["Haiku cap", C.capped], ["Haiku shadow", C.haiku, true]])
+    + `<div class="cols grid">${jobs.map((j) => callsOne(JOB_NAMES[j] || j, rows.filter((r) => r.job === j), last)).join("")}</div>
+    <p class="note">One bar per day, from each job's first logged day; a day with no calls is an empty slot. Calls is items sent through the job. Qwen: answered by ${esc(mq)} on the local machine. Haiku fallback: Qwen failed or its answer was thrown out, so ${esc(mh)} did the item. Haiku cap: the ramp held this item back from Qwen on purpose, or a fixed rule sends it to Haiku. Haiku shadow (ring): a second Haiku call made only to compare with Qwen's answer, counted on top of Calls.</p>`;
 }
 
 const section = (id, title, why, body) => `<section id="${id}"><h2>${esc(title)}</h2><p class="why">${esc(why)}</p>${body}</section>`;
@@ -123,7 +149,7 @@ export function renderData(d) {
   `<div class="cols grid"><div><h3>Inbox triage</h3>${stacked(data.share_by_day.triage, "Triage items per day by who answered")}</div><div><h3>Issue labels</h3>${stacked(data.share_by_day["issue-tag"], "Issue-tag items per day by who answered")}</div></div>`)}
 ${section("workflows", "Every job that uses Qwen", "Each job's own counts by day, with when its log starts. A job with no runs logged shows that, not a rate.",
   `<div class="cols grid">${Object.keys(WORKFLOW_NAMES).map((k) => workflowBlock(k, (data.workflows || {})[k])).join("")}</div>`)}
-${section("calls", "Calls by day", "How many calls each job made per day, and which model took them. Newest day first.", callsTable(data.calls_by_day))}
+${section("calls", "Calls by day", "How many calls each job made per day since it started, and which model took them.", callsCharts(data.calls_by_day))}
 ${section("fallbacks", "Fallback reasons", "Why Qwen's answer was thrown out and Claude did the item instead.", horizontal(data.fallback_reasons, "Fallbacks by reason", C.fell_back))}
 ${section("cost", "Cost per run", "Dollars per triage run over time, against the average before Qwen.", costChart())}
 ${section("latency", "Latency", "How long Qwen takes per item, next to Haiku.", latency())}

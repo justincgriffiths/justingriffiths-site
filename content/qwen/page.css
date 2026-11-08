@@ -42,17 +42,6 @@
 .qwen .disclosure-body > section:first-child { border-top: 0; padding-top: var(--space-2); }
 .learn-more { border-top: var(--border-width) solid var(--site-line); margin-top: 0; padding-top: var(--space-4); }
 .qwen .disclosure ul.why { padding-inline-start: 1.25em; }
-.qwen details.calls summary { cursor: pointer; font-weight: 600; margin-top: var(--space-3); }
-.qwen details.calls th, .qwen details.calls td { padding: var(--space-2); }
-.qwen details.calls tr.total > * { font-weight: 600; background: var(--site-hairline); }
-.qwen details.calls .table-scroll { container: calls / inline-size; }
-.qwen details.calls .narrow { display: none; }
-/* Narrow (a container query, not a breakpoint: frame-lint) (site#88 send-back): every model column must be visible without a sideways scroll. Day moves to a heading row, the
-   three Haiku columns fold into one cell. Wide screens keep the seven columns. */
-@container calls (max-width: 30rem) {
-  .qwen details.calls .wide { display: none; }
-  .qwen details.calls .narrow { display: table-cell; }
-  .qwen details.calls tr.dayhead.narrow { display: table-row; }
-  .qwen details.calls tr.dayhead th { padding-top: var(--space-3); color: var(--site-text-soft); }
-  .qwen details.calls th, .qwen details.calls td { padding: var(--space-2) var(--space-1); overflow-wrap: normal; }
-}
+/* Calls by day (site#88 rework): per-job history charts. A one-day job is a single datapoint, a big number. */
+.qwen .callsjob .single { font-family: var(--site-font); margin: var(--space-2) 0 var(--space-1); color: var(--site-text); }
+.qwen .callsjob .big { font-size: var(--text-h2, 2.5rem); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
