@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!-- Refreshes /qwen/ at 08:10 and 14:10 ET, ten minutes after the 07:00 and 13:00 CoS sweeps (Air local time is ET).
+<!-- Refreshes /qwen/ every two hours, 08:10 to 22:10 ET (Air local time is ET); site#60 raised it from twice a day.
+     data.json carries an "as_of" stamp, so every run deploys and the page's "Data as of" line moves.
      hbrun.sh appends the heartbeat. Ships UNLOADED: nothing runs until ◆MYCROFT_COS copies it to
      ~/Library/LaunchAgents and bootstraps it after the PR merges (README, Qwen refresh). The job is the only
      thing that runs `wrangler deploy`. -->
@@ -20,7 +21,13 @@
   <key>StartCalendarInterval</key>
   <array>
     <dict><key>Hour</key><integer>8</integer><key>Minute</key><integer>10</integer></dict>
+    <dict><key>Hour</key><integer>10</integer><key>Minute</key><integer>10</integer></dict>
+    <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>10</integer></dict>
     <dict><key>Hour</key><integer>14</integer><key>Minute</key><integer>10</integer></dict>
+    <dict><key>Hour</key><integer>16</integer><key>Minute</key><integer>10</integer></dict>
+    <dict><key>Hour</key><integer>18</integer><key>Minute</key><integer>10</integer></dict>
+    <dict><key>Hour</key><integer>20</integer><key>Minute</key><integer>10</integer></dict>
+    <dict><key>Hour</key><integer>22</integer><key>Minute</key><integer>10</integer></dict>
   </array>
   <key>RunAtLoad</key><false/>
   <key>StandardErrorPath</key><string>/Users/justin/projects/justincgriffiths/justingriffiths-site/bin/qwen-refresh.launchd.log</string>

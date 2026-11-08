@@ -38,7 +38,7 @@ export { ICON };
 // Fonts, the shared stylesheet, and the class that tells the CSS the menu script will run.
 export const chromeHead = () => `<link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/site.css">
     <meta name="color-scheme" content="dark">
     <script>document.documentElement.classList.add("js")</script>`;

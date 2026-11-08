@@ -1,4 +1,5 @@
-/* Marketing 101 — Pedal Design System, night lane (site#51). Loaded after /site.css
+/* Marketing 101 — Pedal Design System, night lane (site#51); the source theme for the whole site (site#60).
+   Corners and faces read the --site-radius-* and --site-prose-font aliases in src/tokens.css. Loaded after /site.css
    (src/tokens.css + src/chrome.css), so every value here is a DS token; no :root of its own.
    Night lane rules (readme): paper text and borders on the ground, shadows into night-900,
    muted text night-200, and a BOX stays light: paper fill, night ink, hard offset shadow. */
@@ -6,7 +7,7 @@
 html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 64px); }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body {
-  margin: 0; font-family: var(--font-sans); font-size: var(--text-body); line-height: var(--leading-relaxed);
+  margin: 0; font-family: var(--site-prose-font); font-size: var(--text-body); line-height: var(--leading-relaxed);
   color: var(--text-on-night); background-color: var(--surface-night);
   background-image: linear-gradient(var(--night-grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--night-grid-line) 1px, transparent 1px);
   background-size: 64px 64px;
@@ -32,7 +33,7 @@ blockquote { margin: 24px 0; padding: 16px 0 0; border-top: 2px solid var(--acce
 .hero > p:first-of-type + h1 + p { color: var(--text-muted-on-night); }
 
 /* The one box style: paper fill, night ink, hard offset into the void. */
-.box { background: var(--paper); color: var(--text-primary); border: 3px solid var(--night-900); border-radius: var(--radius-sticker-md); box-shadow: var(--shadow-hard-night-lg); margin: 24px 0 32px; }
+.box { background: var(--paper); color: var(--text-primary); border: var(--site-card-border); border-radius: var(--site-radius-box); box-shadow: var(--shadow-hard-night-lg); margin: 24px 0 32px; }
 .box a { color: var(--text-link); }
 .dia { padding: 8px; overflow-x: auto; }
 .dia svg { display: block; width: 100%; min-width: 640px; height: auto; font-family: var(--font-sans);
@@ -46,7 +47,7 @@ blockquote { margin: 24px 0; padding: 16px 0 0; border-top: 2px solid var(--acce
 table { border-collapse: collapse; width: 100%; min-width: 560px; }
 th, td { text-align: left; vertical-align: top; padding: 12px 16px; border-bottom: 1px solid var(--line-soft); }
 thead th { background: var(--night-800); color: var(--paper); font-size: var(--text-caption); font-weight: 700; letter-spacing: var(--tracking-wide); text-transform: uppercase; border-bottom: 0; }
-thead th:first-child { border-top-left-radius: 10px; } thead th:last-child { border-top-right-radius: 10px; }
+thead th:first-child { border-top-left-radius: var(--site-radius-inner); } thead th:last-child { border-top-right-radius: var(--site-radius-inner); }
 tbody tr:last-child > * { border-bottom: 0; }
 tbody th { font-weight: 700; white-space: nowrap; }
 td.n { white-space: nowrap; }
@@ -54,15 +55,15 @@ td:empty::after { content: ""; display: block; min-height: 24px; border-bottom: 
 
 ul.tasks { list-style: none; padding: 0; }
 ul.tasks li { margin-bottom: 8px; padding-left: 28px; text-indent: -28px; }
-.tick { display: inline-block; vertical-align: -2px; margin-right: 12px; text-indent: 0; width: 16px; height: 16px; border: 2px solid var(--border-on-night); border-radius: 4px; }
+.tick { display: inline-block; vertical-align: -2px; margin-right: 12px; text-indent: 0; width: 16px; height: 16px; border: 2px solid var(--border-on-night); border-radius: var(--site-radius-tick); }
 
 ul.watch { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; max-width: none; }
-ul.watch a { display: inline-block; font-weight: 700; color: var(--night-800); background: var(--teal-500); text-decoration: none; border: 2px solid var(--teal-500); border-radius: var(--radius-pill); padding: 8px 18px; box-shadow: var(--shadow-hard-night); transition: transform var(--dur-fast), box-shadow var(--dur-fast); }
+ul.watch a { display: inline-block; font-weight: 700; color: var(--night-800); background: var(--teal-500); text-decoration: none; border: 2px solid var(--teal-500); border-radius: var(--site-radius-control); padding: 8px 18px; box-shadow: var(--shadow-hard-night); transition: transform var(--dur-fast), box-shadow var(--dur-fast); }
 ul.watch a::before { content: ""; display: inline-block; width: 9px; height: 10px; margin-right: 10px; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
 ul.watch a:hover { background: var(--teal-400); color: var(--night-800); }
 ul.watch a:active { transform: translate(2px, 2px); box-shadow: none; }
 details.answer { margin: 8px 0 24px; max-width: 68ch; }
-details.answer summary { display: inline-block; cursor: pointer; list-style: none; font-weight: 700; color: var(--paper); border: 2px solid var(--border-on-night); border-radius: var(--radius-pill); padding: 8px 20px; box-shadow: var(--shadow-hard-night); transition: transform var(--dur-fast), box-shadow var(--dur-fast); }
+details.answer summary { display: inline-block; cursor: pointer; list-style: none; font-weight: 700; color: var(--paper); border: 2px solid var(--border-on-night); border-radius: var(--site-radius-control); padding: 8px 20px; box-shadow: var(--shadow-hard-night); transition: transform var(--dur-fast), box-shadow var(--dur-fast); }
 details.answer summary::-webkit-details-marker { display: none; }
 details.answer summary:active { transform: translate(2px, 2px); box-shadow: none; }
 details.answer[open] summary { background: var(--teal-500); color: var(--night-800); border-color: var(--teal-500); }
@@ -70,8 +71,8 @@ details.answer p { margin-top: 16px; }
 
 nav.sessions { position: sticky; top: var(--header-h); z-index: 5; background: var(--night-900); border-bottom: 2px solid var(--night-600); }
 nav.sessions .wrap { display: flex; gap: 8px; overflow-x: auto; padding-top: 12px; padding-bottom: 12px; scrollbar-width: none; }
-nav.sessions a { flex: none; display: inline-flex; gap: 8px; align-items: center; font-size: var(--text-caption); font-weight: 700; color: var(--paper); text-decoration: none; border: 2px solid var(--border-on-night); border-radius: var(--radius-pill); padding: 4px 14px 4px 6px; }
-nav.sessions a span { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--teal-500); color: var(--night-800); }
+nav.sessions a { flex: none; display: inline-flex; gap: 8px; align-items: center; font-size: var(--text-caption); font-weight: 700; color: var(--paper); text-decoration: none; border: 2px solid var(--border-on-night); border-radius: var(--site-radius-control); padding: 4px 14px 4px 6px; }
+nav.sessions a span { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: var(--site-radius-inner); background: var(--teal-500); color: var(--night-800); }
 nav.sessions a:hover { background: var(--night-700); }
 
 .session:last-child { margin-bottom: 72px; }
@@ -82,3 +83,5 @@ nav.sessions a:hover { background: var(--night-700); }
   h3, .big, blockquote { font-size: var(--text-h4); }
   .hero { padding-top: 48px; } .session { padding-top: 64px; margin-top: 48px; }
 }
+/* Controls and labels in sans; the running sentences stay serif (site#60) */
+ul.watch a, .next, td.n { font-family: var(--site-font); }

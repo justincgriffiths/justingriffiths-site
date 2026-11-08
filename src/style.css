@@ -35,7 +35,7 @@ h1 {
 .cover-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-6); }
 .btn-lg { padding: var(--space-4) var(--space-8); font-size: var(--text-body-lg); }
 .cover-more {
-  display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap);
+  font-family: var(--site-font); display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap);
   font-weight: var(--weight-bold); color: var(--site-text); text-decoration: none;
 }
 .cover-more:hover { color: var(--site-link); }
@@ -56,10 +56,10 @@ h1 {
    DS "box stays light on night"); the art sits on a teal wash inside it. */
 .cover-visual { display: grid; gap: var(--space-3); align-content: start; max-width: 32rem; }
 .visual-card {
-  background: var(--site-box); border: var(--site-box-border); border-radius: var(--radius-sticker-md);
+  background: var(--site-box); border: var(--site-card-border); border-radius: var(--site-radius-box);
   box-shadow: var(--site-shadow-lg); padding: var(--space-3);
 }
-.visual-art { aspect-ratio: 4 / 3; color: var(--site-box-text); background: var(--site-art); border-radius: var(--radius-sticker-sm); overflow: hidden; display: grid; place-items: center; }
+.visual-art { aspect-ratio: 4 / 3; color: var(--site-box-text); background: var(--site-art); border-radius: var(--site-radius-inner); overflow: hidden; display: grid; place-items: center; }
 .visual-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .mark { display: block; width: 100%; height: 100%; }
 .mark-dot { fill: var(--site-box-line); }
@@ -78,17 +78,18 @@ h1 {
 }
 .portrait { max-width: 14rem; }
 
-/* Index: in-page anchors, as secondary buttons that press onto their shadow */
+/* Index: in-page anchors, as the /marketing-101/ outline chips: paper rule on the ground, offset into the
+   void, pressing onto the shadow; teal on hover, as a chip that is "on" (site#60) */
 .index { padding-block: 0 var(--space-12); }
 .index h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .index ol { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-3); }
 .index a {
   display: inline-flex; align-items: center; min-height: var(--tap); padding-inline: var(--space-5);
-  color: var(--site-box-text); text-decoration: none; font-weight: var(--weight-bold);
-  background: var(--site-box); border: var(--site-box-border); border-radius: var(--radius-sm); box-shadow: var(--site-shadow-sm);
+  font-family: var(--site-font); color: var(--site-text); text-decoration: none; font-weight: var(--weight-bold);
+  background: transparent; border: var(--border-width) solid var(--site-line); border-radius: var(--site-radius-control); box-shadow: var(--site-shadow);
   transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
 }
-.index a:hover { background: var(--site-box-alt); color: var(--site-box-text); }
+.index a:hover { background: var(--site-accent); border-color: var(--site-accent); color: var(--site-accent-ink); }
 .index a:active { transform: translate(2px, 2px); box-shadow: none; }
 .index .num, .section-title .num { display: none; } /* the order carries no information the titles do not */
 
@@ -123,7 +124,7 @@ h1 {
 .logos img { display: block; height: var(--space-10); width: auto; }
 .exhibits { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(10rem, 100%), 1fr)); }
 .exhibits:has(.exhibit-video, .exhibit-embed, .exhibit-audio) { grid-template-columns: 1fr; }
-.exhibit .frame { aspect-ratio: var(--aspect, 4 / 5); background: var(--site-box-alt); border: var(--site-box-border); border-radius: var(--radius-md); overflow: hidden; }
+.exhibit .frame { aspect-ratio: var(--aspect, 4 / 5); background: var(--site-box-alt); border: var(--site-box-border); border-radius: var(--site-radius-box); overflow: hidden; }
 .exhibit-audio .frame { aspect-ratio: auto; padding: var(--space-3); }
 .exhibit-video, .exhibit-embed { --aspect: 16 / 9; }
 .exhibit img, .exhibit video, .exhibit iframe { display: block; width: 100%; height: 100%; object-fit: cover; border: 0; }

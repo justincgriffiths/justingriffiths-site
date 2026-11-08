@@ -128,4 +128,4 @@ Per-client built / verified / live / first-hour delivery / issues, from `~/.loca
 - **Build**: `bin/site-build.sh` in the snapshot (npm build, then `/fleet/` landing, bike-factory, seats, battle-school); any failed step or missing fleet page exits 1, nothing deployed. Every deploy path uses this one build.
 - **Deploy**: `npx wrangler deploy` from the snapshot, only on a clean change; the hash is recorded after success.
 
-`bin/qwen-refresh.sh --no-deploy` runs both gates and the build, prints the snapshot's `dist/fleet/` pages, and stops before the deploy. `bin/com.justin.qwen-refresh.plist` (08:10 and 14:10 ET, via `hbrun.sh`) ships unloaded; load it only after merge. Log: `bin/qwen-refresh.log`.
+`bin/qwen-refresh.sh --no-deploy` runs both gates and the build, prints the snapshot's `dist/fleet/` pages, and stops before the deploy. `bin/com.justin.qwen-refresh.plist` (every two hours, 08:10–22:10 ET, via `hbrun.sh`; each run stamps `as_of`, so each run deploys) ships unloaded; load it only after merge. Log: `bin/qwen-refresh.log`.

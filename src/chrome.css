@@ -19,6 +19,10 @@ body {
   background-size: var(--site-grid-size) var(--site-grid-size);
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
+/* Serif for sentences, sans for titles (site#60). /pedal-design/ keeps the DS: sans throughout. */
+body:not(.skin-pedal) { font-family: var(--site-prose-font); font-optical-sizing: auto; }
+h1, h2, h3, h4, h5, h6, .site-header, .site-footer .btn, .btn, button, summary, label, th, dt, legend, caption, svg text,
+.eyebrow, .meta, .group, .tag, .num, .legend, nav { font-family: var(--site-font); }
 ::selection { background: var(--site-selection); color: var(--site-selection-text); }
 a { color: var(--site-link); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
@@ -40,7 +44,7 @@ a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
   min-height: var(--tap); padding: var(--space-3) var(--space-6);
   font-family: var(--site-heading-font); font-size: var(--text-body); font-weight: var(--weight-bold); line-height: 1.2;
   text-decoration: none; white-space: nowrap; cursor: pointer;
-  border: var(--site-box-border); border-radius: var(--radius-sm); box-shadow: var(--site-shadow);
+  border: var(--site-box-border); border-radius: var(--site-radius-control); box-shadow: var(--site-shadow);
   transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
 }
 .btn:hover { text-decoration: none; }
@@ -73,7 +77,7 @@ a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
 .nav-toggle {
   display: none; align-items: center; justify-content: center; width: var(--tap); height: var(--tap);
   color: var(--site-text); background: transparent; border: var(--border-width) solid var(--site-line);
-  border-radius: var(--radius-sm); cursor: pointer;
+  border-radius: var(--site-radius-control); cursor: pointer;
 }
 .nav-toggle:hover { background: var(--site-hover); }
 .nav-toggle .icon-close, .nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
@@ -109,7 +113,7 @@ a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
   .nav-sub {
     display: none; position: absolute; top: calc(100% + var(--space-2)); left: 0; z-index: 25; min-width: 18rem;
     padding: var(--space-2); background: var(--site-box); border: var(--site-box-border);
-    border-radius: var(--radius-md); box-shadow: var(--site-shadow);
+    border-radius: var(--site-radius-box); box-shadow: var(--site-shadow);
   }
   .nav-group-toggle[aria-expanded="true"] + .nav-group-label + .nav-sub { display: block; }
   .nav-sub a { padding: var(--space-3) var(--space-4); border-radius: var(--radius-xs); color: var(--site-box-text); }

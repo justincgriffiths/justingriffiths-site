@@ -71,6 +71,17 @@ function accuracy() {
     <table><tbody>${slot("Shadow agreement", a.shadow_agreement_pct, a.pending.shadow_agreement_pct)}${slot("Correction-free", a.correction_free_pct, a.pending.correction_free_pct)}</tbody></table>`;
 }
 
+// Freshness (site#60): when the aggregates were read, in Eastern time, plus an age the script keeps current.
+// Older than 12 hours (the overnight gap between two-hourly refreshes) reads as stale.
+const asOf = data.as_of ? new Date(data.as_of) : null;
+const asOfText = asOf && !isNaN(asOf) ? new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" }).format(asOf) : null;
+const fresh = asOfText
+  ? `<p class="asof" data-asof="${esc(data.as_of)}"><span class="dot" aria-hidden="true"></span><span>Data as of <time datetime="${esc(data.as_of)}">${esc(asOfText)}</time><span class="age"></span></span></p>
+<script>(()=>{const p=document.querySelector(".asof"),t=Date.parse(p.dataset.asof),h=(Date.now()-t)/36e5;if(!(h>=0))return;
+const a=h<1?Math.max(1,Math.round(h*60))+" min ago":h<48?Math.round(h)+(Math.round(h)===1?" hour ago":" hours ago"):Math.round(h/24)+" days ago";
+p.querySelector(".age").textContent=" · "+a+(h>12?" · stale":"");if(h>12)p.classList.add("stale");})()</script>`
+  : `<p class="asof stale"><span class="dot" aria-hidden="true"></span><span>Data time unknown: this snapshot carries no as-of stamp</span></p>`;
+
 const section = (id, title, why, body) => `<section id="${id}"><h2>${esc(title)}</h2><p class="why">${esc(why)}</p>${body}</section>`;
 const bd = data.breakdowns;
 const html = `<!doctype html>
@@ -84,7 +95,8 @@ ${chromeHead()}
 ${siteHeader("qwen")}
 <main id="main" class="wrap qwen">
 <h1>Qwen rollout</h1>
-<p class="why">Two chores moved from paid Claude calls to a free model running on my own machine (qwen3-coder:30b): sorting my inboxes and labelling GitHub issues. Aggregates only: counts, dollars and milliseconds, never a message, sender or issue.</p>
+${fresh}
+<p class="why">Two chores moved from paid Claude calls to a free model running on my own machine (qwen3-coder:30b): sorting my inboxes and labeling GitHub issues. Aggregates only: counts, dollars and milliseconds, never a message, sender or issue.</p>
 ${section("share", "Share on Qwen", "How much of the work Qwen took each day, and how much went back to Claude. This shows the ramp from 1 item to all.",
   `<div class="cols"><div><h3>Inbox triage</h3>${stacked(data.share_by_day.triage, "Triage items per day by who answered")}</div><div><h3>Issue labels</h3>${stacked(data.share_by_day["issue-tag"], "Issue-tag items per day by who answered")}</div></div>`)}
 ${section("fallbacks", "Fallback reasons", "Why Qwen's answer was thrown out and Claude did the item instead.", horizontal(data.fallback_reasons, "Fallbacks by reason", C.fell_back))}
