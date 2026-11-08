@@ -29,6 +29,11 @@ writeFileSync(join(runs, "20261107-160000-dry.audit.jsonl"), [
   { tool: "qwen_classify", label: "task", escalated: false, latency_ms: 50 },
   { tool: "qwen_pair", match: false, qwen_label: "fyi", haiku_label: "task" },
 ].map((r) => JSON.stringify(r)).join("\n") + "\n");
+// Before Qwen: a run with no qwen block (Haiku did every message). Unique message ids per run count; a dry-run sidecar does not.
+writeFileSync(join(runs, "20261020-120000-pedal.json"), JSON.stringify({ mode: "create", account: "x", report: "r.md" }));
+writeFileSync(join(runs, "20261020-120000-pedal.audit.jsonl"), ["hid-a", "hid-b", "hid-a"].map((id) => JSON.stringify({ tool: "mcp__mail__get_message", input: { id } })).join("\n") + "\n");
+writeFileSync(join(runs, "20261019-120000-pedal.json"), JSON.stringify({ mode: "dry-run" }));
+writeFileSync(join(runs, "20261019-120000-pedal.audit.jsonl"), JSON.stringify({ tool: "mcp__mail__get_message", input: { id: "hid-c" } }) + "\n");
 writeFileSync(join(runs, "corrections.audit.jsonl"), JSON.stringify({ tool: "qwen_correction", id: "SENTINEL_MSGID_9f3a", from_label: "SENTINEL_PAIR_LABEL", to_label: "task", model_of_origin: "qwen3-coder:30b", issue: "SENTINEL_CORR_ISSUE_8842" }) + "\n");
 writeFileSync(join(dir, "tag.log"),
   "[2026-11-07T06:00:00Z] argv=[secret-repo-sentinel personal limit=1 apply=1] exit=0 tagged=1 failed=0 qwen=1 fallback=0 haiku=2\n" +
@@ -190,7 +195,8 @@ test("the page renders one chart per job with runs and says so for a job with no
   assert.match(sec, /Cron triage<\/h3><p class="note">first logged 2026-11-08 · 4 runs · 8 answered by Qwen · 7 fell back to Claude/);
   assert.match(sec, /Declutter<\/h3><p class="empty">No runs logged\.<\/p>/);
   assert.match(sec, /held back by rule \(needs-del 1, needs-name 2\)/);
-  assert.equal((sec.match(/<svg /g) || []).length, 2);
+  assert.equal((sec.match(/<svg /g) || []).length, 1);                           // the one job with 2+ days draws a chart
+  assert.match(sec, /<p class="single"><span class="big">\d+<\/span> items on 2026-11-0\d<\/p>/);   // a one-day job is a datapoint, not a bar
   assert.doesNotMatch(sec, /NaN|undefined|0%/);
   assert.doesNotMatch(renderData(base), /NaN|undefined/);   // the older snapshot without workflows still renders
 });
@@ -209,6 +215,23 @@ test("calls by day: one row per (day, job) with calls, newest first, counts and 
   const order = rows.map((r) => r.day);
   assert.deepEqual(order, [...order].sort().reverse());
   for (const r of rows) { assert.equal(r.calls, r.qwen + r.haiku_fallback + r.haiku_capped); assert.equal(r.model_qwen, "qwen3-coder:30b"); assert.equal(r.model_haiku, "claude-haiku-5-5"); }
+});
+
+test("calls by day: runs before Qwen count as Haiku calls Qwen was not offered, from unique messages per run; dry runs do not", () => {
+  const rows = JSON.parse(out).calls_by_day, t = rows.find((r) => r.day === "2026-10-20" && r.job === "triage");
+  assert.deepEqual([t.calls, t.qwen, t.haiku_fallback, t.haiku_capped, t.haiku_shadow], [2, 0, 0, 2, 0]);
+  assert.equal(rows.find((r) => r.day === "2026-10-19"), undefined);
+});
+
+test("Share on Qwen: a chart with one day of data is a single datapoint", async () => {
+  const { renderData } = await import("../src/qwen-render.mjs");
+  const base = JSON.parse(readFileSync("content/qwen/data.json", "utf8"));
+  const one = [{ day: "2026-11-08", answered: 10, fell_back: 1, capped: 2 }];
+  const html = renderData({ ...base, share_by_day: { triage: one, "issue-tag": one } });
+  const sec = html.slice(html.indexOf('id="share"'), html.indexOf('id="workflows"'));
+  assert.equal((sec.match(/<svg /g) || []).length, 0);
+  assert.equal((sec.match(/class="single"/g) || []).length, 2);
+  assert.match(sec, /<span class="big">13<\/span> items on 2026-11-08/);
 });
 
 test("a missing learn source adds no learn rows", () => {

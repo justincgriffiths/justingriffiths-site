@@ -43,5 +43,5 @@
 .learn-more { border-top: var(--border-width) solid var(--site-line); margin-top: 0; padding-top: var(--space-4); }
 .qwen .disclosure ul.why { padding-inline-start: 1.25em; }
 /* Calls by day (site#88 rework): per-job history charts. A one-day job is a single datapoint, a big number. */
-.qwen .callsjob .single { font-family: var(--site-font); margin: var(--space-2) 0 var(--space-1); color: var(--site-text); }
-.qwen .callsjob .big { font-size: var(--text-h2, 2.5rem); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.qwen .single { font-family: var(--site-font); margin: var(--space-2) 0 var(--space-1); color: var(--site-text); }
+.qwen .single .big { font-size: var(--text-h2, 2.5rem); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }

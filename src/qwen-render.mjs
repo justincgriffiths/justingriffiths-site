@@ -22,6 +22,11 @@ function axisY(max, fmt = (v) => v) {
 function stacked(rows, label) {
   if (!rows.length) return empty("No live runs yet. Dry runs are not counted.");
   const hasPolicy = rows.some((r) => r.policy), keys = ["answered", "fell_back", "capped", ...(hasPolicy ? ["policy"] : [])];
+  // One day of data is a single datapoint (a big number and who answered), never a lone bar (site#88).
+  if (rows.length === 1) {
+    const r = rows[0], n = keys.reduce((s, k) => s + r[k], 0), names = { answered: "answered by Qwen", fell_back: "fell back to Claude", capped: "capped", policy: "held back by rule" };
+    return `<p class="single"><span class="big">${n}</span> ${n === 1 ? "item" : "items"} on ${esc(r.day)}</p><p class="note">${keys.map((k) => `${r[k]} ${names[k]}`).join(" · ")}. First day logged, so there is no history to chart yet.</p>`;
+  }
   const max = Math.max(1, ...rows.map((r) => keys.reduce((s, k) => s + r[k], 0)));
   const bw = Math.min(40, (W - P.l - P.r) / rows.length - 6), step = (W - P.l - P.r) / rows.length;
   const bars = rows.map((r, i) => {
