@@ -20,7 +20,7 @@ const PAGES = [
   ["archive/index.html", "archive"],
 ];
 
-test("every page stylesheet reads tokens only: no hex outside src/tokens.css (site#51 verify grep)", () => {
+test("every page stylesheet reads tokens only: no hex outside src/tokens.css and src/shallan.css (site#51 verify grep)", () => {
   const files = ["src/style.css", "src/chrome.css", "src/frame.css", "src/pedal-design.css", "content/qwen/page.css", "content/marketing-101/page.css", "content/archive/page.css"];
   for (const f of files) {
     const css = readFileSync(new URL(f, root), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
@@ -47,7 +47,9 @@ for (const [file, current] of PAGES) {
     assert.match(h, new RegExp(`class="btn btn-primary[^"]*" href="${BOOK_URL.replace(/\./g, "\\.")}"[^>]*>Book a call<`));
     const item = NAV.flatMap((n) => [n, ...(n.items ?? [])]).find((n) => n.key === current);
     assert.match(h, new RegExp(`href="${item.href}"[^>]*aria-current="page"`), `${file} does not mark ${item.href}`);
-    assert.match(html, /<link rel="stylesheet" href="\/site\.css">/);
+    // Personal pages read Shallan (/site.css); /pedal-design/ reads the Pedal DS (site#60)
+    const sheet = current === "pedal-design" ? "/pedal-design/site.css" : "/site.css";
+    assert.match(html, new RegExp(`<link rel="stylesheet" href="${sheet.replace(/[./]/g, "\\$&")}">`));
     assert.match(html, /\.nav-toggle/); // the menu script
     assert.ok(!html.includes("mailto:"), `${file} has a mailto`);
   });

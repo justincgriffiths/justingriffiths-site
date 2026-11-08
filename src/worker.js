@@ -12,7 +12,7 @@ const APEX = "justingriffiths.com";
 // true: every .com path except /fleet, /media and /qwen answers with public/construction.html (site#56;
 // /qwen stays live by Justin's call, 2026-11-08).
 // false puts .com back on the full site. The full site stays on the workers.dev staging host either way.
-const CONSTRUCTION = true;
+const CONSTRUCTION = false;
 const ARCHIVE_PREFIX = "/archive";
 const HUB_PATHS = new Set(["/", "/index.html", "/site.css", "/style.css", "/favicon.svg", "/robots.txt"]);
 const GATED_PREFIX = "/fleet";
@@ -113,7 +113,7 @@ export default {
       url.pathname = "/pedal-design/";
       return Response.redirect(url.toString(), 301);
     }
-    if (url.pathname === "/pedal-design/" || url.pathname === "/pedal-design/index.html" || url.pathname === "/pedal-design/style.css") {
+    if (url.pathname === "/pedal-design/" || url.pathname === "/pedal-design/index.html" || url.pathname === "/pedal-design/style.css" || url.pathname === "/pedal-design/site.css") {
       return env.ASSETS.fetch(request);
     }
 

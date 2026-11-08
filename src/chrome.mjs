@@ -2,7 +2,8 @@
 // the one primary action (Book a call), and the small script that drives the menu. Pattern from
 // pedal-performance.com (pearmill/pedal-agency index.html + css/styles.css §4): links, then a primary
 // button on the right; below 1024px the links fold into a menu button.
-// Styles are src/chrome.css, shipped with src/tokens.css as /site.css.
+// Styles are src/chrome.css, shipped with src/shallan.css as /site.css (personal pages) and with
+// src/tokens.css as /pedal-design/site.css (the Pedal DS page).
 
 export const BOOK_URL = "https://cal.com/justin-griffiths";
 
@@ -36,10 +37,10 @@ const ICON = {
 export { ICON };
 
 // Fonts, the shared stylesheet, and the class that tells the CSS the menu script will run.
-export const chromeHead = () => `<link rel="preconnect" href="https://fonts.googleapis.com">
+export const chromeHead = (sheet = "/site.css") => `<link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/site.css">
+    <link rel="stylesheet" href="${sheet}">
     <meta name="color-scheme" content="dark">
     <script>document.documentElement.classList.add("js")</script>`;
 

@@ -16,8 +16,9 @@ test("src/style.css and src/chrome.css carry no hex colors or font names; tokens
   }
 });
 
-test("dist/site.css is tokens.css, chrome.css, then frame.css; dist/style.css is the hub rules", () => {
-  assert.equal(read("dist/site.css"), [read("src/tokens.css"), read("src/chrome.css"), read("src/frame.css")].join("\n"));
+test("dist/site.css is shallan.css + chrome.css + frame.css; /pedal-design/site.css is tokens.css + chrome.css + frame.css; dist/style.css is the hub rules", () => {
+  assert.equal(read("dist/site.css"), [read("src/shallan.css"), read("src/chrome.css"), read("src/frame.css")].join("\n"));
+  assert.equal(read("dist/pedal-design/site.css"), [read("src/tokens.css"), read("src/chrome.css"), read("src/frame.css")].join("\n"));
   assert.equal(read("dist/style.css"), read("src/style.css"));
 });
 
@@ -28,10 +29,10 @@ test("dark only: one night default, no light lane alias, no theme switch (Justin
   assert.doesNotMatch(read("dist/index.html"), /class="switch"|Light<\/a>|Night<\/a>/);
 });
 
-test("tokens.css ships the Pedal defaults and a commented jg theme stub", () => {
+test("tokens.css ships the Pedal defaults; the old jg re-theme stub is gone (Shallan replaced it)", () => {
   const t = read("src/tokens.css");
   assert.match(t, /--accent:\s+var\(--teal-500\)/);
-  assert.match(t, /\/\*[^]*\[data-theme="jg"\][^]*\*\//);
+  assert.doesNotMatch(t, /data-theme="jg"/);
 });
 
 test("site#49: no empty cover column. Without a portrait the second column is the hero visual card; the portrait column is gated on :has(.portrait)", () => {

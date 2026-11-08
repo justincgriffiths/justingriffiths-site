@@ -133,8 +133,8 @@ const renderBlock = (b) => {
 // the hub at / (src/style.css) and /pedal-design/ (public/pedal.css). One bio.json, one renderer.
 // Dark only since 2026-11-08 (Justin): the Light | Night switch is gone; both pages are the night lane.
 const SKINS = {
-  classic: { path: "/", css: "/style.css", current: "home" },
-  pedal: { path: "/pedal-design/", css: "/pedal-design/style.css", current: "pedal-design" },
+  classic: { path: "/", site: "/site.css", css: "/style.css", current: "home" },
+  pedal: { path: "/pedal-design/", site: "/pedal-design/site.css", css: "/pedal-design/style.css", current: "pedal-design" },
 };
 
 // The hero visual: a DS card with an illustration slot. bio.json can set dossier.cover.visual
@@ -211,7 +211,7 @@ function renderPage(skin) {
     <meta property="og:url" content="https://justingriffiths.com${SKINS[skin].path}">
     <meta property="og:type" content="profile">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    ${chromeHead()}
+    ${chromeHead(SKINS[skin].site)}
     <script type="application/ld+json">${JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Person",
@@ -249,11 +249,19 @@ writeFileSync(new URL("./dist/index.html", import.meta.url), classicHtml);
 mkdirSync(new URL("./dist/pedal-design/", import.meta.url), { recursive: true });
 writeFileSync(new URL("./dist/pedal-design/index.html", import.meta.url), pedalHtml);
 copyFileSync(new URL("./src/pedal-design.css", import.meta.url), new URL("./dist/pedal-design/style.css", import.meta.url));
-// /site.css is the token layer, the shared chrome and the frame (src/frame.css); every page loads it. /style.css is the hub's own rules.
+// /site.css is Shallan (src/shallan.css) plus the shared chrome and the frame (src/frame.css); every personal page loads it.
+// /pedal-design/site.css is the Pedal DS (src/tokens.css) plus the same chrome and frame. /style.css is the hub's own rules.
+const frameCss = readFileSync(new URL("./src/frame.css", import.meta.url), "utf8");
+const chromeCss = readFileSync(new URL("./src/chrome.css", import.meta.url), "utf8");
+const shallanCss = readFileSync(new URL("./src/shallan.css", import.meta.url), "utf8");
+writeFileSync(new URL("./dist/site.css", import.meta.url), [shallanCss, chromeCss, frameCss].join("\n"));
 writeFileSync(
-  new URL("./dist/site.css", import.meta.url),
-  ["tokens", "chrome", "frame"].map((f) => readFileSync(new URL(`./src/${f}.css`, import.meta.url), "utf8")).join("\n")
+  new URL("./dist/pedal-design/site.css", import.meta.url),
+  [readFileSync(new URL("./src/tokens.css", import.meta.url), "utf8"), chromeCss, frameCss].join("\n")
 );
+// The Claude Design preview cards link a sibling copy of Shallan, so the folder pushes on its own.
+mkdirSync(new URL("./design/shallan/", import.meta.url), { recursive: true });
+writeFileSync(new URL("./design/shallan/shallan.css", import.meta.url), shallanCss);
 copyFileSync(new URL("./src/style.css", import.meta.url), new URL("./dist/style.css", import.meta.url));
 for (const f of ["favicon.svg", "robots.txt", "construction.html"]) {
   const src = new URL(`./public/${f}`, import.meta.url);

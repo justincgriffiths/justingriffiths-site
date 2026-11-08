@@ -1,6 +1,6 @@
 /* Site chrome (site#51): the base every page shares, the sticky header and nav, and the buttons.
-   Reads only the --site-* aliases and DS scale tokens in src/tokens.css; build.mjs ships the two
-   together as /site.css. Header pattern from pedal-performance.com (pearmill/pedal-agency css/styles.css §4):
+   Reads only the --site-* aliases and scale tokens. build.mjs ships it twice: with src/shallan.css as
+   /site.css (every personal page), and with src/tokens.css as /pedal-design/site.css (the Pedal DS). Header pattern from pedal-performance.com (pearmill/pedal-agency css/styles.css §4):
    a 72px sticky bar with a 2px rule under it, links in a row from 1024px, a menu button below that. */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -19,8 +19,9 @@ body {
   background-size: var(--site-grid-size) var(--site-grid-size);
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
-/* Serif for sentences, sans for titles (site#60). /pedal-design/ keeps the DS: sans throughout. */
-body:not(.skin-pedal) { font-family: var(--site-prose-font); font-optical-sizing: auto; }
+/* Sentences in --site-prose-font, titles in --site-font (site#60). Shallan sets the first to its serif
+   (one-line revert: --shallan-sentence-face); the Pedal DS sets both to sans. */
+body { font-family: var(--site-prose-font); font-optical-sizing: auto; }
 h1, h2, h3, h4, h5, h6, .site-header, .site-footer .btn, .btn, button, summary, label, th, dt, legend, caption, svg text,
 .eyebrow, .meta, .group, .tag, .num, .legend, nav { font-family: var(--site-font); }
 /* A long word in a heading breaks before it pushes the page sideways (200% text, narrow phones) */
@@ -169,3 +170,21 @@ a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
   html { scroll-behavior: auto; }
   .btn, .nav-item > a, .nav-group-toggle, .nav-group-toggle .icon { transition: none; }
 }
+
+/* Disclosure (docs/disclosure.md): collapsible section on native <details>. The summary row is a
+   full-width 44px+ tap target; the mark is a CSS chevron that turns when open. */
+.disclosure { border-top: var(--border-width) solid var(--site-line); }
+.disclosure > summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: var(--tap); padding-block: var(--space-4); cursor: pointer; list-style: none; }
+.disclosure > summary::-webkit-details-marker { display: none; }
+.disclosure > summary:focus-visible { outline: 2px solid var(--site-accent); outline-offset: 2px; }
+.disclosure-head { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.disclosure-title { font-size: var(--text-h3); line-height: var(--leading-snug); letter-spacing: var(--tracking-snug); font-weight: var(--weight-bold); color: var(--site-text); }
+.disclosure-extra { font-size: var(--text-body-sm); color: var(--site-text-soft); }
+.disclosure-mark { flex: none; width: 10px; height: 10px; margin-right: var(--space-2); border-right: 2px solid var(--site-text-soft); border-bottom: 2px solid var(--site-text-soft); transform: rotate(45deg); transition: transform 0.15s; }
+.disclosure[open] > summary > .disclosure-mark { transform: rotate(-135deg); }
+.disclosure > summary:hover .disclosure-title { color: var(--site-link); }
+.disclosure-body { padding-bottom: var(--space-4); }
+@media (prefers-reduced-motion: reduce) { .disclosure-mark { transition: none; } }
+/* Quiet link: text only, underlined on hover. */
+.quiet-link { color: var(--site-text-soft); font-family: var(--site-font); font-size: var(--text-body-sm); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--site-hairline); display: inline-flex; align-items: center; min-height: var(--tap); }
+.quiet-link:hover { color: var(--site-link-hover); text-decoration-color: currentColor; }

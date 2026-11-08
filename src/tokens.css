@@ -1,13 +1,13 @@
 /* ============================================================
-   justingriffiths.com — the one token layer (site#51)
-   Every color, font, type step, space, radius, shadow and motion value the site uses lives
-   here. Page stylesheets read only these custom properties: no hex, no font names elsewhere.
+   justingriffiths.com — the Pedal DS token layer, for /pedal-design/ only (site#51, site#60)
+   Every other page reads Shallan (src/shallan.css), Justin's own fork of this file's night lane.
+   build.mjs ships this file with src/chrome.css as /pedal-design/site.css.
 
    Sections 1-3 are copied verbatim from pearmill/pedal origin/main
    creative/Pedal-Design-System/tokens/{colors,typography,spacing}.css
    (colors.css last changed 2026-11-04: --accent-contrast to night-800 for AA).
    Re-sync by copying those three files again; do not edit them here.
-   Section 4 is this site's own layout aliases. Section 5 is the re-theme stub.
+   Section 4 is the --site-* aliases src/chrome.css reads, set to the DS for /pedal-design/.
    ============================================================ */
 
 /* ---- 1. colors.css ---- */
@@ -239,9 +239,6 @@
   --font-sans: "Google Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-sans);
   --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
-  /* Site serif for running sentences (site#60): sans for titles, serif for sentences. Not a DS face;
-     the site layer below is the only reader. */
-  --font-serif: "Newsreader", "Iowan Old Style", Charter, Georgia, serif;
 
   --weight-regular: 400;
   --weight-medium: 500;
@@ -373,12 +370,12 @@
   --container-wide: 1440px;
 }
 
-/* ---- 4. Site aliases (justingriffiths.com only) ----
+/* ---- 4. Site aliases (/pedal-design/ only) ----
    Mobile-first, the breakpoints pedal-performance.com uses: 768px (tablet), 1024px (desktop).
    Media queries cannot read custom properties, so those two numbers also appear in the CSS.
 
-   One theme: the DS night lane (Justin, 2026-11-08, "dark theme only"). Every page reads
-   these --site-* names, never the ramps, so a re-theme is one block (section 5).
+   The DS night lane. src/chrome.css reads these --site-* names; src/shallan.css defines the same
+   names for every other page, so the shared chrome renders in either system.
    Night-lane rules (DS readme): the ground is --surface-night with the 5% paper lattice;
    anything sitting directly on the ground takes a PAPER border; muted text is night-200;
    hard shadows offset into night-900. A box (card, button, menu) stays LIGHT: paper fill,
@@ -396,14 +393,12 @@
 
   --site-font: var(--font-sans);                     /* titles, labels, controls, chart text */
   --site-heading-font: var(--font-display);
-  --site-prose-font: var(--font-serif);              /* sentences (site#60) */
+  --site-prose-font: var(--font-sans);               /* the DS is sans throughout */
 
-  /* Corners (site#60): the /marketing-101/ shapes, each a step less round.
-     box   14px (--radius-sticker-md) -> 10px     inner  8px (--radius-sticker-sm) -> 6px
-     control  pill (999px)            -> 12px     table head 10px                  -> 6px */
+  /* Corners: the DS defaults /pedal-design/ had before site#60 (Shallan's smaller set lives in src/shallan.css) */
   --site-radius-box: var(--radius-md);
   --site-radius-inner: var(--radius-sm);
-  --site-radius-control: 12px;
+  --site-radius-control: var(--radius-sm);
   --site-radius-tick: var(--radius-xs);
   /* The /marketing-101/ box: a 3px void rule and the large offset */
   --site-card-border: var(--border-width-thick) solid var(--night-900);
@@ -451,32 +446,3 @@
   --site-series-5: var(--yellow);                    /* a third model (Sonnet) */
   --site-pending: var(--warning);                    /* a slot waiting on data */
 }
-
-/* ---- 5. Re-theme stub (Justin's call; ship the Pedal defaults) ----
-   To recolor or re-font the whole site, uncomment and set values here, then put
-   data-theme="jg" on <html>. Nothing else needs to change: every page reads the
-   --site-* aliases above.
-
-[data-theme="jg"] {
-  color-scheme: dark;
-  --site-font: "Your Body Face", system-ui, sans-serif;
-  --site-heading-font: "Your Display Face", var(--site-font);
-  --site-bg: #101418;
-  --site-bg-alt: #0A0D10;
-  --site-text: #F4F1EA;
-  --site-text-soft: #B9B4AA;
-  --site-link: #8CC4FF;
-  --site-line: #F4F1EA;
-  --site-hairline: #2B3138;
-  --site-hover: #1B2026;
-  --site-accent: #8CC4FF;
-  --site-accent-hover: #B5D9FF;
-  --site-accent-ink: #0A0D10;
-  --site-box: #F4F1EA;
-  --site-box-text: #101418;
-  --site-box-line: #101418;
-  --site-art: #DCEBFA;
-  --site-shadow-sm: 2px 2px 0 #000000;
-  --site-shadow: 4px 4px 0 #000000;
-}
-*/

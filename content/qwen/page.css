@@ -28,10 +28,16 @@
 
 /* Freshness (site#60): when the numbers were read, right under the title. Sans, as a label;
    a teal dot while fresh, the pending color once it is more than 12 hours old. */
-.asof { --cluster-align: baseline; --cluster-gap: var(--space-2); font-family: var(--site-font); font-size: var(--text-body-sm); font-weight: var(--weight-medium); color: var(--site-text); margin-bottom: var(--space-6); font-variant-numeric: tabular-nums; }
+.asof { display: flex; align-items: baseline; gap: var(--space-2); font-family: var(--site-font); font-size: var(--text-body-sm); font-weight: var(--weight-medium); color: var(--site-text); margin-bottom: var(--space-6); font-variant-numeric: tabular-nums; }
 .asof .dot { flex: none; align-self: flex-start; margin-top: 0.45em; width: var(--space-3); height: var(--space-3); border-radius: var(--radius-xs); background: var(--site-accent); box-shadow: 0 0 0 3px var(--site-hover); }
 .asof.stale { color: var(--site-pending); }
 .asof.stale .dot { background: var(--site-pending); }
 .asof .age { color: var(--site-text-soft); }
 .asof.stale .age { color: var(--site-pending); }
 .qwen table { font-family: var(--site-font); }
+
+/* Collapsibles (site#68): the as-of line now sits in the Data summary; it keeps its look, minus the bottom margin. */
+.disclosure-extra .asof { margin-bottom: 0; }
+.qwen .disclosure .why { margin-top: 0; font-size: var(--text-body-lg); color: var(--site-text); }
+.qwen .disclosure-body > section:first-child { border-top: 0; padding-top: var(--space-2); }
+.learn-more { border-top: var(--border-width) solid var(--site-line); margin-top: 0; padding-top: var(--space-4); }

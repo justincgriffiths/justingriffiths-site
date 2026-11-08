@@ -143,12 +143,14 @@ const page = { fetch: async (r) => {
   return new Response(p === "/construction" ? "<html><head></head>construction" : "<html><head></head>hub", { headers: { "Content-Type": "text/html" } });
 } };
 const on = (host, path) => worker.fetch(new Request(`https://${host}${path}`), { ASSETS: page, ...env });
-test("worker: .com serves the construction page on / and /anything", async () => {
-  for (const p of ["/", "/anything", "/learn/x"]) {
-    const r = await on("justingriffiths.com", p);
-    assert.equal(r.status, 200, p);
-    assert.match(await r.text(), /construction/, p);
-  }
+// Construction mode is off (Justin, 2026-11-08 /unblock: "Turn it off now"): .com serves the hub again.
+// Flip CONSTRUCTION back to true and this test fails, so the gate's state is always deliberate.
+test("worker: .com serves the full site, not the construction page", async () => {
+  const r = await on("justingriffiths.com", "/");
+  assert.equal(r.status, 200);
+  const t = await r.text();
+  assert.match(t, /hub/);
+  assert.doesNotMatch(t, /construction/);
 });
 test("worker: /fleet/, /media/ and /qwen/ are not replaced on .com", async () => {
   for (const p of ["/qwen/", "/qwen"]) assert.doesNotMatch(await (await on("justingriffiths.com", p)).text(), /construction/, p);

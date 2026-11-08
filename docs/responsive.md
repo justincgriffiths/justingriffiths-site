@@ -42,7 +42,7 @@ Apple's sizes, so the matrix sets the viewport itself and borrows only user agen
 | 200% text | any of the above with every font size doubled (text-only zoom; the tokens are px, so root font size cannot do it) |
 | Safari toolbar | any of the above on an iPhone 16 with a 659px-tall viewport; no full-height rule may use `100vh` (use `svh` or `dvh`; `test/frame-lint.test.mjs`) |
 | Shared nav | a skip link first in tab order that lands on real content, the menu folded below 1024px and opened by its button, the current page marked, the links in a row from 1024px |
-| Skin swap | the same page under a stub skin (`test/qa/fixtures/skin-stub.css`) keeps every frame box's left edge and width at every device width. Boxes bounded in `ch` (`--measure`, the lede) are let out of both runs: a line length is wider in a wider typeface by design. |
+| Skin swap | the same page under two other skins keeps every frame box's left edge and width at every device width: the Pedal DS night lane (`src/tokens.css`, the stylesheet `/pedal-design/` is built on, served in place of `/site.css`) and a stub (`test/qa/fixtures/skin-stub.css`) that redefines every name a skin owns. Boxes bounded in `ch` (`--measure`, the lede) are let out of both runs: a line length is wider in a wider typeface by design. |
 | Page list | a built page missing from `PAGES` in `test/qa/matrix.mjs` fails the run |
 
 Pages marked `report` in the matrix (`/pedal-design/`, the `/archive/research/` snapshot) are not this card's to fix.
@@ -50,11 +50,11 @@ Their findings print in the run and attach to the test, and they cannot fail it.
 
 ## The frame
 
-Two layers. The **skin** is color, type families, radii, shadows and texture (today `src/tokens.css` §4; `src/shallan.css`
-when #60 lands it). The **frame** is how things lay out. The frame holds no color and no font; it reads size tokens and the
+Two layers. The **skin** is color, type families, radii, shadows and texture (`src/shallan.css`; the Pedal DS night lane in
+`src/tokens.css` is a second skin). The **frame** is how things lay out. The frame holds no color and no font; it reads size tokens and the
 semantic `--site-*` names a skin defines. `test/frame-lint.test.mjs` enforces it. Breakpoints are the Pedal DS pair,
 mobile-first: **768px** and **1024px**. Layout tokens (`--site-max`, `--site-gutter`, `--measure`, `--tap`, `--header-h`)
-stay in `src/tokens.css` §4 for now, to leave #60's file alone; they move to `frame.css` on the rebase after #60.
+are still defined in each skin file (`src/shallan.css` and `src/tokens.css`); moving them into `frame.css` is the next step.
 
 Primitives (`src/frame.css`). Each takes its dials as custom properties on the element or its page rule:
 
@@ -87,5 +87,4 @@ Rules for page CSS on a framed page (`/` and `/qwen/` today): no `@media (min-wi
 
 Not yet on the frame, and listed so they shrink: `/marketing-101/` (own `.wrap`, px widths, one 900px breakpoint),
 `content/archive/page.css`, `src/pedal-design.css` (out of bounds for #62), and the 186 archive snapshot pages
-(only `/archive/research/` is in the sweep). Layout tokens still in `tokens.css` (above). The Pedal night lane as a second
-real skin replaces the stub fixture once `src/shallan.css` exists.
+(only `/archive/research/` is in the sweep). Layout tokens still in each skin file (above).
