@@ -19,11 +19,18 @@ for a in "$@"; do case "$a" in @*) cat "\${a#@}" > "$CURL_BODY";; esac; done
 echo '{"success":true,"errors":[]}'
 `, { mode: 0o755 });
 chmodSync(join(stubDir, "curl"), 0o755);
+// An npx that stands in for `npx wrangler kv key put`: records its arguments and the --path file. Nothing leaves the machine.
+writeFileSync(join(stubDir, "npx"), `#!/bin/sh
+echo "$@" >> "$CURL_CALLS"
+prev=""; for a in "$@"; do [ "$prev" = "--path" ] && cat "$a" > "$CURL_BODY"; prev="$a"; done
+`, { mode: 0o755 });
+chmodSync(join(stubDir, "npx"), 0o755);
 let n = 0;
 const kv = (env, ...args) => {
   const state = join(dir, "state" + n++), calls = join(dir, "calls" + n), body = join(dir, "body" + n);
   const r = spawnSync("bash", ["bin/qwen-kv.sh", ...args], { encoding: "utf8", env: {
-    PATH: stubDir + ":" + process.env.PATH, HOME: process.env.HOME, QWEN_KV_STATE: state, CURL_CALLS: calls, CURL_BODY: body,
+    // qwen-kv.sh puts /opt/homebrew/bin ahead of PATH, so the npx stub is passed by path, never found on PATH.
+    PATH: stubDir + ":" + process.env.PATH, QWEN_KV_NPX: join(stubDir, "npx"), HOME: process.env.HOME, QWEN_KV_STATE: state, CURL_CALLS: calls, CURL_BODY: body,
     CLOUDFLARE_API_TOKEN: "sekret-token-value", FLEET_KV_NAMESPACE_ID: "nsid-value", FLEET_KV_DIR: join(dir, "nocfg"), ...env } });
   return { ...r, state, called: existsSync(calls), calls: existsSync(calls) ? readFileSync(calls, "utf8") : "", sent: existsSync(body) ? readFileSync(body, "utf8") : null };
 };
@@ -132,4 +139,15 @@ test("page: a failed or malformed pull leaves the rendered page as it is", async
     await timers.find(([, ms]) => ms === 300000)[0]();
     assert.equal(body.innerHTML, "OLD");
   }
+});
+
+test("no token: the put goes through the logged-in wrangler, to the wrangler.jsonc namespace, still behind the leakcheck", () => {
+  const ok = kv({ QWEN_KV_DATA: file("good-wr.json", good), CLOUDFLARE_API_TOKEN: "", FLEET_KV_NAMESPACE_ID: "" });
+  assert.equal(ok.status, 0, ok.stdout + ok.stderr);
+  assert.match(ok.calls, /wrangler kv key put qwen\/data\.json --path \S+ --namespace-id 7683fca9f60d446cb3799db66178df15 --ttl 3600 --remote/);
+  assert.deepEqual(JSON.parse(ok.sent), good);
+  assert.match(ok.stdout, /via wrangler/);
+  const bad = kv({ QWEN_KV_DATA: file("bad-wr.json", { ...good, subject: "SENTINEL SUBJECT" }), CLOUDFLARE_API_TOKEN: "", FLEET_KV_NAMESPACE_ID: "" });
+  assert.equal(bad.status, 1); assert.match(bad.stdout, /PRIVACY GATE BLOCKED/);
+  assert.equal(bad.called, false, "wrangler was called");
 });

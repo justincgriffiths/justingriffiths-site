@@ -7,7 +7,7 @@
 # Gates, in order: qwen-state.py ok -> bin/qwen-leakcheck.py clean (any hit exits 1, nothing written, value never echoed)
 #   -> sha256 differs from the last put -> PUT. as_of is part of the document, so a real run differs each time.
 # Env (tests/overrides): QWEN_KV_DATA (read this file instead of running qwen-state.py), QWEN_KV_STATE (state dir, default
-#   ~/.local/state/qwen-kv), plus qwen-state.py's own QWEN_* sources. Credentials as bin/fleet-kv.sh: CLOUDFLARE_API_TOKEN +
+#   ~/.local/state/qwen-kv), QWEN_KV_NPX (the npx that runs wrangler; tests point it at a stub), plus qwen-state.py's own QWEN_* sources. Credentials as bin/fleet-kv.sh: CLOUDFLARE_API_TOKEN +
 #   FLEET_KV_NAMESPACE_ID from env, else $FLEET_KV_DIR (default ~/.config/justingriffiths-site) fleet-kv.token (mode 0600)
 #   and fleet-kv.namespace-id. Never printed.
 set -uo pipefail
@@ -42,8 +42,17 @@ fi
 if [ -z "${FLEET_KV_NAMESPACE_ID:-}" ] && [ -f "$CFG/fleet-kv.namespace-id" ]; then
   FLEET_KV_NAMESPACE_ID=$(tr -d '[:space:]' < "$CFG/fleet-kv.namespace-id")
 fi
-[ -n "${CLOUDFLARE_API_TOKEN:-}" ] || fin 1 "no CLOUDFLARE_API_TOKEN and no $CFG/fleet-kv.token"
-[ -n "${FLEET_KV_NAMESPACE_ID:-}" ] || fin 1 "no FLEET_KV_NAMESPACE_ID and no $CFG/fleet-kv.namespace-id"
+# The namespace id is public (wrangler.jsonc FLEET_KV), so it defaults from there.
+FLEET_KV_NAMESPACE_ID="${FLEET_KV_NAMESPACE_ID:-$(sed -n 's/.*"binding": *"FLEET_KV", *"id": *"\([0-9a-f]*\)".*/\1/p' wrangler.jsonc)}"
+[ -n "${FLEET_KV_NAMESPACE_ID:-}" ] || fin 1 "no FLEET_KV_NAMESPACE_ID, no $CFG/fleet-kv.namespace-id, none in wrangler.jsonc"
+if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+  # No token: write with the logged-in wrangler session (OAuth, scope workers_kv write), the same login that deploys
+  # the site. Justin, 2026-11-08: the token setup is one of his least favorite tasks.
+  OUT=$(CLOUDFLARE_ACCOUNT_ID="$ACCT" "${QWEN_KV_NPX:-npx}" --yes wrangler kv key put "qwen/data.json" --path "$TMP" \
+    --namespace-id "$FLEET_KV_NAMESPACE_ID" --ttl "$TTL" --remote 2>&1) || fin 1 "KV write via wrangler failed: $(echo "$OUT" | tail -n 2 | tr '\n' ' ' | cut -c1-200)"
+  echo "$SUM" > "$STATE/last-put.sha256"
+  fin 0 "wrote bytes=$BYTES sha=${SUM:0:12} ttl=${TTL}s via wrangler"
+fi
 OUT=$(curl -s -X PUT -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" --data-binary @"$TMP" \
   "https://api.cloudflare.com/client/v4/accounts/$ACCT/storage/kv/namespaces/$FLEET_KV_NAMESPACE_ID/values/$KEY?expiration_ttl=$TTL")
 [ "$(echo "$OUT" | jq -r .success 2>/dev/null)" = "true" ] || fin 1 "KV write failed: $(echo "$OUT" | jq -c .errors 2>/dev/null | cut -c1-200)"
