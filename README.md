@@ -100,10 +100,10 @@ The mini pushes fleet state to Cloudflare KV; the Worker reads it only behind th
 
 Go-live (each line is a Cloudflare write, done by ◆MYCROFT_COS, not the builder):
 
-1. Create the KV namespace `fleet-state` in JG Personal (`6d4a918d…`).
+1. Create the KV namespace `fleet-state` in JG Personal (`6d4a918d…`). Done 2026-11-07.
 2. Create an API token scoped to Workers KV Storage: Edit on that account only; nothing else. Write it to `~/.config/justingriffiths-site/fleet-kv.token` (mode 0600) on the machine that runs the writer, and the namespace id to `fleet-kv.namespace-id` beside it. Never print it.
-3. In `wrangler.jsonc`, replace `PLACEHOLDER_NAMESPACE_ID`, uncomment the `kv_namespaces` line, merge, deploy.
-4. `bin/fleet-kv.sh` once by hand, then copy `bin/com.justin.fleet-kv.plist` to `~/Library/LaunchAgents` and `launchctl bootstrap` it.
+3. `wrangler.jsonc` binds `FLEET_KV` to the `fleet-state` namespace (`7683fca9…`, created 2026-11-07, site#43). Merge, then deploy (Justin or ◆MYCROFT_COS).
+4. On Minnie (`justins-mac-mini`, the pusher), `bin/fleet-kv.sh` once by hand (dry run passed there 2026-11-07, 1650 bytes), confirm one key with `npx wrangler kv key get state.json --binding FLEET_KV --remote | head -c 200`, then copy `bin/com.justin.fleet-kv.plist` to `~/Library/LaunchAgents` and `launchctl bootstrap` it.
 
 ### Meta rollout (`/fleet/meta/`, Justin only)
 
