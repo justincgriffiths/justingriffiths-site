@@ -44,8 +44,8 @@
     },
     {
       "label": "Research",
-      "value": "justingriffiths.info",
-      "url": "https://justingriffiths.info"
+      "value": "justingriffiths.com/archive",
+      "url": "/archive/"
     },
     {
       "label": "Tutoring",
@@ -143,6 +143,29 @@
                 "name": "Blossom tutoring",
                 "url": "https://justingriffiths.com/learn/marketing/marketing-101/",
                 "placeholder": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "lab",
+        "title": "Lab",
+        "blocks": [
+          {
+            "type": "entries",
+            "items": [
+              {
+                "name": "Qwen rollout",
+                "url": "/qwen/",
+                "role": "Public",
+                "summary": "Two chores moved from paid Claude calls to a free model on my own machine: counts, dollars and milliseconds, never a message."
+              },
+              {
+                "name": "Fleet",
+                "url": "/fleet/",
+                "role": "Sign-in required",
+                "summary": "Status of my agent fleet and its scheduled jobs."
               }
             ]
           }
