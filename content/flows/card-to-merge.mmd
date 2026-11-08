@@ -1,0 +1,15 @@
+%% title: How a card moves from Justin's ask to merge
+%% owner: ●ANANSI_ROUTER
+%% source-of-truth-for: the N=1 path of one card, ask to deploy (mycroft#674). Steps marked (inferred) are not stated in mycroft#674 or the anansi-agent handoff.
+flowchart TD
+  ask["Justin asks (ask or /unblock round)"] --> cos["◆MYCROFT_COS plans: files the card, ranks it"]
+  cos --> route["●ANANSI_ROUTER routes: anansi route handoff"]
+  route --> kal["■KALADIN builder launches: one lane, one worktree"]
+  kal --> build["Builder works the issue, tests green"]
+  build --> pr["PR ready, assigned to Justin, body says Closes #N"]
+  pr --> verify["(inferred) ●ANANSI_ROUTER verifies the PR"]
+  verify --> tomb["Builder tombstones its session (anansi-agent#133)"]
+  verify --> merge["Justin merges"]
+  merge --> deploy["Deploy: sitedep.sh or qwen-refresh.sh (inferred: Justin's call)"]
+  classDef inferred stroke-dasharray: 4 3
+  class verify,deploy inferred
