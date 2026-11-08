@@ -15,7 +15,19 @@ before(() => execFileSync("node", ["build.mjs"], { cwd: root, stdio: "ignore" })
 const PAGES = [
   ["index.html", "home"],
   ["pedal-design/index.html", "pedal-design"],
+  ["qwen/index.html", "qwen"],
+  ["marketing-101/index.html", "marketing-101"],
 ];
+
+test("every page stylesheet reads tokens only: no hex outside src/tokens.css (site#51 verify grep)", () => {
+  const files = ["src/style.css", "src/chrome.css", "src/pedal-design.css", "content/qwen/page.css", "content/marketing-101/page.css"];
+  for (const f of files) {
+    const css = readFileSync(new URL(f, root), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+    assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/, f);
+    assert.doesNotMatch(css, /^\s*:root\s*\{/m, `${f} declares its own :root`);
+  }
+  assert.doesNotMatch(readFileSync(new URL("build-qwen.mjs", root), "utf8"), /#[0-9a-fA-F]{6}\b/);
+});
 const header = (html) => html.slice(html.indexOf('<header class="site-header"'), html.indexOf("</header>"));
 const EXPECTED = ["/", "/qwen/", "/fleet/", "/fleet/flows/", "/pedal-design/", "/marketing-101/", "/archive/"];
 

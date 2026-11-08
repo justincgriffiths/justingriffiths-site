@@ -243,7 +243,7 @@ mkdirSync(new URL("./dist/", import.meta.url), { recursive: true });
 writeFileSync(new URL("./dist/index.html", import.meta.url), classicHtml);
 mkdirSync(new URL("./dist/pedal-design/", import.meta.url), { recursive: true });
 writeFileSync(new URL("./dist/pedal-design/index.html", import.meta.url), pedalHtml);
-copyFileSync(new URL("./public/pedal.css", import.meta.url), new URL("./dist/pedal-design/style.css", import.meta.url));
+copyFileSync(new URL("./src/pedal-design.css", import.meta.url), new URL("./dist/pedal-design/style.css", import.meta.url));
 // /site.css is the token layer plus the shared chrome; every page loads it. /style.css is the hub's own rules.
 writeFileSync(
   new URL("./dist/site.css", import.meta.url),

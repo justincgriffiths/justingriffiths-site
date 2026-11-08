@@ -428,6 +428,14 @@
   --site-shadow: var(--shadow-hard-night);
   --site-shadow-lg: var(--shadow-hard-night-lg);
   --site-art: var(--surface-accent);                 /* teal-100 field behind an illustration */
+
+  /* Chart series on the night ground. They encode data, so they sit outside the accent legend. */
+  --site-series-1: var(--teal-400);                  /* the thing the chart is about (Qwen) */
+  --site-series-2: var(--orange-500);                /* the cost of it (fell back) */
+  --site-series-3: var(--night-400);                 /* not in play (capped) */
+  --site-series-4: var(--lavender);                  /* the comparison (Haiku) */
+  --site-series-5: var(--yellow);                    /* a third model (Sonnet) */
+  --site-pending: var(--warning);                    /* a slot waiting on data */
 }
 
 /* ---- 5. Re-theme stub (Justin's call; ship the Pedal defaults) ----

@@ -1,0 +1,28 @@
+/* /qwen/ (site#51): the Qwen rollout charts on the site's night lane. Loaded after /site.css;
+   reads only --site-* aliases and DS scale tokens. Charts stay on the ground (paper text, night
+   hairlines); series colors are --site-series-*. A reading column, as the data is a single story. */
+.qwen { max-width: calc(48rem + 2 * var(--site-gutter)); padding-block: var(--space-10) var(--space-16); }
+@media (min-width: 768px) { .qwen { max-width: calc(48rem + 2 * var(--site-gutter-wide)); } }
+.qwen h1 { font-size: clamp(var(--text-h1), 6vw, var(--text-display)); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); font-weight: var(--weight-bold); margin-bottom: var(--space-4); }
+.qwen > .why { font-size: var(--text-body-lg); color: var(--site-text); max-width: var(--measure); margin-bottom: var(--space-8); }
+.qwen section { border-top: var(--border-width) solid var(--site-line); padding-block: var(--space-8); }
+.qwen h2 { font-size: var(--text-h3); line-height: var(--leading-snug); letter-spacing: var(--tracking-snug); font-weight: var(--weight-bold); margin-bottom: var(--space-1); }
+.qwen h3 { font-size: var(--text-overline); font-weight: var(--weight-bold); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--site-text-soft); margin: var(--space-6) 0 var(--space-2); }
+.why, .note, .legend { color: var(--site-text-soft); font-size: var(--text-body-sm); line-height: var(--leading-normal); margin-block: var(--space-1) var(--space-3); max-width: var(--measure); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); }
+.legend i { display: inline-block; width: 10px; height: 10px; margin-right: var(--space-2); border-radius: var(--radius-xs); }
+.qwen svg { width: 100%; height: auto; display: block; overflow: visible; }
+.qwen svg text { font-family: var(--site-font); font-size: 11px; fill: var(--site-text-soft); }
+.qwen .grid { stroke: var(--site-hairline); }
+.qwen .trend { stroke: var(--site-text-soft); stroke-width: 1.5; }
+.qwen table { width: 100%; border-collapse: collapse; font-size: var(--text-body-sm); font-variant-numeric: tabular-nums; margin-top: var(--space-3); }
+.qwen th, .qwen td { text-align: left; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--site-hairline); }
+.qwen thead th { font-size: var(--text-overline); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--site-text-soft); border-bottom: var(--border-width) solid var(--site-line); }
+.pending, .empty { color: var(--site-pending); font-size: var(--text-body-sm); }
+.empty { padding: var(--space-3) 0; }
+.cols { display: grid; gap: var(--space-6); }
+@media (min-width: 720px) { .cols { grid-template-columns: 1fr 1fr; } }
+.table-scroll { overflow-x: auto; }
+/* The charts draw in a 560-unit viewBox. On a phone that scales 11-unit labels to ~6px, so the
+   labels grow in viewBox units to stay readable (~11px rendered at 375). */
+@media (max-width: 599.98px) { .qwen svg text { font-size: 18px; } }

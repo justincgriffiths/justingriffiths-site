@@ -9,7 +9,7 @@ const read = (p) => readFileSync(new URL(p, root), "utf8");
 before(() => execFileSync("node", ["build.mjs"], { cwd: root, stdio: "ignore" }));
 
 test("src/style.css and src/chrome.css carry no hex colors or font names; tokens.css owns them", () => {
-  for (const f of ["src/style.css", "src/chrome.css"]) {
+  for (const f of ["src/style.css", "src/chrome.css", "src/pedal-design.css"]) {
     const css = read(f).replace(/\/\*[\s\S]*?\*\//g, "");
     assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/, f);
     assert.doesNotMatch(css, /Google Sans|IBM Plex|Source Serif|rgba?\(/, f);

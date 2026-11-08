@@ -1,0 +1,116 @@
+/* /pedal-design/: the same dossier as /, in the DS "deck" register (site#48, site#51).
+   Loaded after /site.css (src/tokens.css + src/chrome.css): base, header and buttons come from there.
+   Reads only --site-* aliases and DS scale tokens; no hex, no font names, no :root of its own.
+   What sets it apart from the hub: numbered sections and a numbered pill index, headings over a
+   2px paper rule, the facts as a sticker card, a narrower reading column. */
+
+.sheet { max-width: calc(55rem + 2 * var(--site-gutter)); margin-inline: auto; padding: 0 var(--site-gutter) var(--space-12); }
+@media (min-width: 768px) { .sheet { max-width: calc(55rem + 2 * var(--site-gutter-wide)); padding-inline: var(--site-gutter-wide); } }
+
+/* Overlines: tiny, tracked, the only all-caps */
+.kicker, dt, .meta, .group, .tag, .num, .placeholder span:first-child {
+  font-weight: var(--weight-bold); font-size: var(--text-overline); letter-spacing: var(--tracking-wide); text-transform: uppercase; line-height: var(--leading-normal);
+}
+.group, .meta { color: var(--site-accent); }
+dt { color: var(--site-box-soft); }
+
+/* Cover */
+.cover-body { display: grid; gap: var(--space-8); padding-block: var(--space-10) var(--space-8); }
+.cover-id { display: grid; gap: var(--space-5); align-content: start; min-width: 0; }
+.cover-id .kicker { display: none; }
+.portrait { max-width: 11rem; }
+@media (min-width: 640px) { .portrait { max-width: none; } .cover-body:has(.portrait) { grid-template-columns: minmax(10rem, 14rem) 1fr; gap: var(--space-8); align-items: start; } }
+h1 { font-weight: var(--weight-bold); font-size: clamp(var(--text-h1), 7vw, var(--text-display)); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); text-wrap: balance; }
+.lede { font-size: var(--text-body-lg); line-height: var(--leading-normal); max-width: 34em; }
+.cover-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-6); }
+.cover-more { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap); font-weight: var(--weight-bold); color: var(--site-text); text-decoration: none; }
+.cover-more:hover { color: var(--site-link); }
+
+/* Facts: the sticker card (paper, ink rule, offset into the void) */
+.facts {
+  max-width: var(--measure); background: var(--site-box); color: var(--site-box-text);
+  border: var(--border-width-thick) solid var(--site-box-line); border-radius: var(--radius-sticker-md);
+  box-shadow: var(--site-shadow-lg); padding: var(--space-1) var(--space-4);
+}
+.facts a { color: var(--site-box-link); }
+.fact { display: grid; grid-template-columns: 7.5rem 1fr; gap: var(--space-1) var(--space-4); padding-block: var(--space-3); border-bottom: 1px solid var(--site-box-hairline); }
+.fact:last-child { border-bottom: 0; }
+.fact dt { padding-top: var(--space-1); }
+.fact dd { overflow-wrap: anywhere; }
+.fact dd a { display: inline-flex; align-items: center; min-height: var(--tap); margin-block: calc((var(--tap) - 1lh) / -2); }
+.fact .line { display: block; }
+@media (max-width: 383.98px) { .fact { grid-template-columns: 1fr; } .fact dt { padding-top: 0; } }
+
+/* The hero visual card, smaller here: the facts card is this page's feature */
+.cover-visual { display: grid; gap: var(--space-2); max-width: 20rem; }
+.visual-card { background: var(--site-box); border: var(--border-width-thick) solid var(--site-box-line); border-radius: var(--radius-sticker-md); box-shadow: var(--site-shadow-lg); padding: var(--space-2); }
+.visual-art { aspect-ratio: 4 / 3; background: var(--site-art); border-radius: var(--radius-sticker-sm); overflow: hidden; }
+.visual-art img, .mark { display: block; width: 100%; height: 100%; object-fit: cover; }
+.mark-dot, .mark-shadow { fill: var(--site-box-line); }
+.mark-ring { fill: none; stroke: var(--site-box-line); stroke-width: 4; }
+.mark-disc { fill: var(--site-accent); stroke: var(--site-box-line); stroke-width: 4; }
+.mark-text { fill: var(--site-box-line); font-family: var(--site-heading-font); font-weight: var(--weight-bold); font-size: 72px; }
+.visual-note { font-size: var(--text-body-sm); line-height: var(--leading-normal); color: var(--site-text-soft); }
+.visual-note code { font-family: var(--font-mono); color: var(--site-text); }
+@media (min-width: 768px) { .cover-body:not(:has(.portrait)) { grid-template-columns: 1fr minmax(0, 18rem); align-items: start; } }
+
+/* Index: numbered teal pills that press onto their shadow */
+.index h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.index ol { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.index a {
+  display: inline-flex; align-items: center; gap: var(--space-3); min-height: var(--tap); padding: var(--space-2) var(--space-5) var(--space-2) var(--space-2);
+  text-decoration: none; font-weight: var(--weight-bold); color: var(--site-accent-ink); background: var(--site-accent);
+  border: var(--site-box-border); border-radius: var(--radius-pill); box-shadow: var(--site-shadow-sm);
+  transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+}
+.index a:hover { background: var(--site-accent-hover); color: var(--site-accent-ink); }
+.index a:active { transform: translate(2px, 2px); box-shadow: none; }
+.num { display: inline-block; min-width: 2.4em; padding: 0 var(--space-2); text-align: center; border-radius: var(--radius-pill); }
+.index .num { background: var(--site-box-line); color: var(--site-box); }
+
+/* Sections: a heading over a 2px paper rule; the number in a teal chip */
+.section { padding-top: var(--space-12); }
+.section-title {
+  display: flex; align-items: center; gap: var(--space-3); font-weight: var(--weight-bold); font-size: var(--text-h3);
+  line-height: var(--leading-snug); letter-spacing: var(--tracking-snug); padding-bottom: var(--space-3);
+  border-bottom: var(--border-width) solid var(--site-line); margin-bottom: var(--space-6);
+}
+.section-title .num { background: var(--site-accent); color: var(--site-accent-ink); }
+.section-body > * + * { margin-top: var(--space-6); }
+.prose { max-width: var(--measure); }
+.prose + .prose { margin-top: 1em; }
+
+.entries { list-style: none; max-width: var(--measure); border-top: 1px solid var(--site-hairline); }
+.entry { padding-block: var(--space-3); border-bottom: 1px solid var(--site-hairline); }
+.entry-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); }
+.entry .name { font-weight: var(--weight-bold); }
+.entry a.name { display: inline-flex; align-items: center; min-height: var(--tap); margin-block: calc((var(--tap) - 1lh) / -2); }
+.entry cite { font-style: normal; color: var(--site-text-soft); }
+.entry .note { margin-top: var(--space-1); color: var(--site-text-soft); }
+.group { margin: var(--space-6) 0 var(--space-2); }
+.group:first-child { margin-top: 0; }
+.section-body > .group + .entries { margin-top: 0; }
+
+/* Contact facts inside a section: plain rows on the ground, not a second card */
+.section .facts { background: transparent; color: var(--site-text); border: 0; border-top: 1px solid var(--site-hairline); border-radius: 0; box-shadow: none; padding: 0; }
+.section .facts a { color: var(--site-link); }
+.section .fact { border-bottom: 1px solid var(--site-hairline); }
+.section .fact:last-child { border-bottom: 1px solid var(--site-hairline); }
+.section dt { color: var(--site-text-soft); }
+
+.exhibits { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(9rem, 100%), 1fr)); }
+.exhibits:has(.exhibit-video, .exhibit-embed, .exhibit-audio) { grid-template-columns: 1fr; }
+.exhibit .frame { aspect-ratio: var(--aspect, 4 / 5); background: var(--site-box); border: var(--border-width-thick) solid var(--site-box-line); border-radius: var(--radius-sticker-md); box-shadow: var(--site-shadow-lg); overflow: hidden; }
+.exhibit-video, .exhibit-embed { --aspect: 16 / 9; }
+.exhibit img, .exhibit video, .exhibit iframe { display: block; width: 100%; height: 100%; object-fit: cover; border: 0; }
+.exhibit figcaption { margin-top: var(--space-2); font-size: var(--text-body-sm); color: var(--site-text-soft); }
+.placeholder { height: 100%; min-height: 6rem; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: var(--space-1); text-align: center; padding: var(--space-4); color: var(--site-box-soft); }
+.logos { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.logos img { display: block; height: var(--space-10); width: auto; }
+
+/* Footer: a paper rule, then the line and the action */
+.footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); max-width: calc(55rem + 2 * var(--site-gutter)); margin-inline: auto; padding: var(--space-6) var(--site-gutter) var(--space-12); color: var(--site-text-soft); }
+.footer::before { content: ""; flex-basis: 100%; border-top: var(--border-width) solid var(--site-line); margin-bottom: var(--space-2); }
+@media (min-width: 768px) { .footer { max-width: calc(55rem + 2 * var(--site-gutter-wide)); padding-inline: var(--site-gutter-wide); } }
+
+@media (prefers-reduced-motion: reduce) { .index a { transition: none; } }
