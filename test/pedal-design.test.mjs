@@ -17,7 +17,7 @@ const assets = { fetch: async (req) => {
   if (p === "" || p.endsWith("/")) p += "index.html";
   return existsSync(dist(p)) ? new Response(readFileSync(dist(p))) : new Response("nf", { status: 404 });
 } };
-const get = (path) => worker.fetch(new Request(`https://justingriffiths.com${path}`), { ASSETS: assets });
+const get = (path) => worker.fetch(new Request(`https://justingriffiths-site.jg-personal.workers.dev${path}`), { ASSETS: assets });
 
 test("no Light | Night switch on either version: dark only (Justin, 2026-11-08)", () => {
   for (const html of [classic(), pedal()]) assert.doesNotMatch(html, /class="switch"|data-skin=/);
@@ -33,7 +33,7 @@ test("both versions and their stylesheets resolve through the Worker, public, wi
 test("/pedal-design without the slash redirects to it", async () => {
   const r = await get("/pedal-design");
   assert.equal(r.status, 301);
-  assert.equal(r.headers.get("location"), "https://justingriffiths.com/pedal-design/");
+  assert.equal(r.headers.get("location"), "https://justingriffiths-site.jg-personal.workers.dev/pedal-design/");
 });
 
 test("both versions render the same sections, in the same order", () => {

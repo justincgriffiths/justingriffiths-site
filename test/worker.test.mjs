@@ -35,7 +35,7 @@ test("alg none fails", async () => {
 test("unset config fails closed", async () => assert.equal(await v(req(await token()), {}), false));
 
 const assets = { fetch: async () => new Response("scene") };
-const hit = (path, headers) => worker.fetch(new Request(`https://justingriffiths.com${path}`, { headers }), { ASSETS: assets, ...env });
+const hit = (path, headers) => worker.fetch(new Request(`https://justingriffiths-site.jg-personal.workers.dev${path}`, { headers }), { ASSETS: assets, ...env });
 test("worker: /fleet/ without token is 404, not a redirect to .info", async () => {
   assert.equal((await hit("/fleet/")).status, 404);
   assert.equal((await hit("/fleet/scene.js")).status, 404);
@@ -43,7 +43,7 @@ test("worker: /fleet/ without token is 404, not a redirect to .info", async () =
 test("worker: other unknown paths 301 to /archive/ on .com", async () => {
   const r = await hit("/research");
   assert.equal(r.status, 301);
-  assert.equal(r.headers.get("location"), "https://justingriffiths.com/archive/research");
+  assert.equal(r.headers.get("location"), "https://justingriffiths-site.jg-personal.workers.dev/archive/research");
 });
 test("worker: /archive/ is served from assets with noindex", async () => {
   const r = await hit("/archive/research/");
@@ -66,7 +66,7 @@ test("worker: gated response is private, no-store, framing denied", async () => 
 // Live feed: /fleet/state.json reads the FLEET_KV binding, only behind the Access gate.
 const kv = (value) => ({ get: async (k) => (k === "state.json" ? value : null) });
 const hitKv = (path, headers, kvBinding) =>
-  worker.fetch(new Request(`https://justingriffiths.com${path}`, { headers }), { ASSETS: assets, FLEET_KV: kvBinding, ...env });
+  worker.fetch(new Request(`https://justingriffiths-site.jg-personal.workers.dev${path}`, { headers }), { ASSETS: assets, FLEET_KV: kvBinding, ...env });
 const STATE = JSON.stringify({ seats: ["a"] });
 async function authed(path, kvBinding) {
   const t = await token();
@@ -131,4 +131,27 @@ test("meta: another Fleet user, no email, or unset allowlist is 404", async () =
 test("meta: no token is 404 and /fleet/state.json is unaffected", async () => {
   assert.equal((await hit("/fleet/meta/")).status, 404);
   assert.equal((await authed("/fleet/state.json", kv(STATE))).status, 200);
+});
+
+// site#56: .com answers every path with the construction page; workers.dev is the staging host with the full site.
+const STAGING = "justingriffiths-site.jg-personal.workers.dev";
+const page = { fetch: async (r) => new Response(new URL(r.url).pathname === "/construction.html" ? "<html><head></head>construction" : "<html><head></head>hub", { headers: { "Content-Type": "text/html" } }) };
+const on = (host, path) => worker.fetch(new Request(`https://${host}${path}`), { ASSETS: page, ...env });
+test("worker: .com serves the construction page on /, /qwen/ and /anything", async () => {
+  for (const p of ["/", "/qwen/", "/anything", "/learn/x"]) {
+    const r = await on("justingriffiths.com", p);
+    assert.equal(r.status, 200, p);
+    assert.match(await r.text(), /construction/, p);
+  }
+});
+test("worker: /fleet/ and /media/ are not replaced on .com", async () => {
+  assert.equal((await on("justingriffiths.com", "/fleet/")).status, 404);
+  assert.doesNotMatch(await (await on("justingriffiths.com", "/media/a.png")).text(), /^<html><head><\/head>construction/);
+});
+test("worker: workers.dev serves the full site, noindex", async () => {
+  const r = await on(STAGING, "/");
+  assert.equal(r.headers.get("x-robots-tag"), "noindex, nofollow");
+  const t = await r.text();
+  assert.match(t, /hub/);
+  assert.match(t, /<meta name="robots" content="noindex">/);
 });
