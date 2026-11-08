@@ -1,6 +1,6 @@
 /* Marketing 101 — Pedal Design System, night lane (site#51); the source theme for the whole site (site#60).
-   Corners and faces read the --site-radius-* and --site-prose-font aliases in src/tokens.css. Loaded after /site.css
-   (src/tokens.css + src/chrome.css), so every value here is a DS token; no :root of its own.
+   Corners and faces read the --site-radius-* and --site-prose-font aliases in src/shallan.css. Loaded after /site.css
+   (src/shallan.css + src/chrome.css), so every value here is a DS token; no :root of its own.
    Night lane rules (readme): paper text and borders on the ground, shadows into night-900,
    muted text night-200, and a BOX stays light: paper fill, night ink, hard offset shadow. */
 * { box-sizing: border-box; }
@@ -72,7 +72,7 @@ details.answer p { margin-top: 16px; }
 nav.sessions { position: sticky; top: var(--header-h); z-index: 5; background: var(--night-900); border-bottom: 2px solid var(--night-600); }
 nav.sessions .wrap { display: flex; gap: 8px; overflow-x: auto; padding-top: 12px; padding-bottom: 12px; scrollbar-width: none; }
 nav.sessions a { flex: none; display: inline-flex; gap: 8px; align-items: center; font-size: var(--text-caption); font-weight: 700; color: var(--paper); text-decoration: none; border: 2px solid var(--border-on-night); border-radius: var(--site-radius-control); padding: 4px 14px 4px 6px; }
-nav.sessions a span { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: var(--site-radius-inner); background: var(--teal-500); color: var(--night-800); }
+nav.sessions a span { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: var(--site-radius-control); background: var(--teal-500); color: var(--night-800); }
 nav.sessions a:hover { background: var(--night-700); }
 
 .session:last-child { margin-bottom: 72px; }

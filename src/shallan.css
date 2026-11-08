@@ -1,0 +1,212 @@
+/* ============================================================
+   Shallan — Justin Griffiths's personal design system (site#60)
+   Named for the Stormlight Lightweaver: a theme is an illusion laid over the same pages.
+
+   Forked 2026-11-08 from the Pedal DS night lane that /marketing-101/ used that day
+   (src/tokens.css at origin/main 189265b). Every value below was COPIED into this file as a
+   literal; nothing here reads src/tokens.css, and nothing in src/tokens.css reads this.
+   From here Shallan evolves on its own. /pedal-design/ stays on the Pedal DS.
+
+   Who reads it: every personal page (/, /qwen/, /marketing-101/, /archive/, /fleet/).
+   build.mjs ships it with src/chrome.css as /site.css. Docs: docs/shallan.md.
+   Preview cards for Claude Design: design/shallan/*.card.html.
+
+   Changes from the fork point (the only two):
+     1. Corners one step smaller. Box 14px -> 10px, inner 8px -> 6px. Pills stay pills.
+     2. Sentences in a serif (Newsreader), titles and controls in sans. One-line revert:
+        see --shallan-sentence-face in section 2.
+   ============================================================ */
+
+/* ---- 1. Color: the night lane ---- */
+:root {
+  color-scheme: dark;
+
+  /* Night ramp: the ground, the void, raised panels, hairlines, muted text */
+  --night-900: #12121F;   /* the void behind a surface; every hard shadow offsets into it */
+  --night-800: #1A1A2E;   /* THE ground */
+  --night-700: #23233F;   /* raised panel / ghost hover on the ground */
+  --night-600: #3A3A52;   /* hairlines on night; secondary text on paper */
+  --night-400: #6E6E85;   /* de-emphasized on night */
+  --night-200: #C7C7D2;   /* muted text on night */
+
+  /* Paper: text and rules on the ground, and the fill of every box */
+  --paper:     #FAF8F4;
+  --sand:      #F2EEE7;   /* a box's hover / alternate fill */
+  --line-soft: #E7E2DB;   /* hairlines inside a box */
+
+  /* Accents: teal leads, orange answers */
+  --teal-700:  #316858;   /* links on paper, selection */
+  --teal-500:  #5DA490;   /* the accent */
+  --teal-400:  #79B9A7;   /* links and hover on night */
+  --teal-100:  #DAEFE9;   /* the field behind an illustration */
+  --orange-500: #F4845F;  /* the second accent */
+
+  /* Data and status (charts and badges only, never chrome) */
+  --lavender:  #DBD4FF;
+  --yellow:    #FFD876;
+  --success:   #67924A;
+  --warning:   #F8AB41;
+  --danger:    #FF4E4E;
+
+  /* Semantic: on the night ground */
+  --surface-night:        var(--night-800);
+  --surface-night-canvas: var(--night-900);
+  --surface-night-raised: var(--night-700);
+  --text-on-night:        var(--paper);
+  --text-muted-on-night:  var(--night-200);
+  --border-on-night:      var(--paper);    /* an ink border vanishes on night; the rule is paper */
+  --accent-on-night:      var(--teal-500);
+  --accent-on-night-hover: var(--teal-400);
+  --accent-on-night-contrast: var(--night-800); /* text on a teal fill: 5.83:1 */
+
+  /* Semantic: inside a box (a box stays light: paper, ink rule, offset into the void) */
+  --text-primary:   var(--night-800);
+  --text-secondary: var(--night-600);
+  --text-link:      var(--teal-700);
+  --border-default: var(--night-800);
+  --border-soft:    var(--line-soft);
+}
+
+/* ---- 2. Type ---- */
+:root {
+  --font-sans:  "Google Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Newsreader", "Iowan Old Style", Charter, Georgia, serif;
+  --font-mono:  "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  /* THE TOGGLE. Sentences are serif; titles, labels and controls are always sans.
+     To revert the whole site to all-sans, change this one line to var(--font-sans). */
+  --shallan-sentence-face: var(--font-serif);
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+
+  --text-display-xl: 64px;
+  --text-display:    48px;
+  --text-h1:         40px;
+  --text-h2:         32px;
+  --text-h3:         24px;
+  --text-h4:         20px;
+  --text-body-lg:    18px;
+  --text-body:       16px;
+  --text-body-sm:    14px;
+  --text-caption:    13px;
+  --text-overline:   12px;
+
+  --leading-tight:   1.05;
+  --leading-snug:    1.18;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.6;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug:  -0.01em;
+  --tracking-wide:   0.08em;
+}
+
+/* ---- 3. Space, corners, rules, shadows, motion ---- */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+
+  /* Corners, one step smaller than the fork point (14 / 8 / pill / 4 at /marketing-101/):
+       box    14px -> 10px     cards, the diagram and table frames, the Lab menu
+       inner   8px ->  6px     art inside a box, table-head corners
+       pill   unchanged         buttons, chips, the session index
+       tick    4px  unchanged   checkboxes, legend swatches (already the smallest step) */
+  --shallan-radius-box: 10px;
+  --shallan-radius-inner: 6px;
+  --shallan-radius-pill: 999px;
+  --shallan-radius-tick: 4px;
+  --radius-xs: var(--shallan-radius-tick);
+  --radius-sm: var(--shallan-radius-inner);
+
+  --border-width: 2px;
+  --border-width-thick: 3px;
+
+  /* Hard offset shadows, always into the void */
+  --shadow-hard-night-sm: 2px 2px 0 var(--night-900);
+  --shadow-hard-night:    4px 4px 0 var(--night-900);
+  --shadow-hard-night-lg: 6px 6px 0 var(--night-900);
+
+  /* The ground's only texture: a 64px paper lattice at 5% */
+  --night-grid-line: rgba(248, 247, 244, 0.05);
+  --night-grid-size: 64px;
+
+  --ease-standard: cubic-bezier(0.32, 0.72, 0.28, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+
+  --container-max: 1200px;
+}
+
+/* ---- 4. Page aliases ----
+   src/chrome.css and the page stylesheets read these --site-* names. /pedal-design/ gets the same
+   names from src/tokens.css, so the shared chrome renders in either system. */
+:root {
+  --site-max: var(--container-max);
+  --site-gutter: var(--space-5);                     /* 20px on phones */
+  --site-gutter-wide: var(--space-10);               /* 40px from 768px */
+  --band-pad: var(--space-16);
+  --band-pad-wide: var(--space-24);
+  --measure: 65ch;
+  --tap: 44px;
+  --header-h: 72px;
+
+  --site-font: var(--font-sans);                     /* titles, labels, controls, chart text */
+  --site-heading-font: var(--font-sans);
+  --site-prose-font: var(--shallan-sentence-face);   /* sentences */
+
+  --site-radius-box: var(--shallan-radius-box);
+  --site-radius-inner: var(--shallan-radius-inner);
+  --site-radius-control: var(--shallan-radius-pill);
+  --site-radius-tick: var(--shallan-radius-tick);
+  --site-card-border: var(--border-width-thick) solid var(--night-900);
+
+  --site-bg: var(--surface-night);
+  --site-bg-alt: var(--surface-night-canvas);
+  --site-grid-line: var(--night-grid-line);
+  --site-grid-size: var(--night-grid-size);
+  --site-text: var(--text-on-night);
+  --site-text-soft: var(--text-muted-on-night);
+  --site-link: var(--accent-on-night-hover);
+  --site-link-hover: var(--text-on-night);
+  --site-line: var(--border-on-night);
+  --site-hairline: var(--night-600);
+  --site-hover: var(--surface-night-raised);
+  --site-selection: var(--teal-700);
+  --site-selection-text: var(--text-on-night);
+  --site-focus: var(--accent-on-night);
+
+  --site-accent: var(--accent-on-night);
+  --site-accent-hover: var(--accent-on-night-hover);
+  --site-accent-ink: var(--accent-on-night-contrast);
+
+  --site-box: var(--paper);
+  --site-box-alt: var(--sand);
+  --site-box-text: var(--text-primary);
+  --site-box-soft: var(--text-secondary);
+  --site-box-link: var(--text-link);
+  --site-box-line: var(--border-default);
+  --site-box-hairline: var(--border-soft);
+  --site-box-border: var(--border-width) solid var(--site-box-line);
+  --site-shadow-sm: var(--shadow-hard-night-sm);
+  --site-shadow: var(--shadow-hard-night);
+  --site-shadow-lg: var(--shadow-hard-night-lg);
+  --site-art: var(--teal-100);
+
+  --site-series-1: var(--teal-400);                  /* the subject (Qwen) */
+  --site-series-2: var(--orange-500);                /* its cost (fell back) */
+  --site-series-3: var(--night-400);                 /* not in play */
+  --site-series-4: var(--lavender);                  /* the comparison (Haiku) */
+  --site-series-5: var(--yellow);                    /* a third model (Sonnet) */
+  --site-pending: var(--warning);
+}

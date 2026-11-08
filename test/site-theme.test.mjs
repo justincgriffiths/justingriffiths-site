@@ -9,23 +9,28 @@ const root = new URL("..", import.meta.url);
 const read = (p) => readFileSync(new URL(p, root), "utf8");
 before(() => execFileSync("node", ["build.mjs"], { cwd: root, stdio: "ignore" }));
 
-test("corners: one set of site radii, each smaller than the marketing-101 original", () => {
-  const t = read("src/tokens.css");
-  assert.match(t, /--site-radius-box: var\(--radius-md\)/); // 10px, was 14px (--radius-sticker-md)
-  assert.match(t, /--site-radius-inner: var\(--radius-sm\)/); // 6px, was 8px
-  assert.match(t, /--site-radius-control: 12px/); // was a pill
+test("corners: Shallan is a step less round than marketing-101 (14->10, 8->6), pills stay pills", () => {
+  const s = read("src/shallan.css");
+  assert.match(s, /--shallan-radius-box: 10px;/); // was 14px (--radius-sticker-md)
+  assert.match(s, /--shallan-radius-inner: 6px;/); // was 8px (--radius-sticker-sm)
+  assert.match(s, /--shallan-radius-pill: 999px;/); // unchanged (issue comment 6719304207)
+  assert.match(s, /--site-radius-control: var\(--shallan-radius-pill\)/);
   for (const f of ["content/marketing-101/page.css", "src/style.css"]) {
     const css = read(f).replace(/\/\*[\s\S]*?\*\//g, "");
     assert.doesNotMatch(css, /radius-sticker|radius-pill|border-radius:\s*\d+px/, f);
   }
 });
 
-test("serif for sentences, sans for titles; /pedal-design/ stays all sans", () => {
+test("serif for sentences, sans for titles, one-line revert; /pedal-design/ stays all sans", () => {
+  const s = read("src/shallan.css");
+  assert.match(s, /^\s*--shallan-sentence-face: var\(--font-serif\);$/m);
+  assert.match(s, /--site-prose-font: var\(--shallan-sentence-face\)/);
   const chrome = read("src/chrome.css");
-  assert.match(chrome, /body:not\(\.skin-pedal\) \{ font-family: var\(--site-prose-font\)/);
+  assert.match(chrome, /body \{ font-family: var\(--site-prose-font\)/);
   assert.match(chrome, /h1, h2, h3, h4, h5, h6,[^{]*\{ font-family: var\(--site-font\); \}/);
   assert.match(read("content/marketing-101/page.css"), /font-family: var\(--site-prose-font\)/);
-  assert.match(read("dist/pedal-design/index.html"), /<body class="skin-pedal">/);
+  assert.match(read("src/tokens.css"), /--site-prose-font: var\(--font-sans\)/);
+  assert.doesNotMatch(read("src/tokens.css"), /--font-serif/);
   assert.match(read("dist/index.html"), /family=Newsreader/);
 });
 

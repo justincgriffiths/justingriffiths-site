@@ -6,7 +6,7 @@ import { chromeHead, siteHeader, bookButton, NAV_SCRIPT } from "./src/chrome.mjs
 
 const data = JSON.parse(readFileSync(new URL("./content/qwen/data.json", import.meta.url), "utf8"));
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-// Series colors are tokens (src/tokens.css --site-series-*), applied as style="fill:var(...)".
+// Series colors are tokens (src/shallan.css --site-series-*), applied as style="fill:var(...)".
 const C = { answered: "var(--site-series-1)", fell_back: "var(--site-series-2)", capped: "var(--site-series-3)", qwen: "var(--site-series-1)", haiku: "var(--site-series-4)", sonnet: "var(--site-series-5)" };
 const W = 560, H = 190, P = { l: 44, r: 12, t: 12, b: 28 };
 

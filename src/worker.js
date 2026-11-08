@@ -113,7 +113,7 @@ export default {
       url.pathname = "/pedal-design/";
       return Response.redirect(url.toString(), 301);
     }
-    if (url.pathname === "/pedal-design/" || url.pathname === "/pedal-design/index.html" || url.pathname === "/pedal-design/style.css") {
+    if (url.pathname === "/pedal-design/" || url.pathname === "/pedal-design/index.html" || url.pathname === "/pedal-design/style.css" || url.pathname === "/pedal-design/site.css") {
       return env.ASSETS.fetch(request);
     }
 

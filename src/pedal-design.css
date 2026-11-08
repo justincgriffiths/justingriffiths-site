@@ -1,5 +1,5 @@
 /* /pedal-design/: the same dossier as /, in the DS "deck" register (site#48, site#51).
-   Loaded after /site.css (src/tokens.css + src/chrome.css): base, header and buttons come from there.
+   Loaded after /pedal-design/site.css (src/tokens.css + src/chrome.css, the Pedal DS): base, header and buttons come from there.
    Reads only --site-* aliases and DS scale tokens; no hex, no font names, no :root of its own.
    What sets it apart from the hub: numbered sections and a numbered pill index, headings over a
    2px paper rule, the facts as a sticker card, a narrower reading column. */
