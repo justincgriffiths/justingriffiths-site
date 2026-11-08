@@ -13,6 +13,12 @@
 .qwen svg { width: 100%; height: auto; display: block; overflow: visible; }
 .qwen svg text { font-family: var(--site-font); font-size: 11px; fill: var(--site-text-soft); }
 .qwen .gridline { stroke: var(--site-hairline); }
+.qwen .dollar-line { stroke: var(--site-text); stroke-width: 2; }
+.qwen .dollar-dot { fill: var(--site-text); stroke: var(--site-bg); stroke-width: 2; }
+.qwen .baseline { stroke: var(--site-text-soft); stroke-width: 1.5; }
+.qwen .livemark { stroke: var(--site-text-soft); }
+.legend i.sw-line, .legend i.sw-dash { height: 0; width: var(--space-4); border-radius: 0; vertical-align: middle; border-top: 2px solid var(--site-text); }
+.legend i.sw-dash { border-top: 2px dashed var(--site-text-soft); }
 .qwen .trend { stroke: var(--site-text-soft); stroke-width: 1.5; }
 .qwen table { width: 100%; border-collapse: collapse; font-size: var(--text-body-sm); font-variant-numeric: tabular-nums; margin-top: var(--space-3); }
 .qwen th, .qwen td { overflow-wrap: break-word; text-align: left; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--site-hairline); }
