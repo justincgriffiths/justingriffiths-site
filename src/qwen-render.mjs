@@ -108,7 +108,8 @@ function costChart() {
 function latency() {
   const q = data.latency_ms.qwen, h = data.latency_ms.haiku;
   const row = (name, v) => `<tr><th>${name}</th>${v ? `<td data-label="Items">${v.n}</td><td data-label="Median">${v.p50} ms</td><td data-label="90th percentile">${v.p90} ms</td>` : `<td colspan="3" class="pending">Pending: no live items yet</td>`}</tr>`;
-  return `<table class="stack"><thead><tr><th></th><th>Items</th><th>Median</th><th>90th percentile</th></tr></thead><tbody>${row("Qwen", q.n ? q : null)}${row("Haiku", h)}</tbody></table>`;
+  return `<table class="stack"><thead><tr><th></th><th>Items</th><th>Median</th><th>90th percentile</th></tr></thead><tbody>${row("Qwen", q.n ? q : null)}${row("Haiku (shadow pair)", h)}</tbody></table>
+    ${h ? `<p class="note">Haiku is timed on the shadow pair: a second call on the same prompt Qwen answered.</p>` : ""}`;
 }
 
 function accuracy() {
