@@ -45,3 +45,4 @@
 /* Calls by day (site#88 rework): per-job history charts. A one-day job is a single datapoint, a big number. */
 .qwen .single { font-family: var(--site-font); margin: var(--space-2) 0 var(--space-1); color: var(--site-text); }
 .qwen .single .big { font-size: var(--text-h2, 2.5rem); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.qwen .savings { margin: var(--space-1) 0 var(--space-2); color: var(--site-text); font-size: var(--text-body-sm); line-height: var(--leading-normal); }

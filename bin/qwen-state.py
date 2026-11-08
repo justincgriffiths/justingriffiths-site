@@ -8,10 +8,12 @@ Never exported: message ids, subjects, senders, issue titles, issue numbers, rep
 Sources (override with env for tests): QWEN_RUNS (cos/runs dir), QWEN_COST_DB (cos/state/cost.db),
 QWEN_TAG_LOG / QWEN_TAG_JSONL (the canonical issue-tag.{log,jsonl} in ~/.local/state/issue-tag, or ISSUE_TAG_STATE; skill-library#564).
 QWEN_CRON_RUNS (cron-triage runs.jsonl), QWEN_DECLUTTER / QWEN_REAP (their qwen.jsonl); each may be a colon-separated list (site#79).
+History (site#90): QWEN_WRAP_DIR (wrap/*.json, one record per session), QWEN_PR_SWEEP (pr-sweep/runs.jsonl),
+QWEN_SESSION_FINISH / QWEN_DECLUTTER_SWEEP (the session-cleanup logs). Counts, dates and dollars only.
 Usage: bin/qwen-state.py [--now ISO]
 """
 import glob, json, os, re, sqlite3, sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 
 HOME = os.path.expanduser("~")
@@ -26,6 +28,11 @@ STATE = f"{HOME}/.local/state"
 CRON_RUNS = os.environ.get("QWEN_CRON_RUNS", f"{STATE}/cron-triage/runs.jsonl").split(":")
 DECLUTTER = os.environ.get("QWEN_DECLUTTER", f"{STATE}/declutter/qwen.jsonl").split(":")
 REAP = os.environ.get("QWEN_REAP", f"{STATE}/session-reap/qwen.jsonl").split(":")
+WRAP_DIR = os.environ.get("QWEN_WRAP_DIR", f"{STATE}/wrap")
+WRAP_ROW_LOG = os.environ.get("QWEN_WRAP_ROW_LOG", f"{WRAP_DIR}/wrap_row.log")
+PR_SWEEP = os.environ.get("QWEN_PR_SWEEP", f"{STATE}/pr-sweep/runs.jsonl").split(":")
+CLEANUP_LOGS = (os.environ.get("QWEN_SESSION_FINISH", f"{STATE}/session-finish/session-finish.log").split(":")
+                + os.environ.get("QWEN_DECLUTTER_SWEEP", f"{STATE}/declutter-sweep/sweep.log").split(":"))
 # Escalation reasons that are a design rule, not a Qwen failure (skill-library#583): reported apart from fallbacks.
 POLICY = ("needs-name", "needs-del")
 
@@ -307,6 +314,89 @@ def calls_by_day(t_share, i_share, wf, shadow, pre=None):
     return sorted(out, key=lambda r: r["day"], reverse=True)  # newest day first, jobs A-Z within a day
 
 
+HISTORY_MODELS = ("opus", "sonnet", "haiku")  # fixed names; a model string from a row is only ever matched against these
+NOT_LOGGED = "not logged"
+
+
+def model_bucket(m):
+    m = str(m or "").lower()
+    for k in HISTORY_MODELS:
+        if k in m: return k
+    return "qwen3-coder:30b" if "qwen" in m else "other"
+
+
+def hist_wrap():
+    """Wrap: one line of wrap_row.log is one wrap (every line exit=0), so it is the count from its first day on. The per-session
+    JSON records stop on 2026-10-29 and carry no timestamp (day = file modified day); they count only for days before the log
+    begins, so nothing is counted twice. No model or cost is logged. Only counts and days are read, never the asks or ids."""
+    out = defaultdict(lambda: {"runs": 0, "models": {NOT_LOGGED: 0}, "usd": None})
+    log = defaultdict(int)
+    try:
+        for line in open(WRAP_ROW_LOG).read().splitlines():
+            m = re.match(r"\[(\d{4}-\d{2}-\d{2})T", line)
+            if m: log[m[1]] += 1
+    except OSError: pass
+    first = min(log) if log else None
+    for dy, n in log.items(): out[dy]["runs"] += n; out[dy]["models"][NOT_LOGGED] += n
+    for p in glob.glob(f"{WRAP_DIR}/*.json"):
+        try: dy = datetime.fromtimestamp(os.path.getmtime(p), timezone.utc).strftime("%Y-%m-%d")
+        except OSError: continue
+        if first and dy >= first: continue
+        out[dy]["runs"] += 1; out[dy]["models"][NOT_LOGGED] += 1
+    return out
+
+
+def hist_pr_sweep():
+    out = defaultdict(lambda: {"runs": 0, "models": defaultdict(int), "usd": 0.0, "usd_models": defaultdict(float)})
+    for r in rows(PR_SWEEP):
+        dy = day(r.get("ts"))
+        if not dy: continue
+        mb = model_bucket(r.get("model"))
+        out[dy]["runs"] += 1; out[dy]["models"][mb] += 1; out[dy]["usd"] += _num(r.get("cost_usd")); out[dy]["usd_models"][mb] += _num(r.get("cost_usd"))
+    return out
+
+
+def hist_cleanup():
+    """Session cleanup: every live (not dry-run) line of the finish and declutter-sweep logs is one run. Both are scripts;
+    neither logs a model call or a cost. The line's body text is never read."""
+    out = defaultdict(lambda: {"runs": 0, "models": {"script": 0}, "usd": None})
+    for p in CLEANUP_LOGS:
+        try: lines = open(p).read().splitlines()
+        except OSError: continue
+        for line in lines:
+            m = re.match(r"\[(\d{4}-\d{2}-\d{2})T", line); st = re.search(r"\bstatus=([\w-]+)", line)
+            if not m or (st and st[1] in ("dry", "dry-run")) or "--dry-run" in line: continue
+            out[m[1]]["runs"] += 1; out[m[1]]["models"]["script"] += 1
+    return out
+
+
+def addd(d, n):
+    return (datetime.strptime(d, "%Y-%m-%d") + timedelta(days=n)).strftime("%Y-%m-%d")
+
+
+def history(now_day, qwen_first):
+    """History per command (site#90). days = only the days with a record: a day with none is absent, never a zero.
+    usd is null where the source logs no cost. marker = the day the command's Qwen path went live (null if none yet).
+    savings = actual spend, last 7 days (now-6..now) against the 7 before; cost_logged false means say "cost not logged"."""
+    cmds = [("wrap", hist_wrap(), None), ("pr-sweep", hist_pr_sweep(), None),
+            ("session-cleanup", hist_cleanup(), qwen_first.get("session-cleanup"))]
+    out = []
+    for key, by, marker in cmds:
+        days = [{"day": d, "runs": v["runs"], "models": {k: n for k, n in v["models"].items() if n},
+                 "usd": None if v["usd"] is None else round(v["usd"], 4),
+                 **({"usd_models": {k: round(x, 4) for k, x in v["usd_models"].items() if x}} if v.get("usd_models") else {})} for d, v in sorted(by.items()) if v["runs"]]
+        logged = any(r["usd"] is not None for r in days)
+        win = lambda lo, hi: [r for r in days if addd(now_day, lo) <= r["day"] <= addd(now_day, hi)]
+        last, prior = win(-6, 0), win(-13, -7)
+        sv = {"cost_logged": logged, "last7_runs": sum(r["runs"] for r in last), "prior7_runs": sum(r["runs"] for r in prior),
+              "last7_usd": round(sum(r["usd"] or 0 for r in last), 4) if logged else None,
+              "prior7_usd": round(sum(r["usd"] or 0 for r in prior), 4) if logged else None}
+        out.append({"command": key, "first_logged": days[0]["day"] if days else None, "runs": sum(r["runs"] for r in days),
+                    "usd": round(sum(r["usd"] or 0 for r in days), 4) if logged else None,
+                    "marker": {"day": marker, "label": "Qwen live"} if marker else None, "savings": sv, "days": days})
+    return {"through": now_day, "commands": out}
+
+
 def build():
     t_share, reasons, labels, lat = triage()
     i_share, i_models = issue_tag()
@@ -321,12 +411,15 @@ def build():
     avg = lambda vs: (round(sum(v["usd"] for v in vs) / max(sum(v["runs"] for v in vs), 1), 4) if vs else None)
     pctl = lambda p: (lat[min(int(len(lat) * p), len(lat) - 1)] if lat else None)
     wf = workflows()
+    as_of = os.environ.get("QWEN_AS_OF") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    qdays_cleanup = [r["day"] for k in ("declutter", "session-reap") for r in wf[k]["share_by_day"] if r["answered"]]
     return {
         "schema": 1,
         "model": "qwen3-coder:30b",
         # When these aggregates were read from the logs (UTC). /qwen/ shows it as "Data as of" (site#60).
         # QWEN_AS_OF pins it for tests.
-        "as_of": os.environ.get("QWEN_AS_OF") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "as_of": as_of,
+        "history": history(as_of[:10], {"session-cleanup": min(qdays_cleanup) if qdays_cleanup else None}),
         "share_by_day": {"triage": series(t_share), "issue-tag": series(i_share)},
         "workflows": wf,
         "calls_by_day": calls_by_day(t_share, i_share, wf, triage_shadow(), haiku_only_triage()),
