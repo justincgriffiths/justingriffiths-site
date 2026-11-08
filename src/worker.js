@@ -18,6 +18,7 @@ const HUB_PATHS = new Set(["/", "/index.html", "/site.css", "/style.css", "/favi
 const GATED_PREFIX = "/fleet";
 const META_PREFIX = `${GATED_PREFIX}/meta`, META_STATE_PATH = `${META_PREFIX}/state.json`, META_KEY = "meta.json";
 const STATE_PATH = `${GATED_PREFIX}/state.json`, STATE_KEY = "state.json";
+const GAME_STATE_PATH = `${GATED_PREFIX}/game/state.json`, GAME_KEY = "game/state.json";
 const GATED_HEADERS = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY", "Referrer-Policy": "no-referrer" };
 
 // The token was already verified; this reads its email claim and checks the allowlist. Fails closed.
@@ -92,6 +93,12 @@ export default {
         const state = env.FLEET_KV ? await env.FLEET_KV.get(STATE_KEY) : null;
         if (state === null) return new Response("Not found", { status: 404, headers: { "Cache-Control": "private, no-store" } });
         return new Response(state, { headers: { ...GATED_HEADERS, "Content-Type": "application/json; charset=utf-8" } });
+      }
+      // Qwen game report (bin/game-kv.sh writes it). Same gate as the fleet state; no key means 404.
+      if (url.pathname === GAME_STATE_PATH) {
+        const game = env.FLEET_KV ? await env.FLEET_KV.get(GAME_KEY) : null;
+        if (game === null) return new Response("Not found", { status: 404, headers: { "Cache-Control": "private, no-store" } });
+        return new Response(game, { headers: { ...GATED_HEADERS, "Content-Type": "application/json; charset=utf-8" } });
       }
       const res = await env.ASSETS.fetch(request);
       const out = new Response(res.body, res);

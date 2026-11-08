@@ -40,6 +40,7 @@ a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
 .skip:hover { color: var(--site-box-text); background: var(--site-box-alt); }
 .icon { display: block; flex: none; }
 
+<<<<<<< ours
 /* ---- Quiet CTA (src/quiet-cta.mjs, docs/quiet-cta.md): a text link, hairline underline, no fill, no box.
    Controls speak in the heading face; the underline brightens on hover. At least --tap tall. ---- */
 .quiet-cta {
@@ -52,6 +53,27 @@ a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
 .quiet-cta:focus-visible { outline-offset: 2px; }
 .quiet-links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin-top: var(--space-2); }
 .quiet-links .quiet-cta { padding-inline: 0; }
+=======
+/* ---- Buttons: a box on the ground, so paper-light rules: ink border, shadow into the void.
+   They press onto their shadow. ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: var(--tap); padding: var(--space-3) var(--space-6);
+  font-family: var(--site-heading-font); font-size: var(--text-body); font-weight: var(--weight-bold); line-height: 1.2;
+  text-decoration: none; text-align: center; text-wrap: balance; cursor: pointer;
+  border: var(--site-box-border); border-radius: var(--site-radius-control); box-shadow: var(--site-shadow);
+  transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+}
+.btn:hover { text-decoration: none; }
+.btn:active { transform: translate(4px, 4px); box-shadow: none; }
+.btn-primary { background: var(--site-accent); color: var(--site-accent-ink); }
+.btn-primary:hover { background: var(--site-accent-hover); color: var(--site-accent-ink); }
+.btn-secondary { background: var(--site-box); color: var(--site-box-text); }
+.btn-secondary:hover { background: var(--site-box-alt); color: var(--site-box-text); }
+.btn-sm { white-space: nowrap; padding: var(--space-2) var(--space-4); font-size: var(--text-body-sm); box-shadow: var(--site-shadow-sm); }
+.btn-sm:active { transform: translate(2px, 2px); }
+.btn:focus-visible { outline-offset: 4px; }
+>>>>>>> theirs
 
 /* ---- Header ---- */
 .site-header {

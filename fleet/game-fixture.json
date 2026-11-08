@@ -1,0 +1,31 @@
+{
+  "schema": "game-state/1",
+  "generated_at": "2026-01-01T12:00:00Z",
+  "masked": true,
+  "rules_md": "# The Demo Game\n\n**Purpose.** A made-up example so the page has something to draw. None of this is real.\n\n## Rounds\n- A round is two hours.\n- Scores close when the round ends.\n\n## Scoring\n| Event | Points |\n|---|---|\n| `saved_run` | +2 |\n| `fell_back` | -1 |\n| `late` | -2 |\n\n## Limits\n- One score per event.\n- Spend counts against the round.\n",
+  "learnings_md": "# Lessons\n- Check the cheap path first (fake lesson one).\n- Small batches fail small (fake lesson two).\n- **Name the evidence** when you claim a save (fake lesson three).\n",
+  "rounds": [
+    {
+      "round": 3, "start": "2026-01-01T10:00:00Z", "end": "2026-01-01T12:00:00Z", "rules": "v2", "game_usd": 0.42, "learnings": ["Fake lesson three"],
+      "events": [
+        { "ts": "2026-01-01T10:20:00Z", "round": 3, "rules": "v2", "agent": "●DEMO_ALPHA", "event": "saved_run", "points": 2, "usd": 0.12, "evidence": "https://example.com/demo/3", "lesson": "Batch of one first." },
+        { "ts": "2026-01-01T11:05:00Z", "round": 3, "rules": "v2", "agent": "●DEMO_BETA", "event": "fell_back", "points": -1, "usd": -0.3, "evidence": "https://example.com/demo/4", "lesson": "Cap the prompt size." },
+        { "ts": "2026-01-01T11:40:00Z", "round": 3, "rules": "v2", "agent": "●DEMO_ALPHA", "event": "saved_run", "points": 2, "usd": 0.15, "evidence": "https://example.com/demo/5", "lesson": "Reuse the last answer." }
+      ]
+    },
+    {
+      "round": 2, "start": "2026-01-01T08:00:00Z", "end": "2026-01-01T10:00:00Z", "rules": "v2", "game_usd": 0.1, "learnings": ["Fake lesson two"],
+      "events": [
+        { "ts": "2026-01-01T08:30:00Z", "round": 2, "rules": "v2", "agent": "●DEMO_GAMMA", "event": "saved_run", "points": 2, "usd": 0.1, "evidence": "https://example.com/demo/2", "lesson": "Say what you checked." },
+        { "ts": "2026-01-01T09:30:00Z", "round": 2, "rules": "v2", "agent": "●DEMO_BETA", "event": "late", "points": -2, "usd": 0, "evidence": "no link", "lesson": "Start earlier." }
+      ]
+    },
+    {
+      "round": 1, "start": "2026-01-01T06:00:00Z", "end": "2026-01-01T08:00:00Z", "rules": "v1", "game_usd": 0, "learnings": [],
+      "events": [
+        { "ts": "2026-01-01T06:45:00Z", "round": 1, "rules": "v1", "agent": "●DEMO_ALPHA", "event": "saved_run", "points": 2, "usd": 0.05, "evidence": "https://example.com/demo/1", "lesson": "Start with one." }
+      ]
+    }
+  ],
+  "totals": { "●DEMO_ALPHA": 6, "●DEMO_GAMMA": 2, "●DEMO_BETA": -3 }
+}
