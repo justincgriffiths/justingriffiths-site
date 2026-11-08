@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, chmodSync, existsSync } from "node:fs";
+import { spawnSync, execFileSync } from "node:child_process";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, chmodSync, existsSync, copyFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import vm from "node:vm";
@@ -31,6 +31,7 @@ const kv = (env, ...args) => {
   const r = spawnSync("bash", ["bin/qwen-kv.sh", ...args], { encoding: "utf8", env: {
     // qwen-kv.sh puts /opt/homebrew/bin ahead of PATH, so the npx stub is passed by path, never found on PATH.
     PATH: stubDir + ":" + process.env.PATH, QWEN_KV_NPX: join(stubDir, "npx"), HOME: process.env.HOME, QWEN_KV_STATE: state, CURL_CALLS: calls, CURL_BODY: body,
+    QWEN_KV_REMOTE: process.cwd(), QWEN_KV_REF: "HEAD",
     CLOUDFLARE_API_TOKEN: "sekret-token-value", FLEET_KV_NAMESPACE_ID: "nsid-value", FLEET_KV_DIR: join(dir, "nocfg"), ...env } });
   return { ...r, state, called: existsSync(calls), calls: existsSync(calls) ? readFileSync(calls, "utf8") : "", sent: existsSync(body) ? readFileSync(body, "utf8") : null };
 };
@@ -150,4 +151,40 @@ test("no token: the put goes through the logged-in wrangler, to the wrangler.jso
   const bad = kv({ QWEN_KV_DATA: file("bad-wr.json", { ...good, subject: "SENTINEL SUBJECT" }), CLOUDFLARE_API_TOKEN: "", FLEET_KV_NAMESPACE_ID: "" });
   assert.equal(bad.status, 1); assert.match(bad.stdout, /PRIVACY GATE BLOCKED/);
   assert.equal(bad.called, false, "wrangler was called");
+});
+
+// site#106: the exporter and renderer come from a fresh snapshot of origin/main, never the checkout, and the document must carry every key the renderer reads.
+const { history, calls_by_day, ...old } = good; // what the stale exporter wrote
+test("a document missing keys the renderer reads is refused: exit 1, no put, names the keys", () => {
+  for (const doc of [old, { ...good, history: undefined }]) {
+    const r = kv({ QWEN_KV_DATA: file("nokeys.json", doc) });
+    assert.equal(r.status, 1, r.stdout); assert.match(r.stdout, /lacks keys the renderer reads: .*history/);
+    assert.equal(r.called, false, "KV was called"); assert.ok(!existsSync(join(r.state, "last-put.sha256")));
+  }
+  assert.match(kv({ QWEN_KV_DATA: file("nokeys2.json", old) }).stdout, /calls_by_day/);
+});
+test("the required keys are derived from the renderer in the snapshot, not a hand list", () => {
+  const r = spawnSync("bash", ["-c", `git grep -o '\\bdata\\.[a-z_]*' HEAD -- src/qwen-render.mjs | sed 's/.*data\\.//' | sort -u`], { encoding: "utf8" });
+  for (const k of ["history", "calls_by_day", "share_by_day", "breakdowns"]) assert.match(r.stdout, new RegExp("^" + k + "$", "m"));
+});
+// A throwaway origin: the real renderer and leakcheck, plus a stub exporter whose output we choose.
+function remote(doc) {
+  const d = mkdtempSync(join(tmpdir(), "qkvrem-")); mkdirSync(join(d, "src")); mkdirSync(join(d, "bin"));
+  copyFileSync("src/qwen-render.mjs", join(d, "src/qwen-render.mjs")); copyFileSync("bin/qwen-leakcheck.py", join(d, "bin/qwen-leakcheck.py"));
+  writeFileSync(join(d, "bin/qwen-state.py"), `import sys\nsys.stdout.write(${JSON.stringify(JSON.stringify(doc))})\n`);
+  const g = (...a) => execFileSync("git", ["-C", d, "-c", "user.name=t", "-c", "user.email=t@t", ...a], { stdio: "pipe" });
+  g("init", "-q", "-b", "main"); g("add", "-A"); g("commit", "-q", "-m", "x");
+  return d;
+}
+test("the export runs the exporter from the fetched ref: a stale one is refused, a current one is put", () => {
+  const stale = kv({ QWEN_KV_REMOTE: remote(old), QWEN_KV_REF: "main" });
+  assert.equal(stale.status, 1); assert.match(stale.stdout, /lacks keys/); assert.equal(stale.called, false);
+  const fresh = kv({ QWEN_KV_REMOTE: remote(good), QWEN_KV_REF: "main" });
+  assert.equal(fresh.status, 0, fresh.stdout); assert.equal(fresh.called, true); assert.deepEqual(JSON.parse(fresh.sent), good);
+});
+test("a failed fetch refuses the export: exit 1, no put, even with data supplied", () => {
+  for (const env of [{ QWEN_KV_REMOTE: join(dir, "no-such-repo") }, { QWEN_KV_REF: "no-such-ref" }]) {
+    const r = kv({ QWEN_KV_DATA: file("fetchfail.json", good), ...env });
+    assert.equal(r.status, 1); assert.match(r.stdout, /fetch failed/); assert.equal(r.called, false);
+  }
 });
