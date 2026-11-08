@@ -164,7 +164,7 @@ function historyOne(c, last) {
   const by = Object.fromEntries(c.days.map((r) => [r.day, r])), first = c.days[0].day;
   const used = [...new Set(c.days.flatMap((r) => Object.keys(r.models)))], keys = Object.keys(HM).filter((k) => used.includes(k)).concat(used.filter((k) => !HM[k]));
   const lab = (k) => (HM[k] || [k, C.capped])[0], col = (k) => (HM[k] || [k, C.capped])[1];
-  const head = `<h3>${esc(name)}</h3>${savingsLine(c.savings)}`;
+  const head = `<h3>${esc(name)}</h3>${savingsLine(c.savings)}${(c.stale_sources || []).map((x) => `<p class="note stale-source">${x.covered ? `Source ${esc(x.source)} stopped on ${esc(x.last_day)}; runs since then come from the command's other source.` : `Source ${esc(x.source)} has no record since ${esc(x.last_day)}.`}</p>`).join("")}`;
   const note = (extra) => `<p class="note">first logged ${esc(first)} · ${c.runs} ${c.runs === 1 ? "run" : "runs"}${c.usd == null ? " · cost not logged" : ` · ${usd(c.usd)} spent`}${extra}.</p>`;
   const mk = c.marker && c.marker.day ? ` · ${esc(c.marker.label)} since ${esc(c.marker.day)}` : "";
   if (c.days.length === 1) {
