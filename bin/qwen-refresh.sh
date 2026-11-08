@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # qwen-refresh.sh — regenerate content/qwen/data.json from the live sources and deploy /qwen/ only when it changed.
-# Long name: qwen-page-refresh-after-sweep. Runs from launchd (bin/com.justin.qwen-refresh.plist) at 08:10 and 14:10 ET.
+# Long name: qwen-page-refresh-after-sweep. Runs from launchd (bin/com.justin.qwen-refresh.plist) every two hours, 08:10-22:10 ET.
 #   bin/qwen-refresh.sh              generate, gate, deploy on change        (the loaded job is the only caller that deploys)
 #   bin/qwen-refresh.sh --no-deploy  same gates, builds the snapshot, stops before `wrangler deploy`
 # Steps: 1 snapshot a fresh origin/main (git archive)  2 qwen-state.py -> data.json inside it

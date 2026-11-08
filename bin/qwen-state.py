@@ -10,6 +10,7 @@ QWEN_TAG_LOG / QWEN_TAG_JSONL (the canonical issue-tag.{log,jsonl} in ~/.local/s
 Usage: bin/qwen-state.py [--now ISO]
 """
 import glob, json, os, re, sqlite3, sys
+from datetime import datetime, timezone
 from collections import defaultdict
 
 HOME = os.path.expanduser("~")
@@ -186,6 +187,9 @@ def build():
     return {
         "schema": 1,
         "model": "qwen3-coder:30b",
+        # When these aggregates were read from the logs (UTC). /qwen/ shows it as "Data as of" (site#60).
+        # QWEN_AS_OF pins it for tests.
+        "as_of": os.environ.get("QWEN_AS_OF") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "share_by_day": {"triage": series(t_share), "issue-tag": series(i_share)},
         "fallback_reasons": reasons,
         "cost_per_run": {

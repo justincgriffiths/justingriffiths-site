@@ -26,3 +26,13 @@
 /* The charts draw in a 560-unit viewBox. On a phone that scales 11-unit labels to ~6px, so the
    labels grow in viewBox units to stay readable (~11px rendered at 375). */
 @media (max-width: 599.98px) { .qwen svg text { font-size: 18px; } }
+
+/* Freshness (site#60): when the numbers were read, right under the title. Sans, as a label;
+   a teal dot while fresh, the pending color once it is more than 12 hours old. */
+.asof { display: flex; align-items: baseline; gap: var(--space-2); font-family: var(--site-font); font-size: var(--text-body-sm); font-weight: var(--weight-medium); color: var(--site-text); margin-bottom: var(--space-6); font-variant-numeric: tabular-nums; }
+.asof .dot { flex: none; align-self: flex-start; margin-top: 0.45em; width: 10px; height: 10px; border-radius: var(--radius-xs); background: var(--site-accent); box-shadow: 0 0 0 3px var(--site-hover); }
+.asof.stale { color: var(--site-pending); }
+.asof.stale .dot { background: var(--site-pending); }
+.asof .age { color: var(--site-text-soft); }
+.asof.stale .age { color: var(--site-pending); }
+.qwen table { font-family: var(--site-font); }

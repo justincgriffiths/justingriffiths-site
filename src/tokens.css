@@ -239,6 +239,9 @@
   --font-sans: "Google Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: var(--font-sans);
   --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  /* Site serif for running sentences (site#60): sans for titles, serif for sentences. Not a DS face;
+     the site layer below is the only reader. */
+  --font-serif: "Newsreader", "Iowan Old Style", Charter, Georgia, serif;
 
   --weight-regular: 400;
   --weight-medium: 500;
@@ -391,8 +394,19 @@
   --tap: 44px;                                       /* minimum tap target */
   --header-h: 72px;                                  /* sticky header, as pedal-performance.com */
 
-  --site-font: var(--font-sans);
+  --site-font: var(--font-sans);                     /* titles, labels, controls, chart text */
   --site-heading-font: var(--font-display);
+  --site-prose-font: var(--font-serif);              /* sentences (site#60) */
+
+  /* Corners (site#60): the /marketing-101/ shapes, each a step less round.
+     box   14px (--radius-sticker-md) -> 10px     inner  8px (--radius-sticker-sm) -> 6px
+     control  pill (999px)            -> 12px     table head 10px                  -> 6px */
+  --site-radius-box: var(--radius-md);
+  --site-radius-inner: var(--radius-sm);
+  --site-radius-control: 12px;
+  --site-radius-tick: var(--radius-xs);
+  /* The /marketing-101/ box: a 3px void rule and the large offset */
+  --site-card-border: var(--border-width-thick) solid var(--night-900);
 
   /* The ground */
   --site-bg: var(--surface-night);                   /* night-800 */
