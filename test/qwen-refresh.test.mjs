@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { spawn, spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { mkdtempSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-// bin/qwen-refresh.sh with --no-deploy: the change gate and the privacy gate, from the current HEAD snapshot.
+// bin/qwen-refresh.sh (never deploys, site#78): the privacy gate and the build, from the current HEAD snapshot.
 const dir = mkdtempSync(join(tmpdir(), "qrefresh-"));
 // Runs the script in its own process group and kills the whole group on timeout, so a hung build leaves no orphans.
 const exec = (env, ms = 30000) => new Promise((resolve) => {
@@ -25,18 +25,9 @@ const baseEnv = (data, state, fleetBuild = fleetOk) => ({ QWEN_REFRESH_STATE: st
 const run = (data, state) => exec(baseEnv(data, state));
 const clean = JSON.parse(readFileSync("content/qwen/data.json", "utf8")); // real shape of the data the gates see
 
-test("changed + clean data passes the gates and is not deployed", async () => {
+test("clean data passes the gates and is not deployed", async () => {
   const r = await run(clean, join(dir, "s1"));
   assert.equal(r.status, 0); assert.match(r.stdout, /privacy gate clean; --no-deploy/);
-});
-
-test("unchanged data exits 0 with nothing to deploy", async () => {
-  const state = join(dir, "s2");
-  spawnSync("mkdir", ["-p", state]);
-  const sum = spawnSync("shasum", ["-a", "256"], { input: JSON.stringify(clean), encoding: "utf8" }).stdout.split(" ")[0];
-  writeFileSync(join(state, "last-deployed.sha256"), sum + "\n");
-  const r = await run(clean, state);
-  assert.equal(r.status, 0); assert.match(r.stdout, /unchanged/);
 });
 
 test("a planted per-message field blocks with a non-zero exit and names the rule, not the value", async () => {
@@ -44,7 +35,6 @@ test("a planted per-message field blocks with a non-zero exit and names the rule
     const r = await run(bad, join(dir, "s3"));
     assert.equal(r.status, 1); assert.match(r.stdout, /PRIVACY GATE BLOCKED/);
     assert.ok(!/SENTINEL|sentinel@/.test(r.stdout), "the leaked value was echoed");
-    assert.ok(!existsSync(join(dir, "s3", "last-deployed.sha256")));
   }
 });
 
