@@ -351,10 +351,10 @@ test("stale sources: the page says which source stopped and when, only under tha
   const { renderData } = await import("../src/qwen-render.mjs");
   const page = renderData(JSON.parse(out)), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="fallbacks"'));
   assert.match(sec, /Source wrap session records stopped on 2026-11-03; runs since then come from the command's other source/);
-  assert.doesNotMatch(sec, /missing, not zero/);
+  assert.doesNotMatch(sec, /missing, not zero|has no record since/);
   assert.equal((sec.match(/stale-source/g) || []).length, 1);
   const idle = JSON.parse(out); idle.history.commands.forEach((c) => { c.stale_sources = c.command === "pr-sweep" ? [{ source: "pr-sweep runs", last_day: "2026-11-01", covered: false }] : []; });
-  const si = renderData(idle); assert.match(si, /Source pr-sweep runs last wrote on 2026-11-01; its days after that are missing, not zero/);
+  const si = renderData(idle); assert.match(si, /Source pr-sweep runs has no record since 2026-11-01\./);
   assert.doesNotMatch(si, /runs since then come from/);
   const fresh = JSON.parse(out); fresh.history.commands.forEach((c) => { c.stale_sources = []; });
   assert.doesNotMatch(renderData(fresh), /last wrote on/);
