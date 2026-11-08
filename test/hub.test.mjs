@@ -19,6 +19,18 @@ test("Lab section lists Qwen rollout and Fleet", () => {
   assert.match(lab, /Sign-in required/);
 });
 
+test("no mailto or personal email address on the hub (#53)", () => {
+  assert.ok(!html.includes("mailto:"));
+  assert.ok(!/@justingriffiths\.com/.test(html));
+});
+
+test("cover Contact and Contact section both point at the booking link (#53)", () => {
+  const cover = html.slice(html.indexOf("Contact</dt>"), html.indexOf("Contact</dt>") + 200);
+  assert.match(cover, /href="https:\/\/cal\.com\/justin-griffiths"/);
+  const section = html.slice(html.indexOf('id="contact"'));
+  assert.match(section, /Book a call<\/dt><dd><a href="https:\/\/cal\.com\/justin-griffiths"/);
+});
+
 test(".info link points at /archive/", () => {
   assert.ok(!html.includes("justingriffiths.info"));
   assert.match(html, /href="\/archive\/"/);
