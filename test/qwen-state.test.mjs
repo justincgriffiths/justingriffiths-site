@@ -333,3 +333,27 @@ test("history charts: PR sweep bar height is dollars per day, other commands sta
   assert.match(sec, /PR sweeps dollars per day by model/); assert.match(sec, /bar height is dollars per day/);
   assert.match(sec, /Wrap runs per day by model/); assert.match(sec, /2026-11-01 Sonnet: \$1\.50, 1 run/);
 });
+
+// site#94: a source that stopped writing is flagged, not charted as a drop to zero.
+test("stale sources: wrap's session records stopped while its run log kept writing; nothing else is flagged", () => {
+  const h = hist();
+  assert.deepEqual(h.wrap.stale_sources, [{ source: "wrap session records", last_day: "2026-11-03" }]);
+  assert.deepEqual(h["pr-sweep"].stale_sources, []); assert.deepEqual(h["session-cleanup"].stale_sources, []);
+});
+
+test("stale sources: when every source of a command is quiet, nothing is flagged (the command itself is idle)", () => {
+  const later = JSON.parse(execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env, ...wfEnv, QWEN_AS_OF: "2026-12-01T00:00:00Z",
+    QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"), QWEN_TAG_LOG: join(dir, "tag.log"), QWEN_TAG_JSONL: join(dir, "tag.jsonl") } }));
+  for (const c of later.history.commands) assert.deepEqual(c.stale_sources, [], c.command);
+});
+
+test("stale sources: the page says which source stopped and when, only under that command, and the output stays leakcheck-clean", async () => {
+  const { renderData } = await import("../src/qwen-render.mjs");
+  const page = renderData(JSON.parse(out)), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="fallbacks"'));
+  assert.match(sec, /Source wrap session records last wrote on 2026-11-03/);
+  assert.equal((sec.match(/stale-source/g) || []).length, 1);
+  const fresh = JSON.parse(out); fresh.history.commands.forEach((c) => { c.stale_sources = []; });
+  assert.doesNotMatch(renderData(fresh), /last wrote on/);
+  const r = spawnSync("python3", ["bin/qwen-leakcheck.py"], { input: out, encoding: "utf8" });
+  assert.equal(r.status, 0, r.stderr);
+});

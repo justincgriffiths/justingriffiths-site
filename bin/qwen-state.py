@@ -325,6 +325,22 @@ def model_bucket(m):
     return "qwen3-coder:30b" if "qwen" in m else "other"
 
 
+# site#94: newest record day per source, per command. A source with no record in STALE_DAYS while another source of the same
+# command is still writing is flagged in history[].stale_sources (name and last-seen day only), never charted as a drop to zero.
+STALE_DAYS = 3
+SEEN = defaultdict(dict)
+
+
+def seen(cmd, src, dy):
+    if dy and dy > SEEN[cmd].get(src, ""): SEEN[cmd][src] = dy
+
+
+def stale_sources(cmd, now_day):
+    src = SEEN.get(cmd, {}); cut = addd(now_day, -STALE_DAYS)
+    live = {n for n, d in src.items() if d >= cut}
+    return [{"source": n, "last_day": d} for n, d in sorted(src.items()) if d < cut and live]
+
+
 def hist_wrap():
     """Wrap: one line of wrap_row.log is one wrap (every line exit=0), so it is the count from its first day on. The per-session
     JSON records stop on 2026-10-29 and carry no timestamp (day = file modified day); they count only for days before the log
@@ -334,13 +350,14 @@ def hist_wrap():
     try:
         for line in open(WRAP_ROW_LOG).read().splitlines():
             m = re.match(r"\[(\d{4}-\d{2}-\d{2})T", line)
-            if m: log[m[1]] += 1
+            if m: log[m[1]] += 1; seen("wrap", "wrap run log", m[1])
     except OSError: pass
     first = min(log) if log else None
     for dy, n in log.items(): out[dy]["runs"] += n; out[dy]["models"][NOT_LOGGED] += n
     for p in glob.glob(f"{WRAP_DIR}/*.json"):
         try: dy = datetime.fromtimestamp(os.path.getmtime(p), timezone.utc).strftime("%Y-%m-%d")
         except OSError: continue
+        seen("wrap", "wrap session records", dy)
         if first and dy >= first: continue
         out[dy]["runs"] += 1; out[dy]["models"][NOT_LOGGED] += 1
     return out
@@ -351,6 +368,7 @@ def hist_pr_sweep():
     for r in rows(PR_SWEEP):
         dy = day(r.get("ts"))
         if not dy: continue
+        seen("pr-sweep", "pr-sweep runs", dy)
         mb = model_bucket(r.get("model"))
         out[dy]["runs"] += 1; out[dy]["models"][mb] += 1; out[dy]["usd"] += _num(r.get("cost_usd")); out[dy]["usd_models"][mb] += _num(r.get("cost_usd"))
     return out
@@ -367,6 +385,7 @@ def hist_cleanup():
             m = re.match(r"\[(\d{4}-\d{2}-\d{2})T", line); st = re.search(r"\bstatus=([\w-]+)", line)
             if not m or (st and st[1] in ("dry", "dry-run")) or "--dry-run" in line: continue
             out[m[1]]["runs"] += 1; out[m[1]]["models"]["script"] += 1
+            seen("session-cleanup", os.path.splitext(os.path.basename(p))[0] + " log", m[1])
     return out
 
 
@@ -393,7 +412,8 @@ def history(now_day, qwen_first):
               "prior7_usd": round(sum(r["usd"] or 0 for r in prior), 4) if logged else None}
         out.append({"command": key, "first_logged": days[0]["day"] if days else None, "runs": sum(r["runs"] for r in days),
                     "usd": round(sum(r["usd"] or 0 for r in days), 4) if logged else None,
-                    "marker": {"day": marker, "label": "Qwen live"} if marker else None, "savings": sv, "days": days})
+                    "marker": {"day": marker, "label": "Qwen live"} if marker else None, "savings": sv,
+                    "stale_sources": stale_sources(key, now_day), "days": days})
     return {"through": now_day, "commands": out}
 
 
