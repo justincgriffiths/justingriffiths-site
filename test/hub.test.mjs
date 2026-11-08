@@ -25,11 +25,21 @@ test("no mailto or personal email address on the hub (#53)", () => {
   assert.ok(!/@justingriffiths\.com/.test(html));
 });
 
-test("cover Contact and Contact section both point at the booking link (#53)", () => {
-  const cover = html.slice(html.indexOf("Contact</dt>"), html.indexOf("Contact</dt>") + 200);
-  assert.match(cover, /href="https:\/\/cal\.com\/justin-griffiths"/);
-  const section = html.slice(html.indexOf('id="contact"'));
-  assert.match(section, /Book a call<\/dt><dd><a href="https:\/\/cal\.com\/justin-griffiths"/);
+test("the booking link is plain text in About and the footer only (#53, #67)", () => {
+  const book = /<a class="quiet-cta" href="https:\/\/cal\.com\/justin-griffiths" rel="noopener">Book a call<\/a>/;
+  const about = html.slice(html.indexOf('id="about"'), html.indexOf('id="work"'));
+  assert.match(about, book);
+  assert.match(html.slice(html.indexOf("<footer")), book);
+  assert.equal((html.match(/>Book a call</g) ?? []).length, 2);
+  const section = html.slice(html.indexOf('id="contact"'), html.indexOf("</main>"));
+  assert.doesNotMatch(section, /Book a call/);
+});
+
+test("About section is built from bio.json only (#67)", () => {
+  const about = html.slice(html.indexOf('id="about"'), html.indexOf('id="work"'));
+  assert.match(about, /<h2 class="section-title" id="about-title"><span class="num">01<\/span>About<\/h2>/);
+  const long = JSON.parse(readFileSync(new URL("../bio.json", import.meta.url), "utf8")).bio.long;
+  assert.ok(about.includes(long.replace(/&/g, "&amp;").replace(/'/g, "&#39;")), "About is not bio.long");
 });
 
 test(".info link points at /archive/", () => {
@@ -41,8 +51,9 @@ test("no placeholder logo tiles render (site#51)", () => {
   assert.doesNotMatch(html, /Logo pending|logo-ph/i);
 });
 
-test("the hero carries the Book a call button and a visual card", () => {
-  const hero = html.slice(html.indexOf('<section class="cover"'), html.indexOf('<nav class="index"'));
-  assert.match(hero, /<a class="btn btn-primary[^"]*" href="https:\/\/cal\.com\/justin-griffiths"[^>]*>Book a call<\/a>/);
-  assert.match(hero, /class="visual-card"/);
+test("the hero has no JG logo, no filled button and no Book a call (#67)", () => {
+  const hero = html.slice(html.indexOf('<section class="cover"'), html.indexOf('<nav class="index'));
+  assert.doesNotMatch(hero, /class="mark|JG monogram|visual-card|class="btn/);
+  assert.doesNotMatch(hero, /Book a call/);
+  assert.doesNotMatch(html, /class="brand"[^>]*>\s*<svg|class="mark/);
 });

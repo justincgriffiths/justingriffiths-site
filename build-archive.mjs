@@ -3,7 +3,8 @@
 // on the site chrome, so the nav's Archive link and the hub's Research link land somewhere (site#51).
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { chromeHead, siteHeader, bookButton, NAV_SCRIPT } from "./src/chrome.mjs";
+import { quietCta } from "./src/quiet-cta.mjs";
+import { chromeHead, siteHeader, bookLink, NAV_SCRIPT } from "./src/chrome.mjs";
 
 const ROOT = new URL("./archive/research/", import.meta.url);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -43,13 +44,13 @@ const html = `<!doctype html>
   <main id="main" class="wrap archive">
     <h1>Archive</h1>
     <p class="lede">A static snapshot of justingriffiths.info, my self-hosted research newsdesk. It is kept as it was${taken ? ` on <time datetime="${taken}">${taken}</time>` : ""}: ${total} pages, read-only, not indexed.</p>
-    <p><a class="btn btn-secondary" href="/archive/research/">Open the research home</a></p>
+    <p>${quietCta("/archive/research/", "Open the research home")}</p>
     <h2>Collections</h2>
     <ul class="collections">${collections.map((c) => `
       <li><a href="/archive/research/${esc(c.slug)}/"><span class="c-name">${esc(c.name)}</span><span class="c-n">${c.n} ${c.n === 1 ? "page" : "pages"}</span></a></li>`).join("")}
     </ul>
   </main>
-  <footer class="site-footer"><div class="wrap"><p>Snapshot taken by <code>bin/archive-snap.mjs</code>; the pages are unchanged apart from stripped scripts.</p>${bookButton("btn-sm")}</div></footer>
+  <footer class="site-footer"><div class="wrap"><p>Snapshot taken by <code>bin/archive-snap.mjs</code>; the pages are unchanged apart from stripped scripts.</p>${bookLink()}</div></footer>
   ${NAV_SCRIPT}
 </body>
 </html>

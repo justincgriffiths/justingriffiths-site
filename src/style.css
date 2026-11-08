@@ -1,9 +1,9 @@
 /* The hub at / (site#51). Pedal Design System, night lane only (Justin, 2026-11-08).
-   Loaded after /site.css (src/shallan.css + src/chrome.css), which carries the base, header and buttons.
+   Loaded after /site.css (src/shallan.css + src/chrome.css), which carries the base, header and the quiet CTA.
    Reads only --site-* aliases and DS scale tokens; no hex, no font names.
    Layout follows pedal-performance.com: mobile-first, full-bleed bands with a 2px rule between them,
    a 1200px content column, 20px gutters on phones and 40px from 768px, steps at 768px and 1024px.
-   Two box styles: the paper card (hero visual, facts at 1024+) and the buttons. */
+   One box style: the paper card (hero visual, facts at 1024+). No buttons: actions are quiet text links (site#67). */
 
 /* Overlines: the only all-caps, tiny and tracked */
 dt, .meta, .group, .tag, .placeholder span:first-child {
@@ -23,7 +23,6 @@ h1 {
 }
 .lede { --fit: 30ch; font-size: var(--text-h3); line-height: var(--leading-snug); letter-spacing: var(--tracking-snug); text-wrap: pretty; }
 .cover-actions { --cluster-gap: var(--space-4) var(--space-6); }
-.btn-lg { padding: var(--space-4) var(--space-8); font-size: var(--text-body-lg); }
 .cover-more {
   font-family: var(--site-font); display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap);
   font-weight: var(--weight-bold); color: var(--site-text); text-decoration: none;
@@ -48,12 +47,6 @@ h1 {
 }
 .visual-art { aspect-ratio: 4 / 3; color: var(--site-box-text); background: var(--site-art); border-radius: var(--site-radius-inner); overflow: hidden; display: grid; place-items: center; }
 .visual-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.mark { display: block; width: 100%; height: 100%; }
-.mark-dot { fill: var(--site-box-line); }
-.mark-ring { fill: none; stroke: var(--site-box-line); stroke-width: 4; }
-.mark-shadow { fill: var(--site-box-line); }
-.mark-disc { fill: var(--site-accent); stroke: var(--site-box-line); stroke-width: 4; }
-.mark-text { fill: var(--site-box-line); font-family: var(--site-heading-font); font-weight: var(--weight-bold); font-size: 72px; letter-spacing: var(--tracking-tight); }
 .visual-note { font-size: var(--text-body-sm); line-height: var(--leading-normal); color: var(--site-text-soft); }
 .visual-note code { font-family: var(--font-mono); font-size: 0.95em; color: var(--site-text); }
 

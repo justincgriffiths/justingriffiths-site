@@ -1,5 +1,5 @@
 // site#51: every page carries the same header: the site nav (Home, Lab: Qwen/Fleet/Flows, Pedal Design,
-// Marketing 101, Archive) and one primary action, Book a call. Every nav link must resolve through the Worker.
+// Marketing 101, Archive) and one quiet action, About me (a text link to /#about, site#67). Every nav link must resolve through the Worker.
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -38,13 +38,17 @@ test("the nav is Home, Lab (Qwen, Fleet, Flows), Pedal Design, Marketing 101, Ar
 });
 
 for (const [file, current] of PAGES) {
-  test(`${file}: site header with every nav link, Book a call, and the current page marked`, () => {
+  test(`${file}: site header with every nav link, a quiet About me link, and the current page marked`, () => {
     const html = readFileSync(dist(file), "utf8");
     const h = header(html);
     assert.ok(h.length > 0, "no site header");
     const hrefs = [...h.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
     for (const e of EXPECTED) assert.ok(hrefs.includes(e), `${file} header is missing ${e}`);
-    assert.match(h, new RegExp(`class="btn btn-primary[^"]*" href="${BOOK_URL.replace(/\./g, "\\.")}"[^>]*>Book a call<`));
+    assert.match(h, /<a class="quiet-cta header-cta" href="\/#about">About me<\/a>/);
+    assert.doesNotMatch(h, /Book a call|btn-primary/);
+    assert.doesNotMatch(html, /class="btn[ "]/, `${file} has a filled button`);
+    const book = html.match(/>Book a call</g) ?? [];
+    assert.ok(book.length <= 2, `${file}: Book a call appears ${book.length} times`);
     const item = NAV.flatMap((n) => [n, ...(n.items ?? [])]).find((n) => n.key === current);
     assert.match(h, new RegExp(`href="${item.href}"[^>]*aria-current="page"`), `${file} does not mark ${item.href}`);
     // Personal pages read Shallan (/site.css); /pedal-design/ reads the Pedal DS (site#60)

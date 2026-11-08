@@ -1,9 +1,12 @@
 // The site chrome every page shares (site#51): the <head> links, the sticky header with the site nav and
-// the one primary action (Book a call), and the small script that drives the menu. Pattern from
-// pedal-performance.com (pearmill/pedal-agency index.html + css/styles.css §4): links, then a primary
-// button on the right; below 1024px the links fold into a menu button.
+// the one quiet action (About me, a text link to /#about; site#67), and the small script that drives the menu.
+// Pattern from pedal-performance.com (pearmill/pedal-agency index.html + css/styles.css §4): links, then the
+// action on the right; below 1024px the links fold into a menu button. Booking is a plain text link in the
+// About section and the footer (bookLink), never a filled button.
 // Styles are src/chrome.css, shipped with src/shallan.css as /site.css (personal pages) and with
 // src/tokens.css as /pedal-design/site.css (the Pedal DS page).
+
+import { quietCta } from "./quiet-cta.mjs";
 
 export const BOOK_URL = "https://cal.com/justin-griffiths";
 
@@ -44,8 +47,7 @@ export const chromeHead = (sheet = "/site.css") => `<link rel="preconnect" href=
     <meta name="color-scheme" content="dark">
     <script>document.documentElement.classList.add("js")</script>`;
 
-export const bookButton = (cls = "", label = "Book a call") =>
-  `<a class="btn btn-primary${cls ? ` ${cls}` : ""}" href="${BOOK_URL}" rel="noopener">${esc(label)}</a>`;
+export const bookLink = (cls = "") => quietCta(BOOK_URL, "Book a call", { cls, external: true });
 
 const link = (item, current) =>
   `<a href="${esc(item.href)}"${item.key === current ? ' aria-current="page"' : ""}>${esc(item.label)}</a>`;
@@ -76,7 +78,7 @@ export function siteHeader(current = "") {
         </ul>
       </nav>
       <div class="header-actions">
-        ${bookButton("btn-sm header-cta")}
+        ${quietCta("/#about", "About me", { cls: "header-cta" })}
         <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav"><span class="sr-only">Menu</span>${ICON.menu}${ICON.close}</button>
       </div>
     </div>

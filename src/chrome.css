@@ -22,7 +22,7 @@ body {
 /* Sentences in --site-prose-font, titles in --site-font (site#60). Shallan sets the first to its serif
    (one-line revert: --shallan-sentence-face); the Pedal DS sets both to sans. */
 body { font-family: var(--site-prose-font); font-optical-sizing: auto; }
-h1, h2, h3, h4, h5, h6, .site-header, .site-footer .btn, .btn, button, summary, label, th, dt, legend, caption, svg text,
+h1, h2, h3, h4, h5, h6, .site-header, .site-footer .quiet-cta, .quiet-cta, button, summary, label, th, dt, legend, caption, svg text,
 .eyebrow, .meta, .group, .tag, .num, .legend, nav { font-family: var(--site-font); }
 /* A long word in a heading breaks before it pushes the page sideways (200% text, narrow phones) */
 h1, h2, h3, h4, h5, h6 { overflow-wrap: anywhere; }
@@ -40,25 +40,18 @@ a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
 .skip:hover { color: var(--site-box-text); background: var(--site-box-alt); }
 .icon { display: block; flex: none; }
 
-/* ---- Buttons: a box on the ground, so paper-light rules: ink border, shadow into the void.
-   They press onto their shadow. ---- */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
-  min-height: var(--tap); padding: var(--space-3) var(--space-6);
-  font-family: var(--site-heading-font); font-size: var(--text-body); font-weight: var(--weight-bold); line-height: 1.2;
-  text-decoration: none; text-align: center; text-wrap: balance; cursor: pointer;
-  border: var(--site-box-border); border-radius: var(--site-radius-control); box-shadow: var(--site-shadow);
-  transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+/* ---- Quiet CTA (src/quiet-cta.mjs, docs/quiet-cta.md): a text link, hairline underline, no fill, no box.
+   Controls speak in the heading face; the underline brightens on hover. At least --tap tall. ---- */
+.quiet-cta {
+  display: inline-flex; align-items: center; min-height: var(--tap); padding-inline: var(--space-2);
+  font-family: var(--site-heading-font); font-size: var(--text-body-sm); font-weight: var(--weight-medium, 500); line-height: 1.2;
+  color: var(--site-text); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--site-hairline);
+  white-space: nowrap;
 }
-.btn:hover { text-decoration: none; }
-.btn:active { transform: translate(4px, 4px); box-shadow: none; }
-.btn-primary { background: var(--site-accent); color: var(--site-accent-ink); }
-.btn-primary:hover { background: var(--site-accent-hover); color: var(--site-accent-ink); }
-.btn-secondary { background: var(--site-box); color: var(--site-box-text); }
-.btn-secondary:hover { background: var(--site-box-alt); color: var(--site-box-text); }
-.btn-sm { white-space: nowrap; padding: var(--space-2) var(--space-4); font-size: var(--text-body-sm); box-shadow: var(--site-shadow-sm); }
-.btn-sm:active { transform: translate(2px, 2px); }
-.btn:focus-visible { outline-offset: 4px; }
+.quiet-cta:hover { color: var(--site-link-hover); text-decoration-color: currentColor; }
+.quiet-cta:focus-visible { outline-offset: 2px; }
+.quiet-links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin-top: var(--space-2); }
+.quiet-links .quiet-cta { padding-inline: 0; }
 
 /* ---- Header ---- */
 .site-header {
@@ -156,7 +149,7 @@ a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
 /* The smallest phones: the name gives way before the action does */
 @media (max-width: 359.98px) {
   .brand { font-size: var(--text-body); }
-  .header-cta { padding-inline: var(--space-3); }
+  .header-cta { padding-inline: var(--space-1); }
 }
 
 /* ---- Site footer (shared by the pages that are not the hub) ---- */
@@ -168,7 +161,7 @@ a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .btn, .nav-item > a, .nav-group-toggle, .nav-group-toggle .icon { transition: none; }
+  .nav-item > a, .nav-group-toggle, .nav-group-toggle .icon { transition: none; }
 }
 
 /* Disclosure (docs/disclosure.md): collapsible section on native <details>. The summary row is a
