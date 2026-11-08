@@ -9,7 +9,8 @@
 import { verifyAccessJwt } from "./access.js";
 
 const APEX = "justingriffiths.com";
-// true: every .com path except /fleet and /media answers with public/construction.html (site#56).
+// true: every .com path except /fleet, /media and /qwen answers with public/construction.html (site#56;
+// /qwen stays live by Justin's call, 2026-11-08).
 // false puts .com back on the full site. The full site stays on the workers.dev staging host either way.
 const CONSTRUCTION = true;
 const ARCHIVE_PREFIX = "/archive";
@@ -40,7 +41,7 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
 
-    if (CONSTRUCTION && url.hostname === APEX && url.pathname !== GATED_PREFIX && !url.pathname.startsWith(`${GATED_PREFIX}/`) && url.pathname !== "/media" && !url.pathname.startsWith("/media/")) {
+    if (CONSTRUCTION && url.hostname === APEX && url.pathname !== GATED_PREFIX && !url.pathname.startsWith(`${GATED_PREFIX}/`) && url.pathname !== "/media" && !url.pathname.startsWith("/media/") && url.pathname !== "/qwen" && !url.pathname.startsWith("/qwen/")) {
       const res = await env.ASSETS.fetch(new Request(new URL("/construction", url), request));
       return new Response(res.body, { status: res.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" } });
     }
