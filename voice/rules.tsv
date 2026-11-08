@@ -1,0 +1,8 @@
+id	kind	regex	rule	why
+V-001	text	/(^|[\s(])i(?=[\s,.;:!?)]|$|'|’)/	No standalone lowercase "i"	The home intro writes "I" every time; a lowercase "i" is a pasted draft (#99).
+V-002	text	/\.{3,}/	No ellipses	Approved pages end sentences with a period; "...." was the #99 Background.
+V-003	text	/—|(?<=\w)--(?=\w)/	No dashes used for effect	Approved copy uses colons and commas; "--" and em-dashes are an essayist tell.
+V-004	text	/\b(frankly|to be frank|honestly|candidly)\b/i	No asides	The samples state the thing once. "(to be frank)" was in the #99 Background and the CoS rewrite.
+V-005	text	/\bI (do not|am|will not|cannot|have not|did not|would not)\b/	Use the contraction	The home intro says "I'm". "I do not" reads formal and did not match the site (CoS first rewrite, #99).
+V-007	html	/^<li\b[^>]*>\s*<(strong|b)\b/i	No bold-signpost bullets in page prose	Page prose is paragraphs. A list with a bold lead-in is the chat register, not this site (CoS first rewrite, #99).
+V-009	text	/\bslot for\b|\bfor Justin\b|\b(set|edit|change|update)\b[^.]{0,40}\bin [\w.\/-]+\.(json|ya?ml|md|mjs|js|toml)\b|\b[\w-]+\.(json|ya?ml|mjs|toml)\b|\b(TODO|FIXME|TBD|XXX)\b|\bpending approval\b|\bReady for Agent\b|\bagent:/i	No copy addressed to an agent or to Justin	Folds in test/reader-copy.test.mjs (#76): every word is written to the visitor.
