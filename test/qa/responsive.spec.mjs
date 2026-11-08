@@ -50,7 +50,13 @@ for (const page of PAGES) {
         const p = await ctx.newPage();
         await open(p, page.path);
         const r = await audit(p, { tap: w < 1024 });
-        if (!landscape) await p.screenshot({ path: join(SHOTS, `${page.id}-${d.id}.png`), fullPage: true });
+        if (!landscape) {
+          // WebKit cannot capture past 32767 device px; a very long page is cropped from the top.
+          const cssH = await p.evaluate(() => document.documentElement.scrollHeight);
+          const maxH = Math.floor(30000 / (d.dsf ?? contextFor(d).deviceScaleFactor));
+          const clip = cssH > maxH ? { x: 0, y: 0, width: w, height: maxH } : undefined;
+          await p.screenshot({ path: join(SHOTS, `${page.id}-${d.id}.png`), fullPage: true, clip });
+        }
         await ctx.close();
         verdict(page, failures(r), `${page.path} at ${w}px`);
       });

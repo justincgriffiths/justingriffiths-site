@@ -23,6 +23,8 @@ body {
 body:not(.skin-pedal) { font-family: var(--site-prose-font); font-optical-sizing: auto; }
 h1, h2, h3, h4, h5, h6, .site-header, .site-footer .btn, .btn, button, summary, label, th, dt, legend, caption, svg text,
 .eyebrow, .meta, .group, .tag, .num, .legend, nav { font-family: var(--site-font); }
+/* A long word in a heading breaks before it pushes the page sideways (200% text, narrow phones) */
+h1, h2, h3, h4, h5, h6 { overflow-wrap: anywhere; }
 ::selection { background: var(--site-selection); color: var(--site-selection-text); }
 a { color: var(--site-link); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 a:hover { color: var(--site-link-hover); text-decoration-thickness: 2px; }
