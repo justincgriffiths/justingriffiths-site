@@ -31,11 +31,11 @@ You get each stage's count by multiplying the previous count by a rate. That let
 
 Pearmill, Justin's agency, runs its funnel through a framework called *Understanding funnels & establishing KPIs*. Here are its five principles, quoted exactly:
 
-- **States, not pageviews** — a funnel stage is a change in the customer, not a hit in a tool.
-- **Counting rules first** — define the event before setting the target; an undefined KPI breeds a private definition per team.
-- **One owner, one metric** — shared metrics are orphaned metrics.
-- **Decompose, don't stare** — a moving KPI is explained by naming the stage that moved, never by staring harder at the aggregate.
-- **Vanity is expensive** — every reported metric costs attention; report only what someone will act on.
+- States, not pageviews: a funnel stage is a change in the customer, not a hit in a tool.
+- Counting rules first: define the event before setting the target; an undefined KPI breeds a private definition per team.
+- One owner, one metric: shared metrics are orphaned metrics.
+- Decompose, don't stare: a moving KPI is explained by naming the stage that moved, never by staring harder at the aggregate.
+- Vanity is expensive: every reported metric costs attention; report only what someone will act on.
 
 **In Justin's words (to be written by Justin):** [How Justin thinks about the digital funnel, in his own voice: what he looks at first, and why.]
 

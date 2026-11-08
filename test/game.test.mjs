@@ -62,7 +62,7 @@ test("page: How scoring works is the shared disclosure, closed, rendered from ru
   assert.match(html, /<details class="disclosure" id="scoring"><summary>.*How scoring works/);
   assert.match(html, /<h4>Scoring<\/h4>/);
   assert.match(html, /<td><code>saved_run<\/code><\/td><td>\+2<\/td>/);
-  assert.match(html, /<section id="lessons">.*<strong>Name the evidence<\/strong>/s);
+  assert.match(html, /<section id="lessons">.*Name the evidence when you claim a save/s);
 });
 test("page: ledger text is escaped, evidence that is not a web link is text", () => {
   const evil = structuredClone(fixture);

@@ -55,17 +55,17 @@ test("the CLI exits 1 on a failing text file and 0 on a clean one", () => {
   assert.equal(run(join(dir, "ok.txt")).status, 0);
 });
 
-test("the built site passes: --all, with the waived existing lines in voice/known-fails.tsv", () => {
+test("the built site passes: --all, with no waived lines left", () => {
   // Same dist as bin/site-build.sh, /fleet/ pages included (#105: #102 tested without them and a /fleet/game/ line broke the deploy).
   // The node-built fleet pages only; the Rust ones (landing, bike-factory, seats, battle-school) need the wasm toolchain.
   for (const script of ["build.mjs", "build-fleet-meta.mjs", "build-fleet-flows.mjs", "build-fleet-game.mjs"]) {
     execFileSync("node", [script], { cwd: root, stdio: "ignore" });
   }
-  // The /qwen/ Background is raw until #99 lands; every other page must be clean or waived.
+  // voice/known-fails.tsv is empty (#104): every line of every page must pass.
   const r = spawnSync("node", ["bin/copygate", "--all"], { cwd: root, encoding: "utf8" });
   // Leave dist/ as build.mjs alone makes it: the changed-only run after this test builds its base that way, so stray fleet pages would read as new copy.
   for (const d of ["meta", "flows", "game"]) rmSync(join(root, "dist/fleet", d), { recursive: true, force: true });
-  const left = r.stdout.split("\n").filter((l) => l.startsWith("FAIL") && !l.includes(": /qwen/:"));
+  const left = r.stdout.split("\n").filter((l) => l.startsWith("FAIL"));
   assert.deepEqual(left, []);
 });
 
@@ -101,4 +101,12 @@ test("copygate is wired into npm test, CI qa and the deploy build", () => {
   assert.match(pkg.scripts.test, /bin\/copygate/);
   assert.match(readFileSync(join(root, ".github/workflows/qa.yml"), "utf8"), /fetch-depth: 0[\s\S]*npm test/);
   assert.match(readFileSync(join(root, "bin/site-build.sh"), "utf8"), /copygate --all/);
+});
+
+test("V-003 treats number ranges the same in every spelling, and still fails an effect dash (#104)", () => {
+  const ids = (text) => check([{ page: "/a/", text, html: text }]).map((f) => f.id);
+  for (const ok of ["Pay is $250,000–$275,000.", "Pay is 250--275.", "Pay is $250,000-$275,000.", "Jan 2019 – Mar 2021", "Jan 2019 - Mar 2021"])
+    assert.deepEqual(ids(ok), [], ok);
+  for (const bad of ["Counting rules first — define the event.", "Counting rules first -- define the event.", "Pay — $250,000 a year.", "It works--mostly."])
+    assert.ok(ids(bad).includes("V-003"), bad);
 });
