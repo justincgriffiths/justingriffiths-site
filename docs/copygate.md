@@ -5,7 +5,7 @@ New copy is checked against this site's own approved copy before it publishes.
 - **Profile**: `voice/samples.md` (dated excerpts of approved copy) and `voice/rules.tsv` (id, kind, regex, rule, why).
 - **Gate**: `bin/copygate` checks the copy that changed against `origin/main`. It runs in `npm test`, so CI `qa` runs it too.
   `bin/site-build.sh`, the one build `sitedep.sh` uses, runs `bin/copygate --all`, so a deploy refuses a failing build.
-- **Waivers**: `voice/known-fails.tsv` lists old lines that fail today. They are Justin's to rewrite or accept. Editing a line un-waives it.
+- **Waivers**: `voice/known-fails.tsv` lists old lines that fail today (empty since #104). A new waiver is Justin's call. Editing a line un-waives it.
 - **Judge, local only**: `bin/copygate --judge` sends changed copy and `voice/samples.md` to ChatGPT through `~/brain/bin/gcopy.sh`.
   Run it before opening a PR and paste the verdict into the PR body. A "no" means rewrite. It refuses to run when `CI` is set.
 

@@ -176,7 +176,7 @@ function renderPage(skin) {
             <h1 id="subject"${F(' class="t-display"')}>${esc(bio.name)}</h1>
             ${cover.lede ? `<p class="lede${F(" fit")}">${ledeLines(get(cover.lede))}</p>` : ""}
             <div class="cover-actions${F(" cluster")}">
-              ${labId ? `<a class="cover-more" href="#${labId}">See what I am building${ICON.arrow}</a>` : ""}
+              ${labId ? `<a class="cover-more" href="#${labId}">See what I'm building${ICON.arrow}</a>` : ""}
             </div>
             ${cover.facts ? facts(cover.facts) : ""}${bio.resume && skin === "classic" ? `
             <a class="cover-more" href="/resume/">Full resume${ICON.arrow}</a>` : ""}
