@@ -739,6 +739,7 @@
      }
     ],
     "first_logged": "2026-09-29",
+    "interactive": null,
     "marker": null,
     "runs": 249,
     "savings": {
@@ -967,6 +968,7 @@
      }
     ],
     "first_logged": "2026-09-22",
+    "interactive": null,
     "marker": null,
     "runs": 19,
     "savings": {
@@ -1232,6 +1234,7 @@
      }
     ],
     "first_logged": "2026-10-09",
+    "interactive": null,
     "marker": {
      "day": "2026-11-07",
      "label": "Qwen live"
@@ -1278,6 +1281,7 @@
    }
   ]
  },
+ "skill_cost": null,
  "workflows": {
   "cron-triage": {
    "answered": 59,

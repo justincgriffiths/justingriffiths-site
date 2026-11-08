@@ -51,7 +51,7 @@
 /* Calls by day (site#88 rework): per-job history charts. A one-day job is a single datapoint, a big number. */
 .qwen .single { font-family: var(--site-font); margin: var(--space-2) 0 var(--space-1); color: var(--site-text); }
 .qwen .single .big { font-size: var(--text-h2, 2.5rem); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
-.qwen .savings { margin: var(--space-1) 0 var(--space-2); color: var(--site-text); font-size: var(--text-body-sm); line-height: var(--leading-normal); }
+.qwen .savings, .qwen .interactive { margin: var(--space-1) 0 var(--space-2); color: var(--site-text); font-size: var(--text-body-sm); line-height: var(--leading-normal); }
 /* Tables on a phone (site#92): a word never breaks mid-letter. In a section 30rem (480px) wide or narrower each row stacks: the row name
    on top, then one label and value pair per line. The header row hides; the labels come from data-label. */
 @container (max-width: 30rem) {

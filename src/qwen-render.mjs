@@ -191,13 +191,22 @@ function savingsLine(sv) {
   return `<p class="savings"><strong>Last 7 days:</strong> ${usd(sv.last7_usd)} over ${runsOf(sv.last7_runs)}, against ${usd(sv.prior7_usd)} over ${runsOf(sv.prior7_runs)} the 7 days before.</p>`;
 }
 
+// Interactive cost (site#115): the command run by hand inside Claude Code, from the telemetry rows tagged with its skill. Facts only.
+const MODEL_NAMES = { opus: "Opus", sonnet: "Sonnet", haiku: "Haiku", fable: "Fable", other: "Other model" };
+function interactiveLine(i) {
+  if (!i) return "";
+  if (!i.requests) return `<p class="interactive"><strong>Interactive (Claude Code):</strong> no tagged requests in the telemetry.</p>`;
+  const by = Object.entries(i.usd_models).sort((a, b) => b[1] - a[1]).map(([m, v]) => `${MODEL_NAMES[m] || m} ${usd(v)}`).join(" · ");
+  return `<p class="interactive"><strong>Interactive (Claude Code):</strong> ${usd(i.usd)} over ${i.requests} requests since telemetry began; ${usd(i.last7_usd)} in the last 7 days. ${esc(by)}.</p>`;
+}
+
 function historyOne(c, last) {
   const name = HNAMES[c.command] || c.command;
-  if (!c.days.length) return `<div class="callsjob"><h3>${esc(name)}</h3>${empty("No runs logged.")}</div>`;
+  if (!c.days.length) return `<div class="callsjob"><h3>${esc(name)}</h3>${interactiveLine(c.interactive)}${empty("No runs logged.")}</div>`;
   const by = Object.fromEntries(c.days.map((r) => [r.day, r])), first = c.days[0].day;
   const used = [...new Set(c.days.flatMap((r) => Object.keys(r.models)))], keys = Object.keys(HM).filter((k) => used.includes(k)).concat(used.filter((k) => !HM[k]));
   const lab = (k) => (HM[k] || [k, C.capped])[0], col = (k) => (HM[k] || [k, C.capped])[1];
-  const head = `<h3>${esc(name)}</h3>${savingsLine(c.savings)}${(c.stale_sources || []).map((x) => `<p class="note stale-source">${x.covered ? `Source ${esc(x.source)} stopped on ${esc(x.last_day)}; runs since then come from the command's other source.` : `Source ${esc(x.source)} has no record since ${esc(x.last_day)}.`}</p>`).join("")}`;
+  const head = `<h3>${esc(name)}</h3>${savingsLine(c.savings)}${interactiveLine(c.interactive)}${(c.stale_sources || []).map((x) => `<p class="note stale-source">${x.covered ? `Source ${esc(x.source)} stopped on ${esc(x.last_day)}; runs since then come from the command's other source.` : `Source ${esc(x.source)} has no record since ${esc(x.last_day)}.`}</p>`).join("")}`;
   const note = (extra) => `<p class="note">first logged ${esc(first)} · ${c.runs} ${c.runs === 1 ? "run" : "runs"}${c.usd == null ? " · cost not logged" : ` · ${usd(c.usd)} spent`}${extra}.</p>`;
   const mk = c.marker && c.marker.day ? ` · ${esc(c.marker.label)} since ${esc(c.marker.day)}` : "";
   if (c.days.length === 1) {
@@ -224,10 +233,16 @@ function historyOne(c, last) {
   return `<div class="callsjob">${head}${note(`${mk}${top && top.usd > 0 ? `; the label marks the costliest day, ${esc(top.day.slice(5))}` : ""}${money ? "; bar height is dollars per day" : ""}`)}${legend(keys.map((k) => [lab(k), col(k)]))}${svg(`${name} ${money ? "dollars" : "runs"} per day by model, ${days.length} days`, axis + bars + mark + peak + ticks, MB)}</div>`;
 }
 
-function historyCharts(h) {
-  if (!h || !h.commands || !h.commands.some((c) => c.days.length)) return empty("No history logged yet.");
-  return `<div class="cols grid">${h.commands.map((c) => historyOne(c, h.through)).join("")}</div>
-    <p class="note">Runs per day, from each command's first record; a day with no runs is an empty slot. Savings compares the last 7 days with the 7 before, from dollars the command's own log records. Where no cost is logged the page says so and does not estimate. Wrap is counted from its run log (one line per wrap, from 2026-10-12); the per-session records stop on 2026-10-29, so they count only the days before the log begins. Where the day is a file's modified day, that is the day the record was written. Bars show runs, except PR sweeps, where bar height is dollars per day and the runs are in the text.</p>`;
+// Coverage line: N is computed from the telemetry rows (tagged spend over all api_request spend), never typed.
+export function coverageLine(sc) {
+  if (!sc || sc.tagged_pct == null) return "";
+  return `<p class="note coverage">Interactive cost: telemetry from ${esc(sc.since)}; ${sc.tagged_pct}% of spend carries a skill tag.</p>`;
+}
+
+function historyCharts(h, sc) {
+  if (!h || !h.commands || !h.commands.some((c) => c.days.length || c.interactive)) return empty("No history logged yet.");
+  return `${coverageLine(sc)}<div class="cols grid">${h.commands.map((c) => historyOne(c, h.through)).join("")}</div>
+    <p class="note">Runs per day, from each command's first record; a day with no runs is an empty slot. Savings compares the last 7 days with the 7 before, from dollars the command's own log records. Where no cost is logged the page says so and does not estimate. Wrap is counted from its run log (one line per wrap, from 2026-10-12); the per-session records stop on 2026-10-29, so they count only the days before the log begins. Where the day is a file's modified day, that is the day the record was written. Interactive cost is the dollars and requests Claude Code logged for the command's skill tag in the telemetry table, shown beside the scripted runs and not added to them. Bars show runs, except PR sweeps, where bar height is dollars per day and the runs are in the text.</p>`;
 }
 
 const section = (id, title, why, body) => `<section id="${id}"><h2>${esc(title)}</h2><p class="why">${esc(why)}</p>${body}</section>`;
@@ -240,7 +255,7 @@ export function renderData(d) {
 ${section("workflows", "Every job that uses Qwen", "Each job's own counts by day, with when its log starts. A job with no runs logged shows that, not a rate.",
   `<div class="cols grid">${Object.keys(WORKFLOW_NAMES).map((k) => workflowBlock(k, (data.workflows || {})[k])).join("")}</div>`)}
 ${section("calls", "Calls by day", "How many calls each job made per day since it started, and which model took them.", callsCharts(data.calls_by_day))}
-${section("history", "History and savings", "Runs per day for wrap, PR sweeps and session cleanup, by model, with the last 7 days of spend against the 7 before.", historyCharts(data.history))}
+${section("history", "History and savings", "Runs per day for wrap, PR sweeps and session cleanup, by model, with the last 7 days of spend against the 7 before.", historyCharts(data.history, data.skill_cost))}
 ${section("fallbacks", "Fallback reasons", "Why Qwen's answer was thrown out and Claude did the item instead.", horizontal(data.fallback_reasons, "Fallbacks by reason", C.fell_back))}
 ${section("cost", "Cost per run", "Calls per day by job, and dollars per triage run, against the average before Qwen.", costChart())}
 ${section("latency", "Latency", "How long Qwen takes per item, next to Haiku.", latency())}
