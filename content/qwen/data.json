@@ -16,7 +16,7 @@
   },
   "shadow_agreement_pct": {
    "issue-tag": null,
-   "triage": 9.1
+   "triage": 8.3
   },
   "trial": {
    "correct_of_4": {
@@ -27,21 +27,21 @@
    "label": "Pre-production trial, 4 items"
   }
  },
- "as_of": "2026-11-08T17:50:42Z",
+ "as_of": "2026-11-08T18:43:25Z",
  "breakdowns": {
   "by_task_label": {
-   "archive": 6,
+   "archive": 7,
    "fyi": 4,
    "other": 0,
    "reply": 0,
    "task": 1
   },
   "by_tool_call": {
-   "qwen_classify": 11
+   "qwen_classify": 12
   },
   "by_workflow": {
    "cron-triage": {
-    "answered": 53,
+    "answered": 59,
     "capped": 0,
     "fell_back": 11
    },
@@ -61,7 +61,7 @@
     "fell_back": 0
    },
    "triage": {
-    "answered": 11,
+    "answered": 12,
     "capped": 1,
     "fell_back": 1
    }
@@ -69,7 +69,7 @@
  },
  "calls_by_day": [
   {
-   "calls": 64,
+   "calls": 70,
    "day": "2026-11-08",
    "haiku_capped": 0,
    "haiku_fallback": 11,
@@ -77,18 +77,18 @@
    "job": "cron-triage",
    "model_haiku": "claude-haiku-5-5",
    "model_qwen": "qwen3-coder:30b",
-   "qwen": 53
+   "qwen": 59
   },
   {
-   "calls": 13,
+   "calls": 14,
    "day": "2026-11-08",
    "haiku_capped": 1,
    "haiku_fallback": 1,
-   "haiku_shadow": 11,
+   "haiku_shadow": 12,
    "job": "triage",
    "model_haiku": "claude-haiku-5-5",
    "model_qwen": "qwen3-coder:30b",
-   "qwen": 11
+   "qwen": 12
   },
   {
    "calls": 4,
@@ -471,11 +471,11 @@
    {
     "day": "2026-11-08",
     "qwen_era": true,
-    "runs": 6,
-    "usd_per_run": 0.3385
+    "runs": 7,
+    "usd_per_run": 0.3306
    }
   ],
-  "triage_qwen_era_usd_per_run": 0.3385
+  "triage_qwen_era_usd_per_run": 0.3306
  },
  "fallback_reasons": {
   "bad-class": 0,
@@ -484,12 +484,660 @@
   "other": 0,
   "timeout": 0
  },
+ "history": {
+  "commands": [
+   {
+    "command": "wrap",
+    "days": [
+     {
+      "day": "2026-09-29",
+      "models": {
+       "not logged": 5
+      },
+      "runs": 5,
+      "usd": null
+     },
+     {
+      "day": "2026-09-30",
+      "models": {
+       "not logged": 3
+      },
+      "runs": 3,
+      "usd": null
+     },
+     {
+      "day": "2026-10-01",
+      "models": {
+       "not logged": 9
+      },
+      "runs": 9,
+      "usd": null
+     },
+     {
+      "day": "2026-10-02",
+      "models": {
+       "not logged": 1
+      },
+      "runs": 1,
+      "usd": null
+     },
+     {
+      "day": "2026-10-05",
+      "models": {
+       "not logged": 4
+      },
+      "runs": 4,
+      "usd": null
+     },
+     {
+      "day": "2026-10-06",
+      "models": {
+       "not logged": 4
+      },
+      "runs": 4,
+      "usd": null
+     },
+     {
+      "day": "2026-10-07",
+      "models": {
+       "not logged": 7
+      },
+      "runs": 7,
+      "usd": null
+     },
+     {
+      "day": "2026-10-08",
+      "models": {
+       "not logged": 2
+      },
+      "runs": 2,
+      "usd": null
+     },
+     {
+      "day": "2026-10-09",
+      "models": {
+       "not logged": 18
+      },
+      "runs": 18,
+      "usd": null
+     },
+     {
+      "day": "2026-10-12",
+      "models": {
+       "not logged": 8
+      },
+      "runs": 8,
+      "usd": null
+     },
+     {
+      "day": "2026-10-13",
+      "models": {
+       "not logged": 8
+      },
+      "runs": 8,
+      "usd": null
+     },
+     {
+      "day": "2026-10-14",
+      "models": {
+       "not logged": 8
+      },
+      "runs": 8,
+      "usd": null
+     },
+     {
+      "day": "2026-10-15",
+      "models": {
+       "not logged": 9
+      },
+      "runs": 9,
+      "usd": null
+     },
+     {
+      "day": "2026-10-16",
+      "models": {
+       "not logged": 3
+      },
+      "runs": 3,
+      "usd": null
+     },
+     {
+      "day": "2026-10-19",
+      "models": {
+       "not logged": 3
+      },
+      "runs": 3,
+      "usd": null
+     },
+     {
+      "day": "2026-10-20",
+      "models": {
+       "not logged": 7
+      },
+      "runs": 7,
+      "usd": null
+     },
+     {
+      "day": "2026-10-21",
+      "models": {
+       "not logged": 1
+      },
+      "runs": 1,
+      "usd": null
+     },
+     {
+      "day": "2026-10-22",
+      "models": {
+       "not logged": 2
+      },
+      "runs": 2,
+      "usd": null
+     },
+     {
+      "day": "2026-10-23",
+      "models": {
+       "not logged": 10
+      },
+      "runs": 10,
+      "usd": null
+     },
+     {
+      "day": "2026-10-24",
+      "models": {
+       "not logged": 7
+      },
+      "runs": 7,
+      "usd": null
+     },
+     {
+      "day": "2026-10-25",
+      "models": {
+       "not logged": 4
+      },
+      "runs": 4,
+      "usd": null
+     },
+     {
+      "day": "2026-10-27",
+      "models": {
+       "not logged": 6
+      },
+      "runs": 6,
+      "usd": null
+     },
+     {
+      "day": "2026-10-28",
+      "models": {
+       "not logged": 10
+      },
+      "runs": 10,
+      "usd": null
+     },
+     {
+      "day": "2026-10-29",
+      "models": {
+       "not logged": 13
+      },
+      "runs": 13,
+      "usd": null
+     }
+    ],
+    "first_logged": "2026-09-29",
+    "marker": null,
+    "runs": 152,
+    "savings": {
+     "cost_logged": false,
+     "last7_runs": 0,
+     "last7_usd": null,
+     "prior7_runs": 29,
+     "prior7_usd": null
+    },
+    "usd": null
+   },
+   {
+    "command": "pr-sweep",
+    "days": [
+     {
+      "day": "2026-09-22",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 1.9602
+     },
+     {
+      "day": "2026-09-23",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.0
+     },
+     {
+      "day": "2026-09-24",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.281
+     },
+     {
+      "day": "2026-09-25",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 4.9731
+     },
+     {
+      "day": "2026-09-26",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 5.232
+     },
+     {
+      "day": "2026-09-27",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 3.5243
+     },
+     {
+      "day": "2026-09-28",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.7239
+     },
+     {
+      "day": "2026-09-29",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 1.1938
+     },
+     {
+      "day": "2026-09-30",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.0
+     },
+     {
+      "day": "2026-10-01",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 1.2298
+     },
+     {
+      "day": "2026-10-05",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 1.4244
+     },
+     {
+      "day": "2026-10-08",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.5687
+     },
+     {
+      "day": "2026-10-16",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.5349
+     },
+     {
+      "day": "2026-10-25",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.7931
+     },
+     {
+      "day": "2026-10-27",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.47
+     },
+     {
+      "day": "2026-11-02",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.8012
+     },
+     {
+      "day": "2026-11-04",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.6022
+     },
+     {
+      "day": "2026-11-05",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.55
+     },
+     {
+      "day": "2026-11-06",
+      "models": {
+       "sonnet": 1
+      },
+      "runs": 1,
+      "usd": 0.9807
+     }
+    ],
+    "first_logged": "2026-09-22",
+    "marker": null,
+    "runs": 19,
+    "savings": {
+     "cost_logged": true,
+     "last7_runs": 4,
+     "last7_usd": 2.9341,
+     "prior7_runs": 1,
+     "prior7_usd": 0.47
+    },
+    "usd": 25.8433
+   },
+   {
+    "command": "session-cleanup",
+    "days": [
+     {
+      "day": "2026-10-09",
+      "models": {
+       "script": 12
+      },
+      "runs": 12,
+      "usd": null
+     },
+     {
+      "day": "2026-10-10",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-11",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-12",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-13",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-14",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-15",
+      "models": {
+       "script": 21
+      },
+      "runs": 21,
+      "usd": null
+     },
+     {
+      "day": "2026-10-16",
+      "models": {
+       "script": 23
+      },
+      "runs": 23,
+      "usd": null
+     },
+     {
+      "day": "2026-10-17",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-18",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-19",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-20",
+      "models": {
+       "script": 15
+      },
+      "runs": 15,
+      "usd": null
+     },
+     {
+      "day": "2026-10-21",
+      "models": {
+       "script": 21
+      },
+      "runs": 21,
+      "usd": null
+     },
+     {
+      "day": "2026-10-22",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-23",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-24",
+      "models": {
+       "script": 17
+      },
+      "runs": 17,
+      "usd": null
+     },
+     {
+      "day": "2026-10-25",
+      "models": {
+       "script": 25
+      },
+      "runs": 25,
+      "usd": null
+     },
+     {
+      "day": "2026-10-26",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-27",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-28",
+      "models": {
+       "script": 16
+      },
+      "runs": 16,
+      "usd": null
+     },
+     {
+      "day": "2026-10-29",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-10-30",
+      "models": {
+       "script": 23
+      },
+      "runs": 23,
+      "usd": null
+     },
+     {
+      "day": "2026-10-31",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-11-01",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-11-02",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-11-03",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-11-04",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-11-05",
+      "models": {
+       "script": 22
+      },
+      "runs": 22,
+      "usd": null
+     },
+     {
+      "day": "2026-11-06",
+      "models": {
+       "script": 24
+      },
+      "runs": 24,
+      "usd": null
+     },
+     {
+      "day": "2026-11-07",
+      "models": {
+       "script": 26
+      },
+      "runs": 26,
+      "usd": null
+     },
+     {
+      "day": "2026-11-08",
+      "models": {
+       "script": 23
+      },
+      "runs": 23,
+      "usd": null
+     }
+    ],
+    "first_logged": "2026-10-09",
+    "marker": {
+     "day": "2026-11-07",
+     "label": "Qwen live"
+    },
+    "runs": 700,
+    "savings": {
+     "cost_logged": false,
+     "last7_runs": 167,
+     "last7_usd": null,
+     "prior7_runs": 159,
+     "prior7_usd": null
+    },
+    "usd": null
+   }
+  ],
+  "through": "2026-11-08"
+ },
  "latency_ms": {
   "haiku": null,
   "qwen": {
-   "n": 11,
-   "p50": 2432.0,
-   "p90": 10554.0
+   "n": 12,
+   "p50": 2554.0,
+   "p90": 13731.0
   }
  },
  "model": "qwen3-coder:30b",
@@ -505,7 +1153,7 @@
   ],
   "triage": [
    {
-    "answered": 11,
+    "answered": 12,
     "capped": 1,
     "day": "2026-11-08",
     "fell_back": 1
@@ -514,27 +1162,27 @@
  },
  "workflows": {
   "cron-triage": {
-   "answered": 53,
+   "answered": 59,
    "capped": 0,
    "fell_back": 11,
    "first_logged": "2026-11-08",
    "latency_ms": {
-    "n": 11,
+    "n": 12,
     "p50": 37777.0,
     "p90": 41751.0,
     "unit": "run"
    },
    "policy": 0,
    "policy_reasons": {},
-   "runs": 12,
+   "runs": 13,
    "share_by_day": [
     {
-     "answered": 53,
+     "answered": 59,
      "capped": 0,
      "day": "2026-11-08",
      "fell_back": 11,
      "policy": 0,
-     "runs": 12,
+     "runs": 13,
      "usd": 0.0134
     }
    ],

@@ -145,6 +145,55 @@ function callsCharts(rows) {
     <p class="note">One bar per day, from each job's first logged day; a day with no calls is an empty slot. Calls is items sent through the job. Qwen: answered by ${esc(mq)} on the local machine. Haiku fallback: Qwen failed or its answer was thrown out, so ${esc(mh)} did the item. Haiku cap: the ramp held this item back from Qwen on purpose, or a fixed rule sends it to Haiku. Haiku shadow (ring): a second Haiku call made only to compare with Qwen's answer, counted on top of Calls.</p>`;
 }
 
+// History (site#90): wrap, PR sweeps and session cleanup, one chart each. Every day from the command's first record to the
+// data's last day gets a slot (an empty day is a hairline, never skipped). Bars stack by model. Dollars are not a second axis:
+// the savings line carries the 7-day spend and the busiest-spend day is labeled on the chart. One day of data is one number.
+const HM = { opus: ["Opus", C.fell_back], sonnet: ["Sonnet", C.sonnet], haiku: ["Haiku", C.haiku], "qwen3-coder:30b": ["Qwen", C.qwen], script: ["Script (no model)", C.capped], other: ["Other model", C.capped], "not logged": ["Model not logged", C.capped] };
+const HNAMES = { wrap: "Wrap", "pr-sweep": "PR sweeps", "session-cleanup": "Session cleanup" };
+const runsOf = (n) => `${n} ${n === 1 ? "run" : "runs"}`;
+const usd = (v) => `$${v >= 100 ? Math.round(v) : v.toFixed(2)}`;
+
+function savingsLine(sv) {
+  if (!sv.cost_logged) return `<p class="savings"><strong>Last 7 days:</strong> ${runsOf(sv.last7_runs)} against ${sv.prior7_runs} the 7 days before. Cost not logged, so no savings figure.</p>`;
+  return `<p class="savings"><strong>Last 7 days:</strong> ${usd(sv.last7_usd)} over ${runsOf(sv.last7_runs)}, against ${usd(sv.prior7_usd)} over ${runsOf(sv.prior7_runs)} the 7 days before.</p>`;
+}
+
+function historyOne(c, last) {
+  const name = HNAMES[c.command] || c.command;
+  if (!c.days.length) return `<div class="callsjob"><h3>${esc(name)}</h3>${empty("No runs logged.")}</div>`;
+  const by = Object.fromEntries(c.days.map((r) => [r.day, r])), first = c.days[0].day;
+  const used = [...new Set(c.days.flatMap((r) => Object.keys(r.models)))], keys = Object.keys(HM).filter((k) => used.includes(k)).concat(used.filter((k) => !HM[k]));
+  const lab = (k) => (HM[k] || [k, C.capped])[0], col = (k) => (HM[k] || [k, C.capped])[1];
+  const head = `<h3>${esc(name)}</h3>${savingsLine(c.savings)}`;
+  const note = (extra) => `<p class="note">first logged ${esc(first)} · ${c.runs} ${c.runs === 1 ? "run" : "runs"}${c.usd == null ? " · cost not logged" : ` · ${usd(c.usd)} spent`}${extra}.</p>`;
+  const mk = c.marker && c.marker.day ? ` · ${esc(c.marker.label)} since ${esc(c.marker.day)}` : "";
+  if (c.days.length === 1) {
+    const r = c.days[0];
+    return `<div class="callsjob">${head}<p class="single"><span class="big">${r.runs}</span> ${r.runs === 1 ? "run" : "runs"} on ${esc(r.day)}</p>${note(`${mk}. First day logged, so there is no history to chart yet`)}</div>`;
+  }
+  const days = []; for (let d = first; d <= last; d = dayAdd(d, 1)) days.push(d);
+  const max = Math.max(1, ...c.days.map((r) => r.runs)), step = (W - P.l - P.r) / days.length, bw = Math.max(2, Math.min(28, step - 4)), ph = H - P.t - P.b, yv = (v) => (v / max) * ph;
+  const top = c.usd == null ? null : c.days.reduce((a, r) => ((r.usd || 0) > (a.usd || 0) ? r : a));
+  const bars = days.map((d, i) => {
+    const r = by[d], x = P.l + i * step + (step - bw) / 2; let y = H - P.b;
+    if (!r) return `<rect x="${x}" y="${H - P.b - 1}" width="${bw}" height="1" class="gridline"><title>${esc(d)}: no runs</title></rect>`;
+    return keys.map((k) => { const n = r.models[k] || 0, h = yv(n); y -= h; return h ? `<rect x="${x}" y="${y}" width="${bw}" height="${h}" style="fill:${col(k)};stroke:var(--site-bg);stroke-width:1"><title>${esc(d)} ${esc(lab(k))}: ${n}${r.usd == null ? "" : `, ${usd(r.usd)}`}</title></rect>` : ""; }).join("");
+  }).join("");
+  const peak = top && top.usd > 0 ? (() => { const i = days.indexOf(top.day), x = P.l + i * step + step / 2, anchor = i > days.length / 2 ? "end" : "start"; return `<text x="${x}" y="${H - P.b - yv(top.runs) - 4}" text-anchor="${anchor}">${usd(top.usd)}</text>`; })() : "";
+  const mi = c.marker && c.marker.day ? days.indexOf(c.marker.day) : -1;
+  const mark = mi >= 0 ? `<line x1="${P.l + mi * step + step / 2}" x2="${P.l + mi * step + step / 2}" y1="${P.t}" y2="${H - P.b}" class="trend" stroke-dasharray="4 3"/><text x="${P.l + mi * step + step / 2 + (mi > days.length / 2 ? -4 : 4)}" y="${P.t + 10}" text-anchor="${mi > days.length / 2 ? "end" : "start"}">${esc(c.marker.label)}</text>` : "";
+  const idx = [...new Set([0, Math.floor((days.length - 1) / 2), days.length - 1])];
+  const ticks = idx.map((i) => `<text x="${P.l + i * step + step / 2}" y="${H - 10}" text-anchor="${i === 0 ? "start" : i === days.length - 1 ? "end" : "middle"}">${esc(days[i].slice(5))}</text>`).join("");
+  const axis = [0, max].map((v) => { const y = H - P.b - yv(v); return `<line x1="${P.l}" x2="${W - P.r}" y1="${y}" y2="${y}" class="gridline"/><text x="${P.l - 6}" y="${y + 4}" text-anchor="end">${v}</text>`; }).join("");
+  return `<div class="callsjob">${head}${note(`${mk}${top && top.usd > 0 ? `; the label marks the costliest day, ${esc(top.day.slice(5))}` : ""}`)}${legend(keys.map((k) => [lab(k), col(k)]))}${svg(`${name} runs per day by model, ${days.length} days`, axis + bars + mark + peak + ticks)}</div>`;
+}
+
+function historyCharts(h) {
+  if (!h || !h.commands || !h.commands.some((c) => c.days.length)) return empty("No history logged yet.");
+  return `<div class="cols grid">${h.commands.map((c) => historyOne(c, h.through)).join("")}</div>
+    <p class="note">Runs per day, from each command's first record; a day with no runs is an empty slot. Savings compares the last 7 days with the 7 before, from dollars the command's own log records. Where no cost is logged the page says so and does not estimate. Wrap's day is the day its record was written.</p>`;
+}
+
 const section = (id, title, why, body) => `<section id="${id}"><h2>${esc(title)}</h2><p class="why">${esc(why)}</p>${body}</section>`;
 
 export function renderData(d) {
@@ -155,6 +204,7 @@ export function renderData(d) {
 ${section("workflows", "Every job that uses Qwen", "Each job's own counts by day, with when its log starts. A job with no runs logged shows that, not a rate.",
   `<div class="cols grid">${Object.keys(WORKFLOW_NAMES).map((k) => workflowBlock(k, (data.workflows || {})[k])).join("")}</div>`)}
 ${section("calls", "Calls by day", "How many calls each job made per day since it started, and which model took them.", callsCharts(data.calls_by_day))}
+${section("history", "History and savings", "Runs per day for wrap, PR sweeps and session cleanup, by model, with the last 7 days of spend against the 7 before.", historyCharts(data.history))}
 ${section("fallbacks", "Fallback reasons", "Why Qwen's answer was thrown out and Claude did the item instead.", horizontal(data.fallback_reasons, "Fallbacks by reason", C.fell_back))}
 ${section("cost", "Cost per run", "Dollars per triage run over time, against the average before Qwen.", costChart())}
 ${section("latency", "Latency", "How long Qwen takes per item, next to Haiku.", latency())}

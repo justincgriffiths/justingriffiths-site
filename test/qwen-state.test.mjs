@@ -1,13 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import worker from "../src/worker.js";
 
 // PUBLIC page: poison every source with per-message fields; none may reach the exporter output.
-const SENTINELS = ["SENTINEL_CRON_JOB_NAME", "SENTINEL_CRON_RUNID", "SENTINEL_FLAGGED_TEXT", "SENTINEL_DECLUTTER_JOB", "SENTINEL_SESSION_NAME", "SENTINEL_REAP_JOB", "SENTINEL REASON declutter 5521", "SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841", "SENTINEL_LABEL_xyz", "secret-repo-sentinel2", "7771299", "SENTINEL_PAIR_LABEL", "SENTINEL_MSGID_PAIR", "SENTINEL_CORR_ISSUE_8842", "SENTINEL_LEARN_STORE", "SENTINEL_LEARN_REASON", "SENTINEL_MODEL_ROW"];
+const SENTINELS = ["SENTINEL_CRON_JOB_NAME", "SENTINEL_CRON_RUNID", "SENTINEL_FLAGGED_TEXT", "SENTINEL_DECLUTTER_JOB", "SENTINEL_SESSION_NAME", "SENTINEL_REAP_JOB", "SENTINEL REASON declutter 5521", "SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841", "SENTINEL_LABEL_xyz", "secret-repo-sentinel2", "7771299", "SENTINEL_PAIR_LABEL", "SENTINEL_MSGID_PAIR", "SENTINEL_CORR_ISSUE_8842", "SENTINEL_LEARN_STORE", "SENTINEL_LEARN_REASON", "SENTINEL_MODEL_ROW", "SENTINEL_WRAP_SESSION_ID", "SENTINEL_WRAP_ASK", "SENTINEL_PR_REPO", "SENTINEL_PR_STOP", "SENTINEL_SWEEP_BODY", "SENTINEL_FINISH_BODY"];
 const FORBIDDEN_KEYS = ["id", "ids", "subject", "sender", "from", "title", "number", "repo", "account", "labels", "pair", "haiku_add", "dimension", "from", "to", "model_of_origin", "applied_at", "qwen_label", "haiku_label", "from_label", "to_label", "issue", "match", "haiku_usd", "context", "input", "message_id", "email", "report"];
 
 const dir = mkdtempSync(join(tmpdir(), "qwen-"));
@@ -72,7 +72,23 @@ const learnFile = jl("learn.jsonl", [
   { ts: "2026-11-08T12:00:00+00:00", job: "SENTINEL_LEARN_STORE", tool: "qwen_classify", model: "SENTINEL_MODEL_ROW", escalated: false, reason: "", latency_ms: 500 },
   { ts: "2026-11-08T12:00:01+00:00", job: "SENTINEL_LEARN_STORE", tool: "qwen_classify", model: "SENTINEL_MODEL_ROW", escalated: true, reason: "SENTINEL_LEARN_REASON", latency_ms: 0 },
 ]);
-const wfEnv = { QWEN_CRON_RUNS: cronFile, QWEN_DECLUTTER: declutterFile, QWEN_REAP: reapFile, QWEN_LEARN: learnFile };
+// site#90: history sources. Wrap records carry a session id and the user's asks; PR-sweep rows a stop reason; the cleanup logs a body.
+const wrapDir = join(dir, "wrap"); mkdirSync(wrapDir);
+for (const [i, d] of [[1, "2026-11-01"], [2, "2026-11-01"], [3, "2026-11-03"]]) {
+  const f = join(wrapDir, `rec${i}.json`);
+  writeFileSync(f, JSON.stringify({ session_id: "SENTINEL_WRAP_SESSION_ID", asks: [{ text: "SENTINEL_WRAP_ASK" }], claimed: "DONE" }));
+  const t = new Date(`${d}T12:00:00Z`); utimesSync(f, t, t);
+}
+const prFile = jl("prsweep.jsonl", [
+  { ts: "2026-11-01T09:00:00Z", worked: 3, cost_usd: 1.5, rc: 0, stop_reason: "SENTINEL_PR_STOP", turns: 9, model: "sonnet", budget_usd: 6, repo: "SENTINEL_PR_REPO" },
+  { ts: "2026-11-05T09:00:00Z", worked: 1, cost_usd: 0.25, rc: 0, stop_reason: "end_turn", turns: 4, model: "SENTINEL_MODEL_ROW" },
+  { ts: "2026-11-08T09:00:00Z", worked: 1, cost_usd: 0.5, rc: 0, stop_reason: "end_turn", turns: 4, model: "claude-opus-5-5" },
+]);
+const finishLog = join(dir, "finish.log"), sweepLog = join(dir, "sweep.log");
+writeFileSync(finishLog, `[2026-11-06T06:00:00Z] argv=[] exit=0 status=clean body="SENTINEL_FINISH_BODY"\n[2026-11-06T07:00:00Z] argv=[--dry-run] exit=0 status=dry body="x"\n[2026-11-08T07:00:00Z] argv=[] exit=0 status=apply body="x"\n`.replace(/\\n/g, "\n"));
+writeFileSync(sweepLog, `[2026-11-08T08:00:00Z] argv=[--max 10] exit=0 status=ok body="SENTINEL_SWEEP_BODY"\n[2026-11-08T09:00:00Z] argv=[--dry-run] exit=0 status=dry-run body="x"\n`.replace(/\\n/g, "\n"));
+const wfEnv = { QWEN_CRON_RUNS: cronFile, QWEN_DECLUTTER: declutterFile, QWEN_REAP: reapFile, QWEN_LEARN: learnFile, QWEN_AS_OF: "2026-11-08T15:00:00Z",
+  QWEN_WRAP_DIR: wrapDir, QWEN_PR_SWEEP: prFile, QWEN_SESSION_FINISH: finishLog, QWEN_DECLUTTER_SWEEP: sweepLog };
 
 const out = execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env, ...wfEnv,
   QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"), QWEN_TAG_LOG: join(dir, "tag.log"), QWEN_TAG_JSONL: join(dir, "tag.jsonl") } });
@@ -245,7 +261,7 @@ const callsSec = async (rows) => {
   const { renderData } = await import("../src/qwen-render.mjs");
   const base = JSON.parse(readFileSync("content/qwen/data.json", "utf8"));
   const html = renderData({ ...base, calls_by_day: rows });
-  return html.slice(html.indexOf('id="calls"'), html.indexOf('id="fallbacks"'));
+  return html.slice(html.indexOf('id="calls"'), html.indexOf('id="history"'));
 };
 
 test("calls by day: no table; a job with one day of data is a single datapoint, not a bar", async () => {
@@ -269,4 +285,41 @@ test("calls by day: 2+ days draw one bar per day, empty days included, Haiku sha
   assert.doesNotMatch(sec, /NaN|undefined/);
   const { renderData } = await import("../src/qwen-render.mjs");
   assert.doesNotMatch(renderData(JSON.parse(readFileSync("content/qwen/data.json", "utf8"))), /NaN|undefined/);
+});
+
+// site#90: history and savings per command.
+const hist = () => Object.fromEntries(JSON.parse(out).history.commands.map((c) => [c.command, c]));
+
+test("history: run counts match the sources, dollars sum, a day with no record is absent", () => {
+  const h = hist();
+  assert.equal(h.wrap.runs, 3); assert.deepEqual(h.wrap.days.map((d) => [d.day, d.runs]), [["2026-11-01", 2], ["2026-11-03", 1]]);
+  assert.equal(h.wrap.usd, null); assert.deepEqual(h.wrap.days[0].models, { "not logged": 2 });
+  assert.equal(h["pr-sweep"].runs, 3); assert.equal(h["pr-sweep"].usd, 2.25);
+  assert.deepEqual(h["pr-sweep"].days.map((d) => d.models), [{ sonnet: 1 }, { other: 1 }, { opus: 1 }]);   // an unknown model string is "other"
+  assert.equal(h["session-cleanup"].runs, 3);                                                              // dry-run lines are not runs
+  assert.deepEqual(h["session-cleanup"].days.find((d) => d.day === "2026-11-08").models, { script: 2 });
+});
+
+test("history: 7-day savings compares the last 7 days with the 7 before; no logged cost says so", () => {
+  const h = hist();
+  assert.deepEqual(h["pr-sweep"].savings, { cost_logged: true, last7_runs: 2, last7_usd: 0.75, prior7_runs: 1, prior7_usd: 1.5 });
+  assert.equal(h.wrap.savings.cost_logged, false); assert.equal(h.wrap.savings.last7_usd, null);
+  assert.equal(h["session-cleanup"].marker.day, "2026-11-07");   // first day a Qwen answer landed in declutter or session-reap
+  assert.equal(h.wrap.marker, null);
+});
+
+test("history: no session id, ask text, repo or log body reaches the output", () => {
+  for (const sent of ["SENTINEL_WRAP_SESSION_ID", "SENTINEL_WRAP_ASK", "SENTINEL_PR_REPO", "SENTINEL_PR_STOP", "SENTINEL_SWEEP_BODY", "SENTINEL_FINISH_BODY"]) assert.equal(out.includes(sent), false, sent);
+});
+
+test("history charts: empty days drawn, one day is a number, no savings guess without a logged cost", async () => {
+  const { renderData } = await import("../src/qwen-render.mjs");
+  const h = JSON.parse(out), page = renderData(h), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="fallbacks"'));
+  assert.match(sec, /Cost not logged, so no savings figure/);
+  assert.match(sec, /\$0\.75 over 2 runs, against \$1\.50 over 1 run\b/);
+  assert.match(sec, /2026-11-02: no runs/);
+  assert.doesNotMatch(sec, /NaN|undefined/);
+  const one = { ...h, history: { through: "2026-11-08", commands: [{ ...h.history.commands[0], days: [h.history.commands[0].days[0]], runs: 2 }] } };
+  const s1 = renderData(one); const sec1 = s1.slice(s1.indexOf('id="history"'), s1.indexOf('id="fallbacks"'));
+  assert.match(sec1, /<span class="big">2<\/span> runs on 2026-11-01/); assert.doesNotMatch(sec1, /<rect/);
 });
