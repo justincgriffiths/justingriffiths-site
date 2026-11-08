@@ -21,7 +21,7 @@ const metaStub = writeStub("mkdir -p dist/fleet/meta; echo x > dist/fleet/meta/i
 const fleetOk = writeStub('# PAGE selects the sub-page\nd=dist/fleet${PAGE:+/$PAGE}; mkdir -p "$d"; echo x > "$d/index.html"\n');
 const dataFile = (data) => { const f = join(dir, "data.json"); writeFileSync(f, JSON.stringify(data)); return f; };
 const baseEnv = (data, state, fleetBuild = fleetOk) => ({ QWEN_REFRESH_STATE: state, QWEN_REFRESH_REF: "HEAD", QWEN_REFRESH_DATA: dataFile(data),
-  FLEET_BUILD: fleetBuild, SITE_NPM_BUILD: npmStub, SITE_META_BUILD: metaStub });
+  FLEET_BUILD: fleetBuild, SITE_NPM_BUILD: npmStub, SITE_META_BUILD: metaStub, SITE_COPYGATE: "true" });
 const run = (data, state) => exec(baseEnv(data, state));
 const clean = JSON.parse(readFileSync("content/qwen/data.json", "utf8")); // real shape of the data the gates see
 

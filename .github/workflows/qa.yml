@@ -16,12 +16,14 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # bin/copygate (inside npm test) diffs the built copy against origin/main
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm test
+      - run: npm test # includes bin/copygate: changed copy must pass voice/rules.tsv (the --judge never runs in CI)
       - run: npx playwright install --with-deps webkit
       - run: npm run qa
       - uses: actions/upload-artifact@v4

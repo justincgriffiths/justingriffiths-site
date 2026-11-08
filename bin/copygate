@@ -1,0 +1,157 @@
+#!/usr/bin/env node
+// copygate: the site's copy gate (#100). Extracts the visible copy of every built page in dist/, keeps only
+// the lines that changed against origin/main, and runs voice/rules.tsv over them. Exits 1 on any FAIL.
+//   bin/copygate                 changed copy vs origin/main (builds the base in a temp dir)
+//   bin/copygate --all           every line of every page (the deploy path, where no git base exists)
+//   bin/copygate --all --list-fails   print every failing line as a voice/known-fails.tsv row
+//   bin/copygate --text FILE     check a text file instead of dist/ ("-" is stdin); each line is one block
+//   bin/copygate --judge         also ask ChatGPT (~/brain/bin/gcopy.sh) if the copy reads like voice/samples.md.
+//                                Local only: refuses to run when CI is set.
+// Options: --dist DIR (default dist), --base REF (default origin/main), --base-dist DIR (a built base, skips the build).
+// Existing lines that fail today are listed in voice/known-fails.tsv (id, page, line) and skipped by --all, so a
+// deploy build is not blocked by old copy. They are Justin's to rewrite or accept; editing a line un-waives it.
+// Rules: voice/rules.tsv, columns id, kind (text | html), regex (/pattern/flags), rule, why.
+// Env: COPYGATE_GCOPY overrides the judge script (tests stub it).
+import { readFileSync, readdirSync, statSync, mkdtempSync, rmSync, symlinkSync, existsSync, appendFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { tmpdir } from "node:os";
+import { execFileSync, spawnSync } from "node:child_process";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const root = resolve(fileURLToPath(import.meta.url), "../..");
+
+export function loadRules(file = join(root, "voice/rules.tsv")) {
+  const [, ...rows] = readFileSync(file, "utf8").split("\n").filter(Boolean);
+  return rows.map((row) => {
+    const [id, kind, rx, rule, why] = row.split("\t");
+    const m = rx.match(/^\/(.*)\/([a-z]*)$/s);
+    if (!m) throw new Error(`${id}: regex must be written /pattern/flags`);
+    return { id, kind, re: new RegExp(m[1], m[2]), rule, why };
+  });
+}
+
+const BLOCK = /<(?=(?:p|li|h[1-6]|div|td|th|summary|dt|dd|section|article|header|footer|figcaption|blockquote|tr|ul|ol|br|a class="quiet)\b)/i;
+const decode = (s) => s.replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&")
+  .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/&[a-z#0-9]+;/gi, " ");
+
+// One entry per block of visible copy: { text, html }. html keeps inline tags so structural rules can see them.
+export function extractBlocks(html) {
+  const body = html.replace(/<(script|style|code|pre)\b[\s\S]*?<\/\1>/gi, " ");
+  const blocks = body.split(BLOCK).map((frag) => "<" + frag)
+    .map((frag) => ({ html: frag.replace(/\s+/g, " ").trim(), text: decode(frag.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim() }))
+    .filter((b) => b.text);
+  const alts = [...html.matchAll(/\b(?:alt|aria-label)="([^"]*)"/g)].map((m) => decode(m[1]).trim()).filter(Boolean)
+    .map((text) => ({ text, html: text }));
+  return [...blocks, ...alts];
+}
+
+export function pages(dir) {
+  return readdirSync(dir).flatMap((n) => {
+    const p = join(dir, n);
+    if (statSync(p).isDirectory()) return n === "archive" ? [] : pages(p);
+    return n.endsWith(".html") ? [p] : [];
+  });
+}
+
+export const collect = (dist) => pages(dist).flatMap((p) =>
+  extractBlocks(readFileSync(p, "utf8")).map((b) => ({ ...b, page: "/" + p.slice(dist.length + 1).replace(/index\.html$/, "") })));
+
+// Blocks present in `blocks` and absent from the same page in `base` (a new page is all changed).
+export function changedOnly(blocks, base) {
+  const seen = new Set(base.map((b) => `${b.page}\0${b.text}`));
+  return blocks.filter((b) => !seen.has(`${b.page}\0${b.text}`));
+}
+
+export function check(blocks, rules = loadRules()) {
+  const fails = [];
+  for (const b of blocks)
+    for (const r of rules) {
+      r.re.lastIndex = 0;
+      if (r.re.test(r.kind === "html" ? b.html : b.text))
+        fails.push({ id: r.id, rule: r.rule, page: b.page, line: b.text.slice(0, 140) });
+    }
+  return fails;
+}
+
+export function loadKnown(file = join(root, "voice/known-fails.tsv")) {
+  if (!existsSync(file)) return new Set();
+  return new Set(readFileSync(file, "utf8").split("\n").slice(1).filter(Boolean));
+}
+export const knownKey = (f) => `${f.id}\t${f.page}\t${f.line}`;
+
+export function judgeBrief(blocks, samples) {
+  const copy = blocks.map((b) => `- ${b.text}`).join("\n");
+  return `Judge only against the SAMPLES below, which are approved copy from this site. Ignore every other style rule you were given.
+
+## SAMPLES (approved)
+${samples}
+
+## NEW COPY (changed lines)
+${copy}
+
+Question: does the new copy read like the samples? Judge register only: capitalization, contractions, sentence length,
+lists and bold lead-ins, asides, ellipses and dashes, formality. Do not flag content, clarity or what a line leaves out;
+a line that matches the register is a match. Answer on the first line with exactly "VERDICT: yes" or "VERDICT: no".
+If no, list each line that does not match, quoted, one per line, with a few words on why. If yes, write nothing else.`;
+}
+
+export function judge(blocks, { samples = readFileSync(join(root, "voice/samples.md"), "utf8"), env = process.env } = {}) {
+  if (env.CI) return { ok: false, error: "the judge is local only; CI cannot reach ChatGPT" };
+  const gcopy = env.COPYGATE_GCOPY || join(process.env.HOME || "", "brain/bin/gcopy.sh");
+  const r = spawnSync(gcopy, ["-g", "doc"], { input: judgeBrief(blocks, samples), encoding: "utf8", env });
+  if (r.status !== 0) return { ok: false, error: `gcopy exit ${r.status}: ${(r.stderr || "").trim().slice(-200)}` };
+  const m = r.stdout.match(/^\s*VERDICT:\s*(yes|no)\b/im);
+  if (!m) return { ok: false, error: `no verdict in the reply: ${r.stdout.slice(0, 120)}` };
+  return { ok: m[1].toLowerCase() === "yes", verdict: m[1].toLowerCase(), detail: r.stdout.trim() };
+}
+
+function baseBlocks(ref, baseDist) {
+  if (baseDist) return collect(resolve(baseDist));
+  const tmp = mkdtempSync(join(tmpdir(), "copygate-"));
+  try {
+    const tar = execFileSync("git", ["-C", root, "archive", ref], { maxBuffer: 1 << 30 });
+    execFileSync("tar", ["-x", "-C", tmp], { input: tar });
+    if (existsSync(join(root, "node_modules"))) symlinkSync(join(root, "node_modules"), join(tmp, "node_modules"));
+    execFileSync("node", ["build.mjs"], { cwd: tmp, stdio: "ignore" });
+    return collect(join(tmp, "dist"));
+  } finally { rmSync(tmp, { recursive: true, force: true }); }
+}
+
+function main(argv) {
+  const opt = (n, d) => (argv.includes(n) ? argv[argv.indexOf(n) + 1] : d);
+  const dist = resolve(opt("--dist", join(root, "dist")));
+  let blocks, scope;
+  if (argv.includes("--text")) {
+    const f = opt("--text");
+    blocks = readFileSync(f === "-" ? 0 : f, "utf8").split("\n").map((l) => l.trim()).filter(Boolean)
+      .map((text) => ({ text, html: text, page: f === "-" ? "stdin" : f }));
+    scope = "text";
+  } else {
+    blocks = collect(dist);
+    scope = "all";
+    if (!argv.includes("--all")) {
+      blocks = changedOnly(blocks, baseBlocks(opt("--base", "origin/main"), opt("--base-dist")));
+      scope = `changed vs ${opt("--base", "origin/main")}`;
+    }
+  }
+  let fails = check(blocks);
+  if (argv.includes("--list-fails")) { console.log("id\tpage\tline"); for (const f of fails) console.log(knownKey(f)); return 0; }
+  if (scope === "all") { const known = loadKnown(); fails = fails.filter((f) => !known.has(knownKey(f))); }
+  for (const f of fails) console.log(`FAIL ${f.id} ${f.rule}: ${f.page}: "${f.line}"`);
+  let rc = fails.length ? 1 : 0;
+  let verdict = "";
+  if (argv.includes("--judge")) {
+    if (!blocks.length) console.log("judge: no changed copy to judge");
+    else {
+      const j = judge(blocks);
+      if (j.error) { console.log(`JUDGE ERROR ${j.error}`); rc = rc || 2; }
+      else { console.log(`JUDGE ${j.ok ? "yes" : "no"}\n${j.detail}`); if (!j.ok) rc = 1; }
+      verdict = j.verdict || "error";
+    }
+  }
+  console.log(`copygate: ${blocks.length} lines (${scope}), ${fails.length} fail${fails.length === 1 ? "" : "s"}${verdict ? `, judge ${verdict}` : ""}`);
+  try { appendFileSync(join(root, "bin/copygate.log"), `[${new Date().toISOString()}] argv=[${argv.join(" ")}] exit=${rc}\n`); } catch {}
+  return rc;
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) process.exit(main(process.argv.slice(2)));

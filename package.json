@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "test": "node --test test/*.test.mjs",
+    "test": "node --test test/*.test.mjs && bin/copygate",
     "dev": "node build.mjs && wrangler dev",
     "deploy": "wrangler deploy",
     "qa": "node build.mjs && playwright test --project=webkit"

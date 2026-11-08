@@ -4,7 +4,7 @@
 # first failing step, or if a fleet page is missing from dist/ afterwards. Run from anywhere; builds in the repo it lives in.
 # Needs the fleet toolchain on the Air (see bin/fleet-build.sh); cargo comes from ~/.cargo/bin.
 # Env: FLEET_BUILD (default bin/fleet-build.sh), SITE_NPM_BUILD (default `npm run build --silent`), SITE_META_BUILD (default
-#   `node build-fleet-meta.mjs`); tests stub all three.
+#   `node build-fleet-meta.mjs`), SITE_COPYGATE (default `bin/copygate --all`, #100); tests stub all four.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 export PATH="$HOME/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
@@ -19,4 +19,7 @@ node build-fleet-game.mjs > /dev/null || { echo "site-build: fleet game page fai
 for f in index.html bike-factory/index.html seats/index.html battle-school/index.html meta/index.html game/index.html flows/index.html flows/card-to-merge/index.html; do
   [ -s "dist/fleet/$f" ] || { echo "site-build: dist/fleet/$f missing" >&2; exit 1; }
 done
+# The copy gate (#100): no build ships copy that fails voice/rules.tsv, so sitedep.sh --deploy refuses it. A deploy snapshot has
+# no git base, so it checks every page; old lines that already fail are waived in voice/known-fails.tsv.
+${SITE_COPYGATE:-bin/copygate --all} || { echo "site-build: copygate failed" >&2; exit 1; }
 echo "site-build: dist/ with fleet pages ok"
