@@ -98,15 +98,20 @@ const JOB_NAMES = { triage: "Inbox triage", "issue-tag": "Issue labels", "cron-t
 // runs that day has no row. Counts only; the model names are fixed strings from the exporter.
 function callsTable(rows) {
   if (!rows || !rows.length) return empty("No calls logged yet.");
-  const cols = ["calls", "qwen", "haiku_fallback", "haiku_capped", "haiku_shadow"], days = [...new Set(rows.map((r) => r.day))];
+  const days = [...new Set(rows.map((r) => r.day))];
+  // Two layouts in one table, switched by CSS at 480px (page.css): wide shows Day and the three Haiku columns; phone drops
+  // Day under a per-day heading row and folds the three Haiku columns into one "12 (11 fb · 1 cap · 11 shadow)" cell.
+  const cells = (r) => `<td>${r.calls}</td><td>${r.qwen}</td><td class="wide">${r.haiku_fallback}</td><td class="wide">${r.haiku_capped}</td><td class="wide">${r.haiku_shadow}</td><td class="narrow">${r.haiku_fallback + r.haiku_capped} (${r.haiku_fallback} fb · ${r.haiku_capped} cap · ${r.haiku_shadow} shadow)</td>`;
+  const sum = (rs) => Object.fromEntries(["calls", "qwen", "haiku_fallback", "haiku_capped", "haiku_shadow"].map((k) => [k, rs.reduce((s, r) => s + r[k], 0)]));
   const body = days.map((d) => {
-    const rs = rows.filter((r) => r.day === d), tot = (k) => rs.reduce((s, r) => s + r[k], 0);
-    return rs.map((r) => `<tr><td>${esc(r.day)}</td><th scope="row">${esc(JOB_NAMES[r.job] || r.job)}</th>${cols.map((k) => `<td>${r[k]}</td>`).join("")}</tr>`).join("")
-      + `<tr class="total"><td>${esc(d)}</td><th scope="row">All jobs</th>${cols.map((k) => `<td>${tot(k)}</td>`).join("")}</tr>`;
+    const rs = rows.filter((r) => r.day === d);
+    return `<tr class="dayhead narrow"><th colspan="5" scope="colgroup">${esc(d)}</th></tr>`
+      + rs.map((r) => `<tr><td class="wide">${esc(r.day)}</td><th scope="row">${esc(JOB_NAMES[r.job] || r.job)}</th>${cells(r)}</tr>`).join("")
+      + `<tr class="total"><td class="wide">${esc(d)}</td><th scope="row">All jobs</th>${cells(sum(rs))}</tr>`;
   }).join("");
   const mq = rows[0].model_qwen, mh = rows[0].model_haiku;
-  return `<details class="calls" open><summary>Calls by day</summary><div class="table-scroll"><table><thead><tr><th>Day</th><th>Job</th><th>Calls</th><th>Qwen</th><th>Haiku (fallback)</th><th>Haiku (cap)</th><th>Haiku (shadow)</th></tr></thead><tbody>${body}</tbody></table></div>
-    <p class="note">Calls is items sent through the job. Qwen: answered by ${esc(mq)} on the local machine. Haiku (fallback): Qwen failed or its answer was thrown out, so ${esc(mh)} did the item. Haiku (cap): the ramp held this item back from Qwen on purpose, or a fixed rule sends it to Haiku. Haiku (shadow): a second Haiku call made only to compare with Qwen's answer, counted on top of Calls.</p></details>`;
+  return `<details class="calls" open><summary>Calls by day</summary><div class="table-scroll"><table><thead><tr><th class="wide">Day</th><th>Job</th><th>Calls</th><th>Qwen</th><th class="wide">Haiku (fallback)</th><th class="wide">Haiku (cap)</th><th class="wide">Haiku (shadow)</th><th class="narrow">Haiku</th></tr></thead><tbody>${body}</tbody></table></div>
+    <p class="note">Calls is items sent through the job. Qwen: answered by ${esc(mq)} on the local machine. Haiku (fallback, fb): Qwen failed or its answer was thrown out, so ${esc(mh)} did the item. Haiku (cap): the ramp held this item back from Qwen on purpose, or a fixed rule sends it to Haiku. Haiku (shadow): a second Haiku call made only to compare with Qwen's answer, counted on top of Calls. On a phone the three Haiku columns share one cell: fallback plus cap, then each part.</p></details>`;
 }
 
 const section = (id, title, why, body) => `<section id="${id}"><h2>${esc(title)}</h2><p class="why">${esc(why)}</p>${body}</section>`;

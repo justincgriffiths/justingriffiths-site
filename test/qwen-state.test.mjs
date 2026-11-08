@@ -222,8 +222,9 @@ test("the page shows a Calls by day table: totals row per day, plain-words legen
   const base = JSON.parse(readFileSync("content/qwen/data.json", "utf8"));
   const html = renderData({ ...base, calls_by_day: JSON.parse(out).calls_by_day });
   const sec = html.slice(html.indexOf('id="calls"'), html.indexOf('id="fallbacks"'));
-  assert.match(sec, /<th>Day<\/th><th>Job<\/th><th>Calls<\/th><th>Qwen<\/th><th>Haiku \(fallback\)<\/th><th>Haiku \(cap\)<\/th><th>Haiku \(shadow\)<\/th>/);
-  assert.match(sec, /<tr class="total"><td>2026-11-08<\/td><th scope="row">All jobs<\/th><td>15<\/td><td>6<\/td><td>9<\/td><td>0<\/td><td>0<\/td>/);
+  assert.match(sec, /<th class="wide">Day<\/th><th>Job<\/th><th>Calls<\/th><th>Qwen<\/th><th class="wide">Haiku \(fallback\)<\/th><th class="wide">Haiku \(cap\)<\/th><th class="wide">Haiku \(shadow\)<\/th><th class="narrow">Haiku<\/th>/);
+  assert.match(sec, /<tr class="total"><td class="wide">2026-11-08<\/td><th scope="row">All jobs<\/th><td>15<\/td><td>6<\/td><td class="wide">9<\/td><td class="wide">0<\/td><td class="wide">0<\/td><td class="narrow">9 \(9 fb · 0 cap · 0 shadow\)<\/td>/);
+  assert.match(sec, /<tr class="dayhead narrow"><th colspan="5" scope="colgroup">2026-11-08<\/th>/);   // phone: Day moves to a heading row
   assert.match(sec, /Haiku \(cap\): the ramp held this item back from Qwen on purpose/);
   assert.equal((sec.match(/class="total"/g) || []).length, 3);                  // 11-09, 11-08, 11-07
   assert.doesNotMatch(sec, /NaN|undefined/);
