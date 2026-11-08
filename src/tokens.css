@@ -1,0 +1,468 @@
+/* ============================================================
+   justingriffiths.com — the one token layer (site#51)
+   Every color, font, type step, space, radius, shadow and motion value the site uses lives
+   here. Page stylesheets read only these custom properties: no hex, no font names elsewhere.
+
+   Sections 1-3 are copied verbatim from pearmill/pedal origin/main
+   creative/Pedal-Design-System/tokens/{colors,typography,spacing}.css
+   (colors.css last changed 2026-11-04: --accent-contrast to night-800 for AA).
+   Re-sync by copying those three files again; do not edit them here.
+   Section 4 is this site's own layout aliases. Section 5 is the re-theme stub.
+   ============================================================ */
+
+/* ---- 1. colors.css ---- */
+/* ============================================================
+   Pedal — Color tokens
+   2026-10-22 (Justin, Claude Design -> git reconcile): legacy green ramp deleted; UI text,
+   hard borders and --surface-dark resolve to the NIGHT ramp (#1A1A2E), not warm ink. The ink
+   ramp stays: it is the illustration outline colour.
+   Light theme. Primary accent = Pedal teal (#5DA490).
+   (Grass green #84B159 was the accent through 2026-08-18; it is kept below as
+    a legacy/secondary scale but is no longer the brand accent — see --teal-*.)
+   Strong secondary = indigo navy (#10288C) with a light-blue surface.
+   Pink (#FFE8F0) rounds out the playful pastel fills.
+   Night navy (#1A1A2E) for UI text + the signature hard borders (since 2026-10-22);
+   warm near-black ink is the illustration outline colour only.
+   ============================================================ */
+:root {
+  /* The legacy grass-green ramp (--green-50..700, base #84B159) was deleted 2026-10-22
+     (Justin). Use --teal-*. --success / --success-surface keep their own status values. */
+
+  /* ---- Navy / blue: DEPRECATED 2026-10-23. The pitch deck (portal /pitch-deck) is the reference
+     implementation; only --blue-50 survives, as a light wash. Every other name below is an alias
+     to its deck replacement so old call sites render on-motif. Map: guidelines/deck-motif.md ---- */
+  --navy-900: var(--night-900);  /* deprecated 2026-10-23 (pitch-deck motif); was #0A1A60 */
+  --navy-700: var(--night-800);  /* deprecated 2026-10-23 (pitch-deck motif); was #10288C */
+  --navy-600: var(--night-700);  /* deprecated 2026-10-23 (pitch-deck motif); was #243FAE */
+  --navy-500: var(--night-600);  /* deprecated 2026-10-23 (pitch-deck motif); was #3A5AD0 */
+  --blue-400: var(--teal-400);  /* deprecated 2026-10-23 (pitch-deck motif); was #6E8FE6 */
+  --blue-300: var(--teal-300);  /* deprecated 2026-10-23 (pitch-deck motif); was #9DB8F2 */
+  --blue-200: var(--blue-50);  /* deprecated 2026-10-23 (pitch-deck motif); was #CBE2FE */
+  --blue-100: var(--blue-50);  /* deprecated 2026-10-23 (pitch-deck motif); was #E2EEFE */
+  --blue-50:  #F1F6FF;    /* faintest blue wash */
+
+  /* ---- Pink: only --pink-100 survives (light wash). 50/200/300 alias to it. ---- */
+  --pink-300: var(--pink-100);  /* deprecated 2026-10-23 (pitch-deck motif); was #FFB6CE */
+  --pink-200: var(--pink-100);  /* deprecated 2026-10-23 (pitch-deck motif); was #FFCFDF */
+  --pink-100: #FFE8F0;    /* light pink surface */
+  --pink-50:  var(--pink-100);  /* deprecated 2026-10-23 (pitch-deck motif); was #FFF4F8 */
+
+  /* ---- Ink: DEPRECATED. Text, borders and shadows are the night ramp (#1A1A2E family), as in
+     the pitch deck. Each ink step aliases its night step. ---- */
+  --ink-900: var(--night-900);  /* deprecated 2026-10-23 (pitch-deck motif); was #2A211F */
+  --ink-800: var(--night-800);  /* deprecated 2026-10-23 (pitch-deck motif); was #332B29 */
+  --ink-600: var(--night-600);  /* deprecated 2026-10-23 (pitch-deck motif); was #5C534F */
+  --ink-400: var(--night-400);  /* deprecated 2026-10-23 (pitch-deck motif); was #948B86 */
+  --ink-200: var(--night-200);  /* deprecated 2026-10-23 (pitch-deck motif); was #C9C2BC */
+
+  /* ---- Neutrals / surfaces ---- */
+  --white:   #FFFFFF;
+  --paper:   #FAF8F4;     /* warm off-white page wash */
+  --sand:    #F2EEE7;     /* sunken / subtle fill */
+  --line-soft: #E7E2DB;   /* hairline dividers */
+
+  /* ---- Illustration pastels: illustration fills and full-bleed section bands ONLY (Justin,
+     2026-10-23). Never a card, button, chip, text or border colour. Magenta and lemon are
+     retired (aliased); pink is the --pink-100 wash. ---- */
+  --mint:    #DBFFF6;
+  --sage:    #E7F2D8;     /* soft tint of the new green */
+  --teal:    #8BDFDD;
+  --peach:   #FFD8CC;
+  --cream:   #FFF2E0;
+  --yellow:  #FFD876;
+  --lemon:   var(--cream);  /* deprecated 2026-10-23 (pitch-deck motif); was #FFFEBD */
+  --pink:    var(--pink-100);   /* #FFE8F0 */
+  --magenta: var(--teal-500);  /* deprecated 2026-10-23 (pitch-deck motif); was #FF2791 */
+  --lavender:#DBD4FF;
+  --sky:     var(--blue-50);  /* deprecated 2026-10-23 (pitch-deck motif); was var(--blue-200) */
+
+  /* ---- Illustration sticker palette ----
+     The locked palette for Pedal's flat-vector sticker art (bold black
+     outlines, puffy colored border, navy hard shadow). Teal + orange are
+     flagged "to confirm" — keep them as swappable variables. */
+  --illus-teal:   #4DA8A0;   /* primary object fill, "good"/neutral */
+  --illus-orange: #F4845F;   /* accents, arrows, sparks, warnings */
+  --illus-navy:   #1A1A2E;   /* outlines context, drop shadow, depth faces */
+  --illus-cream:  #F8F7F4;   /* baked-in sticker background, light fills */
+  --illus-grey:   #C4C4C4;   /* sparingly — "wasted / hidden / ghosted" */
+
+  /* ---- Night ramp (the dark lane) ----
+     Added 2026-08-04. The dark half of the system, and it is NOT a new
+     aesthetic: Pedal's sticker art was already drawn on this exact ground.
+     `--illus-navy` (#1A1A2E) is the ground, `--illus-cream` (#F8F7F4) is the
+     paper, and `--illus-teal` / `--illus-orange` are the accents — so the
+     stickers sit on a night surface with nothing to reconcile. What was
+     missing was a SURFACE lane using them, which is why every dark Pedal
+     artifact so far invented its own.
+
+     CORRECTED 2026-08-04, same day: these are now Cosmin's canonical sticker-palette
+     values as shipped in the Pearmill partner-update deck. The first version of this
+     ramp was derived by eye from a deck that had repointed its own aliases, and it came
+     out one step off — Cosmin's is the source, so where they disagreed his wins. The
+     void is #12121F, not #0D0D18. Do not re-derive this ramp from an artifact. */
+  --night-900: #12121F;   /* the void behind a surface — also the shadow colour */
+  --night-800: #1A1A2E;   /* = --illus-navy. THE dark ground */
+  --night-700: #23233F;   /* raised panel on the ground */
+  --night-600: #3A3A52;   /* hairlines and dividers on night */
+  --night-400: #6E6E85;   /* de-emphasised text on night */
+  --night-200: #C7C7D2;   /* muted text on night — the ink scale is too warm here */
+
+  /* ---- Pedal teal — THE brand accent (base: #5DA490) ----
+     Re-anchored 2026-08-18: teal #5DA490 is Pedal's default accent across BOTH
+     lanes — it replaces grass green on light and the old #4DA8A0 step on night.
+     #5DA490 is the logo teal (brand-kit `accent_teal`), so wordmark, UI
+     accent, and this scale now agree. It stays clean on the night ground where
+     grass green went muddy (why `pedal-teal.png` was already the dark-slide mark).
+
+     Single-hue (~163°) ramp: 500 is the exact brand hex; darker steps carry text
+     and contrast on light, lighter steps are surfaces/washes and hover on night.
+     The illustration/sticker teal stays #4DA8A0 (`--illus-teal`) — do NOT collapse
+     the two; the sticker art is drawn on #4DA8A0, this is the UI accent. */
+  --teal-800: #234D41;    /* deepest — pressed on light, deep text */
+  --teal-700: #316858;    /* text/link on light, pressed */
+  --teal-600: #438975;    /* hover / darker accent */
+  --teal-500: #5DA490;    /* BASE brand teal — the default in most scenarios */
+  --teal-400: #79B9A7;    /* hover / light tint on night */
+  --teal-300: #99CCBD;
+  --teal-200: #BADED4;
+  --teal-100: #DAEFE9;    /* light accent surface */
+  --teal-50:  #EFF8F6;    /* faintest accent wash */
+  --orange-600: #E96B43;  /* pressed / deep */
+  --orange-500: var(--illus-orange);  /* #F4845F — secondary accent on night */
+  --orange-300: #F8B49B;
+  --orange-100: #FCE6DD;
+
+  /* ---- Semantic status ---- */
+  --success: #67924A;
+  --success-surface: #E7F1DA;
+  --warning: #F8AB41;
+  --warning-surface: #FFF2E0;
+  --danger:  #FF4E4E;
+  --danger-surface: #FFE2E2;
+  --info:    #3A5AD0;
+  --info-surface: #CBE2FE;
+
+  /* ============================================================
+     Semantic aliases — prefer these in components
+     ============================================================ */
+  --accent:           var(--teal-500);
+  --accent-hover:     var(--teal-600);
+  --accent-pressed:   var(--teal-700);
+  --accent-contrast:  var(--night-800); /* text/icon on accent fill. Was white until 2026-11-04: white on teal-500 is 2.93:1 (fails AA); night-800 is 5.83:1 */
+  --accent-surface:   var(--teal-100);
+  --accent-wash:      var(--teal-50);
+
+  /* ---- Secondary brand (navy / blue) ---- */
+  --secondary:          var(--night-800);  /* was navy-700; deck has no blue secondary */
+  --secondary-hover:    var(--night-700);
+  --secondary-pressed:  var(--night-900);
+  --secondary-contrast: var(--white);   /* text/icon on navy fill */
+  --secondary-surface:  var(--blue-50);
+  --secondary-wash:     var(--blue-50);
+
+  --text-primary:     var(--night-800);
+  --text-secondary:   var(--night-600);
+  --text-muted:       var(--night-400);
+  --text-on-accent:   var(--night-800); /* = --accent-contrast (2026-11-04, AA) */
+  --text-on-dark:     var(--white);
+  --text-link:        var(--teal-700);
+
+  --surface-page:     var(--white);
+  --surface-sunken:   var(--paper);
+  --surface-card:     var(--white);
+  --surface-accent:   var(--teal-100);
+  --surface-dark:     var(--night-800);    /* warm-ink fills: table headers, chips — component-level only */
+  --surface-navy:     var(--night-800);  /* #1A1A2E — THE canonical dark SECTION background. Was --navy-700 #10288C,
+                                             rejected by Chad as royal blue; repointed 2026-10-22 (Justin). */
+
+  --border-default:   var(--night-800);   /* the signature 2px hard ink border */
+  --border-strong:    var(--night-900);
+  --border-soft:      var(--line-soft);
+  --border-accent:    var(--teal-500);
+
+  /* ---- On night (the dark lane) ----
+     Two inversions carry the whole lane, and both are easy to get wrong by
+     reaching for the light-lane token:
+
+     1. The hard border becomes PAPER, not ink. An ink border on a night
+        ground is invisible — the outline IS the structure in this system, so
+        losing it loses the design, silently.
+     2. The hard shadow offsets into `--night-900`, not into ink. A shadow has
+        to be darker than the surface it lifts off; ink (#332B29) is warmer and
+        LIGHTER than the ground, so an ink offset reads as a smudge.
+
+     Text on night is `--paper`, not `--white`: the lane is warm-neutral and
+     pure white sits proud of every other surface in the system. */
+  --surface-night-canvas: var(--night-900);
+  --surface-night:        var(--night-800);
+  --surface-night-raised: var(--night-700);
+  --text-on-night:        var(--paper);
+  --text-muted-on-night:  var(--night-200);
+  --border-on-night:      var(--paper);
+  --accent-on-night:         var(--teal-500);
+  --accent-on-night-hover:   var(--teal-400);
+  --accent-on-night-pressed: var(--teal-700);
+  --accent-on-night-contrast: var(--night-800);  /* text on a teal fill */
+
+  /* ---- On navy (the dark SECTION lane) ----
+     Added 2026-08-18. The canonical dark section background is navy #10288C,
+     replacing the warm-ink "brown" band (#2A211F/#332B29) that decks used for
+     section-divider slides and dark bands. Navy is Pedal's strong secondary,
+     so a navy section reads as brand, not as a muddy near-black.
+
+     Same inversion discipline as the night lane:
+     - Border and text become PAPER, never ink (an ink outline vanishes on navy).
+     - The hard shadow offsets into `--navy-900` (#0A1A60), darker than the ground.
+     - TEAL is the accent that pops on navy — use --accent-on-navy for eyebrows,
+       rules, and fills; grass green and warm ink both die here. */
+  --surface-navy-canvas:  var(--night-900);  /* #12121F — deepest / the shadow colour (was --navy-900, 2026-10-22) */
+  --surface-navy-raised:  var(--night-700);  /* #23233F — raised panel on the dark ground (was --navy-600, 2026-10-22) */
+  --text-on-navy:         var(--paper);
+  --text-muted-on-navy:   var(--blue-300);   /* de-emphasised text on navy */
+  --border-on-navy:       var(--paper);
+  --accent-on-navy:          var(--teal-500);
+  --accent-on-navy-hover:    var(--teal-400);
+  --accent-on-navy-pressed:  var(--teal-700);
+  --accent-on-navy-contrast: var(--white);   /* text/icon on a teal fill over navy */
+
+  --focus-ring:       var(--teal-500);
+}
+
+/* ---- 2. typography.css ---- */
+/* ============================================================
+   Pedal — Typography tokens
+   One typeface: Google Sans (brand-supplied). 400 / 500 / 700.
+   NOTE: the source inspiration used Cabin + Bagoss Condensed;
+   Pedal standardizes on Google Sans per the supplied font files.
+   ============================================================ */
+:root {
+  --font-sans: "Google Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+
+  /* Font sizes (px) */
+  --text-display-xl: 64px;
+  --text-display:    48px;
+  --text-h1:         40px;
+  --text-h2:         32px;
+  --text-h3:         24px;
+  --text-h4:         20px;
+  --text-body-lg:    18px;
+  --text-body:       16px;
+  --text-body-sm:    14px;
+  --text-caption:    13px;
+  --text-overline:   12px;
+
+  /* Line heights */
+  --leading-tight:   1.05;   /* display headlines */
+  --leading-snug:    1.18;   /* headings */
+  --leading-normal:  1.5;    /* body small / ui */
+  --leading-relaxed: 1.6;    /* long-form body */
+
+  /* Letter spacing */
+  --tracking-tight:   -0.02em;  /* large display */
+  --tracking-snug:    -0.01em;  /* headings */
+  --tracking-normal:  0;
+  --tracking-wide:    0.08em;   /* overline / labels */
+}
+
+/* ---- 3. spacing.css ---- */
+/* ============================================================
+   Pedal — Spacing, radii, borders, shadows, motion
+   ============================================================ */
+:root {
+  /* ---- Spacing scale (4px base) ---- */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ---- Radii ---- (squared, Gumroad-ish — corners stay tight) */
+  --radius-none: 0;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* ---- Borders ---- the signature: 2px solid ink ---- */
+  --border-width: 2px;
+  --border-width-thick: 3px;
+  --border: var(--border-width) solid var(--border-default);   /* night since 2026-10-22 */
+  --border-strong-style: var(--border-width) solid var(--border-strong);
+
+  /* ---- Poster scale (added 2026-08-04) ----
+     For large-format surfaces only — a 1920x1080 deck stage, a full-bleed
+     hero. At that size the 2px signature border optically disappears; 4px is
+     the same border, held at the same apparent weight. This is a SCALE, not a
+     second style: do not use it on web UI, where it reads as a heavier design
+     rather than the same one bigger. There is deliberately no poster radius —
+     20px at 1920 is 13px at 1280, which --radius-lg already covers. */
+  --border-width-poster: 4px;
+  --border-poster: var(--border-width-poster) solid var(--border-strong);
+  --border-poster-on-night: var(--border-width-poster) solid var(--paper);
+
+  /* ---- Hard offset shadows (brand signature) ---- */
+  --shadow-hard-sm: 2px 2px 0 var(--night-800);  /* was ink-800; deck motif 2026-10-23 */
+  --shadow-hard:    4px 4px 0 var(--night-800);  /* was ink-800; deck motif 2026-10-23 */
+  --shadow-hard-lg: 6px 6px 0 var(--night-800);  /* was ink-800; deck motif 2026-10-23 */
+  --shadow-hard-accent: 4px 4px 0 var(--teal-500);
+
+  /* ---- Hard offset shadows, night lane ----
+     Offset into the void (--night-900), never into ink: the shadow has to be
+     darker than the surface it lifts off, and ink is both warmer and lighter
+     than the night ground, so an ink offset reads as a smudge instead of a
+     lift. Same three steps as the light lane, plus a poster step. */
+  --shadow-hard-night-sm: 2px 2px 0 var(--night-900);
+  --shadow-hard-night:    4px 4px 0 var(--night-900);
+  --shadow-hard-night-lg: 6px 6px 0 var(--night-900);
+  --shadow-hard-night-poster: 8px 8px 0 var(--night-900);
+  --shadow-hard-night-accent: 4px 4px 0 var(--teal-500);
+
+  /* ---- Sticker-chip scale (Cosmin's partner-update deck, adopted 2026-08-04) ----
+     Rounder corners and a chunkier offset than the web defaults, so a panel reads as a
+     die-cut sticker rather than a card. Deck surfaces only — the light-lane --radius-*
+     and --shadow-hard-* defaults are unchanged, because repointing those re-themes every
+     existing rounded element in the portal. */
+  --radius-sticker-sm: 8px;
+  --radius-sticker-md: 14px;
+  --shadow-sticker-sm: 3px 3px 0 var(--night-800);
+  --shadow-sticker:    5px 5px 0 var(--night-800);
+  --shadow-sticker-accent: 5px 5px 0 var(--teal-500);
+
+  /* ---- Night ground texture ----
+     A 64px lattice of paper lines at 5%, the only texture in the system. It
+     exists because a large flat night ground reads as a void rather than a
+     surface; at 5% it is felt and not seen. Applied as a pointer-events:none
+     ::before layer, never as a background on the content element. */
+  --night-grid-line: rgba(248, 247, 244, 0.05);
+  --night-grid-size: 64px;
+
+  /* ---- Soft elevation shadows (subtle UI depth) ---- */
+  --shadow-sm: 0 1px 2px rgba(42,33,31,0.08);
+  --shadow-md: 0 4px 12px rgba(42,33,31,0.10);
+  --shadow-lg: 0 12px 32px rgba(42,33,31,0.12);
+
+  /* ---- Motion ---- (snappy, slightly springy) */
+  --ease-standard: cubic-bezier(0.32, 0.72, 0.28, 1); /* @kind other */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* @kind other */
+  --dur-fast: 120ms; /* @kind other */
+  --dur-base: 200ms; /* @kind other */
+  --dur-slow: 320ms; /* @kind other */
+
+  /* ---- Layout ---- */
+  --container-max: 1200px;
+  --container-wide: 1440px;
+}
+
+/* ---- 4. Site aliases (justingriffiths.com only) ----
+   Mobile-first, the breakpoints pedal-performance.com uses: 768px (tablet), 1024px (desktop).
+   Media queries cannot read custom properties, so those two numbers also appear in the CSS.
+
+   One theme: the DS night lane (Justin, 2026-11-08, "dark theme only"). Every page reads
+   these --site-* names, never the ramps, so a re-theme is one block (section 5).
+   Night-lane rules (DS readme): the ground is --surface-night with the 5% paper lattice;
+   anything sitting directly on the ground takes a PAPER border; muted text is night-200;
+   hard shadows offset into night-900. A box (card, button, menu) stays LIGHT: paper fill,
+   night ink rule, hard offset into night-900. */
+:root {
+  color-scheme: dark;
+  --site-max: var(--container-max);                  /* 1200px content column */
+  --site-gutter: var(--space-5);                     /* 20px on phones */
+  --site-gutter-wide: var(--space-10);               /* 40px from 768px */
+  --band-pad: var(--space-16);                       /* section band, phones */
+  --band-pad-wide: var(--space-24);                  /* section band, desktop */
+  --measure: 65ch;
+  --tap: 44px;                                       /* minimum tap target */
+  --header-h: 72px;                                  /* sticky header, as pedal-performance.com */
+
+  --site-font: var(--font-sans);
+  --site-heading-font: var(--font-display);
+
+  /* The ground */
+  --site-bg: var(--surface-night);                   /* night-800 */
+  --site-bg-alt: var(--surface-night-canvas);        /* night-900: alternate bands, the footer */
+  --site-grid-line: var(--night-grid-line);
+  --site-grid-size: var(--night-grid-size);
+  --site-text: var(--text-on-night);                 /* paper */
+  --site-text-soft: var(--text-muted-on-night);      /* night-200 */
+  --site-link: var(--accent-on-night-hover);         /* teal-400 */
+  --site-link-hover: var(--text-on-night);
+  --site-line: var(--border-on-night);               /* paper: rules and outlines on the ground */
+  --site-hairline: var(--night-600);
+  --site-hover: var(--surface-night-raised);         /* night-700: ghost hover on the ground */
+  --site-selection: var(--teal-700);
+  --site-selection-text: var(--text-on-night);
+  --site-focus: var(--accent-on-night);
+
+  /* The accent (primary button, current page) */
+  --site-accent: var(--accent-on-night);             /* teal-500 */
+  --site-accent-hover: var(--accent-on-night-hover);
+  --site-accent-ink: var(--accent-on-night-contrast);/* night-800 on teal, AA */
+
+  /* A box on the ground: paper, ink rule, offset into the void */
+  --site-box: var(--paper);
+  --site-box-alt: var(--sand);
+  --site-box-text: var(--text-primary);
+  --site-box-soft: var(--text-secondary);
+  --site-box-link: var(--text-link);
+  --site-box-line: var(--border-default);
+  --site-box-hairline: var(--border-soft);
+  --site-box-border: var(--border-width) solid var(--site-box-line);
+  --site-shadow-sm: var(--shadow-hard-night-sm);
+  --site-shadow: var(--shadow-hard-night);
+  --site-shadow-lg: var(--shadow-hard-night-lg);
+  --site-art: var(--surface-accent);                 /* teal-100 field behind an illustration */
+
+  /* Chart series on the night ground. They encode data, so they sit outside the accent legend. */
+  --site-series-1: var(--teal-400);                  /* the thing the chart is about (Qwen) */
+  --site-series-2: var(--orange-500);                /* the cost of it (fell back) */
+  --site-series-3: var(--night-400);                 /* not in play (capped) */
+  --site-series-4: var(--lavender);                  /* the comparison (Haiku) */
+  --site-series-5: var(--yellow);                    /* a third model (Sonnet) */
+  --site-pending: var(--warning);                    /* a slot waiting on data */
+}
+
+/* ---- 5. Re-theme stub (Justin's call; ship the Pedal defaults) ----
+   To recolor or re-font the whole site, uncomment and set values here, then put
+   data-theme="jg" on <html>. Nothing else needs to change: every page reads the
+   --site-* aliases above.
+
+[data-theme="jg"] {
+  color-scheme: dark;
+  --site-font: "Your Body Face", system-ui, sans-serif;
+  --site-heading-font: "Your Display Face", var(--site-font);
+  --site-bg: #101418;
+  --site-bg-alt: #0A0D10;
+  --site-text: #F4F1EA;
+  --site-text-soft: #B9B4AA;
+  --site-link: #8CC4FF;
+  --site-line: #F4F1EA;
+  --site-hairline: #2B3138;
+  --site-hover: #1B2026;
+  --site-accent: #8CC4FF;
+  --site-accent-hover: #B5D9FF;
+  --site-accent-ink: #0A0D10;
+  --site-box: #F4F1EA;
+  --site-box-text: #101418;
+  --site-box-line: #101418;
+  --site-art: #DCEBFA;
+  --site-shadow-sm: 2px 2px 0 #000000;
+  --site-shadow: 4px 4px 0 #000000;
+}
+*/

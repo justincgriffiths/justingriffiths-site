@@ -1,0 +1,148 @@
+/* The hub at / (site#51). Pedal Design System, night lane only (Justin, 2026-11-08).
+   Loaded after /site.css (src/tokens.css + src/chrome.css), which carries the base, header and buttons.
+   Reads only --site-* aliases and DS scale tokens; no hex, no font names.
+   Layout follows pedal-performance.com: mobile-first, full-bleed bands with a 2px rule between them,
+   a 1200px content column, 20px gutters on phones and 40px from 768px, steps at 768px and 1024px.
+   Two box styles: the paper card (hero visual, facts at 1024+) and the buttons. */
+
+/* One column rule for every band: full-bleed background, content held to --site-max. */
+.cover-body, .index, .section, .footer {
+  padding-inline: max(var(--site-gutter), (100% - var(--site-max)) / 2);
+}
+@media (min-width: 768px) {
+  .cover-body, .index, .section, .footer {
+    padding-inline: max(var(--site-gutter-wide), (100% - var(--site-max)) / 2);
+  }
+}
+
+/* Overlines: the only all-caps, tiny and tracked */
+dt, .meta, .group, .tag, .placeholder span:first-child {
+  font-size: var(--text-overline); font-weight: var(--weight-bold); letter-spacing: var(--tracking-wide); text-transform: uppercase; line-height: var(--leading-normal);
+}
+dt, .meta, .group { color: var(--site-text-soft); }
+
+/* ---- Hero ---- */
+.cover { border-bottom: var(--border-width) solid var(--site-line); }
+.cover-body { display: grid; gap: var(--space-10); padding-block: var(--space-10) var(--space-12); }
+.cover-id { display: grid; gap: var(--space-6); align-content: start; min-width: 0; }
+.cover-id .kicker { display: none; }
+h1 {
+  font-family: var(--site-heading-font); font-weight: var(--weight-bold);
+  font-size: clamp(var(--text-h1), 5.2vw, var(--text-display-xl)); line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight); text-wrap: balance;
+}
+.lede { font-size: var(--text-h3); line-height: var(--leading-snug); letter-spacing: var(--tracking-snug); max-width: 30ch; text-wrap: pretty; }
+.cover-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-6); }
+.btn-lg { padding: var(--space-4) var(--space-8); font-size: var(--text-body-lg); }
+.cover-more {
+  display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap);
+  font-weight: var(--weight-bold); color: var(--site-text); text-decoration: none;
+}
+.cover-more:hover { color: var(--site-link); }
+.cover-more .icon { transition: transform var(--dur-fast) var(--ease-standard); }
+.cover-more:hover .icon { transform: translateX(3px); }
+
+/* The facts: plain rows on the ground (positions, location, contact) */
+.facts { max-width: var(--measure); border-top: 1px solid var(--site-hairline); }
+.fact { display: grid; grid-template-columns: 1fr; gap: var(--space-1); padding-block: var(--space-3); border-bottom: 1px solid var(--site-hairline); }
+.fact dd { overflow-wrap: break-word; }
+.fact .line { display: block; }
+.fact dd a { display: inline-flex; align-items: center; min-height: var(--tap); margin-block: calc((var(--tap) - 1lh) / -2); }
+@media (min-width: 768px) {
+  .fact { grid-template-columns: 8rem 1fr; gap: var(--space-4); align-items: baseline; }
+}
+
+/* The hero visual: the one featured box. Paper card, ink rule, hard offset into the void (the
+   DS "box stays light on night"); the art sits on a teal wash inside it. */
+.cover-visual { display: grid; gap: var(--space-3); align-content: start; max-width: 32rem; }
+.visual-card {
+  background: var(--site-box); border: var(--site-box-border); border-radius: var(--radius-sticker-md);
+  box-shadow: var(--site-shadow-lg); padding: var(--space-3);
+}
+.visual-art { aspect-ratio: 4 / 3; color: var(--site-box-text); background: var(--site-art); border-radius: var(--radius-sticker-sm); overflow: hidden; display: grid; place-items: center; }
+.visual-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.mark { display: block; width: 100%; height: 100%; }
+.mark-dot { fill: var(--site-box-line); }
+.mark-ring { fill: none; stroke: var(--site-box-line); stroke-width: 4; }
+.mark-shadow { fill: var(--site-box-line); }
+.mark-disc { fill: var(--site-accent); stroke: var(--site-box-line); stroke-width: 4; }
+.mark-text { fill: var(--site-box-line); font-family: var(--site-heading-font); font-weight: var(--weight-bold); font-size: 72px; letter-spacing: var(--tracking-tight); }
+.visual-note { font-size: var(--text-body-sm); line-height: var(--leading-normal); color: var(--site-text-soft); }
+.visual-note code { font-family: var(--font-mono); font-size: 0.95em; color: var(--site-text); }
+
+@media (min-width: 1024px) {
+  .cover-body { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--space-16); align-items: center; padding-block: var(--space-16) var(--space-16); }
+  .cover-visual { justify-self: end; width: 100%; }
+  /* site#49: a portrait adds its own column only when one exists */
+  .cover-body:has(.portrait) { grid-template-columns: minmax(12rem, 16rem) 1fr; column-gap: var(--space-12); }
+}
+.portrait { max-width: 14rem; }
+
+/* Index: in-page anchors, as secondary buttons that press onto their shadow */
+.index { padding-block: 0 var(--space-12); }
+.index h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.index ol { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.index a {
+  display: inline-flex; align-items: center; min-height: var(--tap); padding-inline: var(--space-5);
+  color: var(--site-box-text); text-decoration: none; font-weight: var(--weight-bold);
+  background: var(--site-box); border: var(--site-box-border); border-radius: var(--radius-sm); box-shadow: var(--site-shadow-sm);
+  transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+}
+.index a:hover { background: var(--site-box-alt); color: var(--site-box-text); }
+.index a:active { transform: translate(2px, 2px); box-shadow: none; }
+.index .num, .section-title .num { display: none; } /* the order carries no information the titles do not */
+
+/* ---- Sections: the ground and the darker canvas alternate, a 2px paper rule between ---- */
+.section { padding-block: var(--band-pad); border-bottom: var(--border-width) solid var(--site-line); }
+.section:nth-of-type(odd) { background-color: var(--site-bg-alt); }
+.section-title { font-family: var(--site-heading-font); font-size: var(--text-h3); font-weight: var(--weight-bold); line-height: var(--leading-snug); letter-spacing: var(--tracking-snug); margin-bottom: var(--space-6); text-wrap: balance; }
+.section-body { min-width: 0; }
+.section-body > * + * { margin-top: var(--space-8); }
+@media (min-width: 1024px) {
+  .section { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: var(--space-16); padding-block: var(--band-pad-wide); }
+  .section-title { margin-bottom: 0; position: sticky; top: calc(var(--header-h) + var(--space-6)); align-self: start; }
+}
+
+.prose { max-width: var(--measure); text-wrap: pretty; }
+.prose + .prose { margin-top: var(--space-4); }
+
+.entries { list-style: none; max-width: var(--measure); border-top: 1px solid var(--site-hairline); }
+.entry { padding-block: var(--space-4); border-bottom: 1px solid var(--site-hairline); }
+.entry-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); }
+.entry .name { font-weight: var(--weight-bold); }
+.entry a.name { display: inline-flex; align-items: center; min-height: var(--tap); margin-block: calc((var(--tap) - 1lh) / -2); }
+.entry cite { font-style: italic; color: var(--site-text-soft); }
+.entry .note { margin-top: var(--space-1); color: var(--site-text-soft); max-width: var(--measure); }
+.group { margin: var(--space-8) 0 var(--space-3); }
+.group:first-child { margin-top: 0; }
+.section-body > .group + .entries { margin-top: 0; }
+
+/* Logos (real ones only; placeholders do not render) and media */
+.logos { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.logos a { text-decoration: none; color: inherit; }
+.logos img { display: block; height: var(--space-10); width: auto; }
+.exhibits { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(10rem, 100%), 1fr)); }
+.exhibits:has(.exhibit-video, .exhibit-embed, .exhibit-audio) { grid-template-columns: 1fr; }
+.exhibit .frame { aspect-ratio: var(--aspect, 4 / 5); background: var(--site-box-alt); border: var(--site-box-border); border-radius: var(--radius-md); overflow: hidden; }
+.exhibit-audio .frame { aspect-ratio: auto; padding: var(--space-3); }
+.exhibit-video, .exhibit-embed { --aspect: 16 / 9; }
+.exhibit img, .exhibit video, .exhibit iframe { display: block; width: 100%; height: 100%; object-fit: cover; border: 0; }
+.exhibit audio { width: 100%; }
+.exhibit figcaption { margin-top: var(--space-2); color: var(--site-text-soft); }
+.exhibit .tag { color: var(--site-text); margin-right: var(--space-2); }
+.exhibit .credit { display: block; }
+.placeholder { height: 100%; min-height: 6rem; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: var(--space-1); text-align: center; padding: var(--space-4); color: var(--site-box-soft); }
+
+/* Contact facts inside a section: the same plain rows as the hero */
+.section .facts { margin-top: 0; }
+
+/* ---- Footer: the canvas band, with the action repeated ---- */
+.footer {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4) var(--space-8);
+  background-color: var(--site-bg-alt); color: var(--site-text-soft); padding-block: var(--space-10) var(--space-12);
+}
+.footer p { max-width: var(--measure); }
+
+@media (prefers-reduced-motion: reduce) {
+  .index a, .cover-more .icon { transition: none; }
+}

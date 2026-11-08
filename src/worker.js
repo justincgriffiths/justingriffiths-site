@@ -10,7 +10,7 @@ import { verifyAccessJwt } from "./access.js";
 
 const APEX = "justingriffiths.com";
 const ARCHIVE_PREFIX = "/archive";
-const HUB_PATHS = new Set(["/", "/index.html", "/style.css", "/favicon.svg", "/robots.txt"]);
+const HUB_PATHS = new Set(["/", "/index.html", "/site.css", "/style.css", "/favicon.svg", "/robots.txt"]);
 const GATED_PREFIX = "/fleet";
 const META_PREFIX = `${GATED_PREFIX}/meta`, META_STATE_PATH = `${META_PREFIX}/state.json`, META_KEY = "meta.json";
 const STATE_PATH = `${GATED_PREFIX}/state.json`, STATE_KEY = "state.json";

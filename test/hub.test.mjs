@@ -7,7 +7,8 @@ execFileSync("node", ["build.mjs"], { cwd: new URL("../", import.meta.url), stdi
 const html = readFileSync(new URL("../dist/index.html", import.meta.url), "utf8");
 
 test("nav has a Lab anchor between Work and the influences section", () => {
-  const nav = html.slice(html.indexOf('<nav class="index"'), html.indexOf("</nav>"));
+  const start = html.indexOf('<nav class="index"');
+  const nav = html.slice(start, html.indexOf("</nav>", start));
   assert.match(nav, /href="#lab"/);
   assert.ok(nav.indexOf("#work") < nav.indexOf("#lab") && nav.indexOf("#lab") < nav.indexOf("#influences"));
 });
@@ -34,4 +35,14 @@ test("cover Contact and Contact section both point at the booking link (#53)", (
 test(".info link points at /archive/", () => {
   assert.ok(!html.includes("justingriffiths.info"));
   assert.match(html, /href="\/archive\/"/);
+});
+
+test("no placeholder logo tiles render (site#51)", () => {
+  assert.doesNotMatch(html, /Logo pending|logo-ph/i);
+});
+
+test("the hero carries the Book a call button and a visual card", () => {
+  const hero = html.slice(html.indexOf('<section class="cover"'), html.indexOf('<nav class="index"'));
+  assert.match(hero, /<a class="btn btn-primary[^"]*" href="https:\/\/cal\.com\/justin-griffiths"[^>]*>Book a call<\/a>/);
+  assert.match(hero, /class="visual-card"/);
 });

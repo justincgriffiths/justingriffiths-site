@@ -3,6 +3,7 @@
 // Diagrams: content/marketing-101/diagrams/*.svg (rendered once by bin/render-diagrams.mjs).
 // Look: the Pedal Design System night lane, tokens vendored from pearmill/pedal origin/main
 // creative/Pedal-Design-System/tokens (2026-11-04). No dependencies.
+import { chromeHead, siteHeader, bookButton, NAV_SCRIPT } from "./src/chrome.mjs";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 
 const ROOT = new URL("./content/marketing-101/", import.meta.url);
@@ -89,10 +90,12 @@ const page = `<!doctype html>
   <meta name="description" content="Ten short sessions on marketing, read as an economist.">
   <meta name="robots" content="noindex">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  ${chromeHead()}
   <style>${css}</style>
 </head>
 <body>
   <a class="skip" href="#s1">Skip to session 1</a>
+  ${siteHeader("marketing-101")}
   <header id="top" class="hero wrap">
     <p class="eyebrow">Ten talk-through sessions</p>
     <h1>Marketing 101</h1>
@@ -107,7 +110,8 @@ const page = `<!doctype html>
       <p class="next">${s.n < sessions.length ? `<a href="#s${s.n + 1}">Next: ${esc(short[s.n])} →</a>` : `<a href="#top">Back to the top ↑</a>`}</p>
     </section>`).join("")}
   </main>
-  <footer class="wrap"><p>Built by <a href="/">Justin Griffiths</a>. Every case study links its sources in its session.</p></footer>
+  <footer class="site-footer"><div class="wrap"><p>Built by <a href="/">Justin Griffiths</a>. Every case study links its sources in its session.</p>${bookButton("btn-sm")}</div></footer>
+  ${NAV_SCRIPT}
 </body>
 </html>
 `;

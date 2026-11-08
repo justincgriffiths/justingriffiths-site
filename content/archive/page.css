@@ -1,0 +1,12 @@
+/* /archive/ landing (site#51). Loaded after /site.css; tokens only. Read mode: one column, a ruled list. */
+.archive { max-width: calc(48rem + 2 * var(--site-gutter)); padding-block: var(--space-10) var(--space-16); }
+@media (min-width: 768px) { .archive { max-width: calc(48rem + 2 * var(--site-gutter-wide)); } }
+.archive h1 { font-size: clamp(var(--text-h1), 6vw, var(--text-display)); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); font-weight: var(--weight-bold); margin-bottom: var(--space-4); }
+.archive .lede { font-size: var(--text-body-lg); max-width: var(--measure); margin-bottom: var(--space-6); }
+.archive h2 { font-size: var(--text-h3); line-height: var(--leading-snug); font-weight: var(--weight-bold); margin: var(--space-12) 0 var(--space-4); }
+.collections { list-style: none; border-top: var(--border-width) solid var(--site-line); }
+.collections li { border-bottom: 1px solid var(--site-hairline); }
+.collections a { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); min-height: 56px; padding-block: var(--space-3); text-decoration: none; color: var(--site-text); }
+.collections a:hover .c-name { color: var(--site-link); text-decoration: underline; }
+.c-name { font-size: var(--text-h4); font-weight: var(--weight-bold); }
+.c-n { color: var(--site-text-soft); font-size: var(--text-body-sm); font-variant-numeric: tabular-nums; white-space: nowrap; }
