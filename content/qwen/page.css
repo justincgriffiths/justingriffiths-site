@@ -15,7 +15,7 @@
 .qwen .gridline { stroke: var(--site-hairline); }
 .qwen .trend { stroke: var(--site-text-soft); stroke-width: 1.5; }
 .qwen table { width: 100%; border-collapse: collapse; font-size: var(--text-body-sm); font-variant-numeric: tabular-nums; margin-top: var(--space-3); }
-.qwen th, .qwen td { overflow-wrap: anywhere; text-align: left; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--site-hairline); }
+.qwen th, .qwen td { overflow-wrap: break-word; text-align: left; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--site-hairline); }
 .qwen thead th { font-size: var(--text-overline); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--site-text-soft); border-bottom: var(--border-width) solid var(--site-line); }
 .pending, .empty { color: var(--site-pending); font-size: var(--text-body-sm); }
 .empty { padding: var(--space-3) 0; }
@@ -46,3 +46,13 @@
 .qwen .single { font-family: var(--site-font); margin: var(--space-2) 0 var(--space-1); color: var(--site-text); }
 .qwen .single .big { font-size: var(--text-h2, 2.5rem); font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .qwen .savings { margin: var(--space-1) 0 var(--space-2); color: var(--site-text); font-size: var(--text-body-sm); line-height: var(--leading-normal); }
+/* Tables on a phone (site#92): a word never breaks mid-letter. In a section 30rem (480px) wide or narrower each row stacks: the row name
+   on top, then one label and value pair per line. The header row hides; the labels come from data-label. */
+@container (max-width: 30rem) {
+  .qwen table.stack, .qwen table.stack tbody, .qwen table.stack tr, .qwen table.stack th, .qwen table.stack td { display: block; }
+  .qwen table.stack thead { display: none; }
+  .qwen table.stack tr { padding-block: var(--space-2); border-bottom: 1px solid var(--site-hairline); }
+  .qwen table.stack th, .qwen table.stack td { border-bottom: 0; padding-inline: 0; padding-block: var(--space-1); }
+  .qwen table.stack td[data-label] { display: flex; justify-content: space-between; gap: var(--space-3); }
+  .qwen table.stack td[data-label]::before { content: attr(data-label); color: var(--site-text-soft); }
+}

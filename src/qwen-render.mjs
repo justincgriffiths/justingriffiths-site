@@ -75,8 +75,8 @@ function costChart() {
 
 function latency() {
   const q = data.latency_ms.qwen, h = data.latency_ms.haiku;
-  const row = (name, v) => `<tr><th>${name}</th>${v ? `<td>${v.n}</td><td>${v.p50} ms</td><td>${v.p90} ms</td>` : `<td colspan="3" class="pending">Pending: no live items yet</td>`}</tr>`;
-  return `<table><thead><tr><th></th><th>Items</th><th>Median</th><th>90th percentile</th></tr></thead><tbody>${row("Qwen", q.n ? q : null)}${row("Haiku", h)}</tbody></table>`;
+  const row = (name, v) => `<tr><th>${name}</th>${v ? `<td data-label="Items">${v.n}</td><td data-label="Median">${v.p50} ms</td><td data-label="90th percentile">${v.p90} ms</td>` : `<td colspan="3" class="pending">Pending: no live items yet</td>`}</tr>`;
+  return `<table class="stack"><thead><tr><th></th><th>Items</th><th>Median</th><th>90th percentile</th></tr></thead><tbody>${row("Qwen", q.n ? q : null)}${row("Haiku", h)}</tbody></table>`;
 }
 
 function accuracy() {
@@ -85,7 +85,7 @@ function accuracy() {
   const slot = (title, obj, refs) => `<tr><th>${title}</th>${Object.entries(obj).map(([w, v]) => v == null ? `<td class="pending">${esc(w)}: pending (${esc(refs[w])})</td>` : `<td>${esc(w)}: ${esc(v)}%</td>`).join("")}</tr>`;
   return `<p class="note"><strong>${esc(a.trial.label)}.</strong> This is the test run before Qwen went live, not live accuracy.</p>
     <svg viewBox="0 0 ${W} 82" role="img" aria-label="Trial: correct answers out of 4 by model">${bars}</svg>
-    <table><tbody>${slot("Shadow agreement", a.shadow_agreement_pct, a.pending.shadow_agreement_pct)}${slot("Correction-free", a.correction_free_pct, a.pending.correction_free_pct)}</tbody></table>`;
+    <table class="stack"><tbody>${slot("Shadow agreement", a.shadow_agreement_pct, a.pending.shadow_agreement_pct)}${slot("Correction-free", a.correction_free_pct, a.pending.correction_free_pct)}</tbody></table>`;
 }
 
 // Freshness (site#60): when the aggregates were read, in Eastern time, plus an age the page keeps current.
