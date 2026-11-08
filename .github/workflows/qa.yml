@@ -1,0 +1,32 @@
+# Responsive QA (site#62): the Apple device matrix, the 320-1920 buffer sweep and the cross-skin geometry check,
+# in WebKit, against the local build. Runs on every pull request. Mark the "qa" check required on main
+# (a repo setting) so a PR touching content/, src/*.css or build*.mjs cannot merge red.
+name: qa
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npx playwright install --with-deps webkit
+      - run: npm run qa
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-screenshots
+          path: qa/
+          if-no-files-found: ignore

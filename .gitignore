@@ -11,3 +11,5 @@ qa/*/*.png
 !qa/*/contact-*.png
 playwright-report/
 test-results/
+qa/*/.contact-*.html
+qa/*/remote/
