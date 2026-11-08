@@ -92,7 +92,7 @@ writeFileSync(sweepLog, `[2026-11-08T08:00:00Z] argv=[--max 10] exit=0 status=ok
 const wfEnv = { QWEN_CRON_RUNS: cronFile, QWEN_DECLUTTER: declutterFile, QWEN_REAP: reapFile, QWEN_LEARN: learnFile, QWEN_AS_OF: "2026-11-08T15:00:00Z",
   QWEN_WRAP_DIR: wrapDir, QWEN_PR_SWEEP: prFile, QWEN_SESSION_FINISH: finishLog, QWEN_DECLUTTER_SWEEP: sweepLog };
 
-const out = execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env, ...wfEnv,
+const out = execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env, ...wfEnv, PGPASSWORD: "",
   QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"), QWEN_TAG_LOG: join(dir, "tag.log"), QWEN_TAG_JSONL: join(dir, "tag.jsonl") } });
 const keysOf = (o, acc = []) => { if (o && typeof o === "object") for (const [k, v] of Object.entries(o)) { acc.push(k); keysOf(v, acc); } return acc; };
 

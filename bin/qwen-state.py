@@ -10,9 +10,12 @@ QWEN_TAG_LOG / QWEN_TAG_JSONL (the canonical issue-tag.{log,jsonl} in ~/.local/s
 QWEN_CRON_RUNS (cron-triage runs.jsonl), QWEN_DECLUTTER / QWEN_REAP (their qwen.jsonl); each may be a colon-separated list (site#79).
 History (site#90): QWEN_WRAP_DIR (wrap/*.json, one record per session), QWEN_PR_SWEEP (pr-sweep/runs.jsonl),
 QWEN_SESSION_FINISH / QWEN_DECLUTTER_SWEEP (the session-cleanup logs). Counts, dates and dollars only.
+Skill cost (site#115): QWEN_SKILL_COST_FIXTURE (a JSON array of aggregate rows) stands in for the telemetry query; with no fixture the
+block is read from Supabase telemetry.events through the read-only fleet_reader role, only when PGPASSWORD is in the env
+(bin/skill-cost.sh injects it with `op run`). Aggregated in SQL: per UTC day x skill.name x model bucket x main-thread flag.
 Usage: bin/qwen-state.py [--now ISO]
 """
-import glob, json, os, re, sqlite3, sys
+import glob, json, os, re, sqlite3, subprocess, sys
 from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 
@@ -399,11 +402,91 @@ def hist_cleanup():
     return out
 
 
+TELEMETRY_FROM = "2026-11-04"  # first day telemetry.events holds (skill-library#520)
+PSQL = os.environ.get("QWEN_PSQL", "/opt/homebrew/opt/postgresql@17/bin/psql")
+SKILL_RE = re.compile(r"^[a-z0-9][a-z0-9:_.-]{0,59}$")  # a skill name is kept only if it looks like one; anything else folds into "other"
+SKILL_COST_SQL = """select coalesce(json_agg(t), '[]'::json) from (
+  select to_char(event_ts at time zone 'UTC', 'YYYY-MM-DD') as day, coalesce(attrs->>'skill.name', '') as skill,
+         case when model ilike '%opus%' then 'opus' when model ilike '%sonnet%' then 'sonnet' when model ilike '%haiku%' then 'haiku'
+              when model ilike '%fable%' then 'fable' else 'other' end as model,
+         coalesce(query_source, '') like 'repl_main_thread%' as main,
+         round(sum(cost_usd), 6) as usd, count(*) as requests
+  from telemetry.events where event_name = 'api_request' and event_ts < '{cutoff}'
+  group by 1, 2, 3, 4) t"""
+
+
+def skill_rows(cutoff):
+    """Aggregate rows [{day, skill, model, main, usd, requests}] or None when no source is configured / reachable."""
+    fx = os.environ.get("QWEN_SKILL_COST_FIXTURE")
+    if fx:
+        try: return json.load(open(fx))
+        except (OSError, ValueError): return None
+    if not os.environ.get("PGPASSWORD"): return None
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T[\d:.]+Z", cutoff): return None
+    env = {**os.environ, "PGHOST": os.environ.get("PGHOST", "aws-0-us-east-1.pooler.supabase.com"), "PGPORT": os.environ.get("PGPORT", "5432"),
+           "PGUSER": os.environ.get("PGUSER", "fleet_reader.enrpunfsnpnprtldxnsr"), "PGDATABASE": os.environ.get("PGDATABASE", "postgres"),
+           "PGSSLMODE": "require", "PGOPTIONS": "-c default_transaction_read_only=on"}
+    try:
+        r = subprocess.run([PSQL, "-X", "-At", "-c", SKILL_COST_SQL.format(cutoff=cutoff)], env=env, capture_output=True, text=True, timeout=120)
+        return json.loads(r.stdout) if r.returncode == 0 else None
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+
+
+def skill_cost(cutoff):
+    """The skill_cost block (site#115). Dollars and request counts per day x skill x model, untagged spend per day split into the main
+    thread and everything else (subagents, summaries), and coverage: tagged_pct = tagged spend / total api_request spend, computed here."""
+    rows_ = skill_rows(cutoff)
+    if rows_ is None: return None
+    by, un, tot, tagged = defaultdict(lambda: [0.0, 0]), defaultdict(lambda: {"main_usd": 0.0, "main_requests": 0, "other_usd": 0.0, "other_requests": 0}), 0.0, 0.0
+    reqs = 0
+    for r in rows_:
+        dy, usd_, n = day(r.get("day")), _num(r.get("usd")), int(_num(r.get("requests")))
+        if not dy: continue
+        tot += usd_; reqs += n
+        sk = str(r.get("skill") or "")
+        if sk:
+            tagged += usd_
+            k = (dy, sk if SKILL_RE.match(sk) else "other", r.get("model") if r.get("model") in ("opus", "sonnet", "haiku", "fable") else "other")
+            by[k][0] += usd_; by[k][1] += n
+        else:
+            u = un[dy]; w = "main" if r.get("main") else "other"
+            u[w + "_usd"] += usd_; u[w + "_requests"] += n
+    days = sorted({k[0] for k in by} | set(un))
+    return {"since": TELEMETRY_FROM, "first_day": days[0] if days else None, "through": days[-1] if days else None, "cutoff": cutoff,
+            "total_usd": round(tot, 4), "tagged_usd": round(tagged, 4), "requests": reqs,
+            "tagged_pct": round(100 * tagged / tot, 1) if tot else None,
+            "by_day_skill_model": [{"day": d, "skill": s_, "model": m, "usd": round(v[0], 4), "requests": v[1]} for (d, s_, m), v in sorted(by.items())],
+            "untagged_by_day": [{"day": d, **{k: (round(v, 4) if k.endswith("usd") else v) for k, v in un[d].items()}} for d in sorted(un)]}
+
+
+# Which telemetry skill tags are the interactive side of each History command.
+CMD_SKILLS = {"wrap": ("wrap",), "session-cleanup": ("declutter-sessions",), "pr-sweep": ("unstick-prs",)}
+
+
+def interactive(cmd, sc, now_day):
+    """Interactive (telemetry) cost for one History command: per day usd/requests by model, plus the total and the last 7 days.
+    None when there is no telemetry block or the command has no mapped skill."""
+    if not sc or cmd not in CMD_SKILLS: return None
+    days = defaultdict(lambda: {"usd": 0.0, "requests": 0, "models": defaultdict(float)})
+    for r in sc["by_day_skill_model"]:
+        if r["skill"] in CMD_SKILLS[cmd]:
+            d = days[r["day"]]; d["usd"] += r["usd"]; d["requests"] += r["requests"]; d["models"][r["model"]] += r["usd"]
+    rows_ = [{"day": k, "usd": round(v["usd"], 4), "requests": v["requests"], "usd_models": {m: round(x, 4) for m, x in sorted(v["models"].items())}} for k, v in sorted(days.items())]
+    mt = defaultdict(float)
+    for r in rows_:
+        for m, x in r["usd_models"].items(): mt[m] += x
+    last7 = [r for r in rows_ if addd(now_day, -6) <= r["day"] <= now_day]
+    return {"skills": list(CMD_SKILLS[cmd]), "usd": round(sum(r["usd"] for r in rows_), 4), "requests": sum(r["requests"] for r in rows_),
+            "usd_models": {m: round(x, 4) for m, x in sorted(mt.items())}, "last7_usd": round(sum(r["usd"] for r in last7), 4),
+            "last7_requests": sum(r["requests"] for r in last7), "days": rows_}
+
+
 def addd(d, n):
     return (datetime.strptime(d, "%Y-%m-%d") + timedelta(days=n)).strftime("%Y-%m-%d")
 
 
-def history(now_day, qwen_first):
+def history(now_day, qwen_first, sc=None):
     """History per command (site#90). days = only the days with a record: a day with none is absent, never a zero.
     usd is null where the source logs no cost. marker = the day the command's Qwen path went live (null if none yet).
     savings = actual spend, last 7 days (now-6..now) against the 7 before; cost_logged false means say "cost not logged"."""
@@ -423,7 +506,7 @@ def history(now_day, qwen_first):
         out.append({"command": key, "first_logged": days[0]["day"] if days else None, "runs": sum(r["runs"] for r in days),
                     "usd": round(sum(r["usd"] or 0 for r in days), 4) if logged else None,
                     "marker": {"day": marker, "label": "Qwen live"} if marker else None, "savings": sv,
-                    "stale_sources": stale_sources(key, now_day), "days": days})
+                    "stale_sources": stale_sources(key, now_day), "interactive": interactive(key, sc, now_day), "days": days})
     return {"through": now_day, "commands": out}
 
 
@@ -442,6 +525,7 @@ def build():
     pctl = lambda p: (lat[min(int(len(lat) * p), len(lat) - 1)] if lat else None)
     wf = workflows()
     as_of = os.environ.get("QWEN_AS_OF") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    sc = skill_cost(as_of)
     qdays_cleanup = [r["day"] for k in ("declutter", "session-reap") for r in wf[k]["share_by_day"] if r["answered"]]
     return {
         "schema": 1,
@@ -449,7 +533,8 @@ def build():
         # When these aggregates were read from the logs (UTC). /qwen/ shows it as "Data as of" (site#60).
         # QWEN_AS_OF pins it for tests.
         "as_of": as_of,
-        "history": history(as_of[:10], {"session-cleanup": min(qdays_cleanup) if qdays_cleanup else None}),
+        "history": history(as_of[:10], {"session-cleanup": min(qdays_cleanup) if qdays_cleanup else None}, sc),
+        "skill_cost": sc,
         "share_by_day": {"triage": series(t_share), "issue-tag": series(i_share)},
         "workflows": wf,
         "calls_by_day": calls_by_day(t_share, i_share, wf, triage_shadow(), haiku_only_triage()),
