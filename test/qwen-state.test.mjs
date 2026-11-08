@@ -87,7 +87,14 @@ const prFile = jl("prsweep.jsonl", [
   { ts: "2026-11-08T09:00:00Z", worked: 1, cost_usd: 0.5, rc: 0, stop_reason: "end_turn", turns: 4, model: "claude-opus-5-5" },
 ]);
 const finishLog = join(dir, "finish.log"), sweepLog = join(dir, "sweep.log");
-writeFileSync(finishLog, `[2026-11-06T06:00:00Z] argv=[] exit=0 status=clean body="SENTINEL_FINISH_BODY"\n[2026-11-06T07:00:00Z] argv=[--dry-run] exit=0 status=dry body="x"\n[2026-11-08T07:00:00Z] argv=[] exit=0 status=apply body="x"\n`.replace(/\\n/g, "\n"));
+// site#117: the finish job fires hourly. Two idle checks and a dry run are fires, not work; only the two status=apply lines are runs.
+writeFileSync(finishLog, [
+  `[2026-11-06T06:00:00Z] argv=[] exit=0 status=clean body="SENTINEL_FINISH_BODY"`,
+  `[2026-11-06T07:00:00Z] argv=[] exit=0 status=clean body="no idle AGT_ session to work (0 busy, 1 handled <24h)"`,
+  `[2026-11-06T07:30:00Z] argv=[--dry-run] exit=0 status=dry body="1 session(s), 1 action(s) planned (nothing written)"`,
+  `[2026-11-08T07:00:00Z] argv=[] exit=0 status=apply body="2 session(s), 3 action(s), 1 applied, 1 mechanically clean, 0 need the session"`,
+  `[2026-11-08T08:00:00Z] argv=[] exit=0 status=apply body="1 session(s), 1 action(s), 0 applied, 0 mechanically clean, 1 need the session"`,
+].join("\n") + "\n");
 writeFileSync(sweepLog, `[2026-11-08T08:00:00Z] argv=[--max 10] exit=0 status=ok body="SENTINEL_SWEEP_BODY"\n[2026-11-08T09:00:00Z] argv=[--dry-run] exit=0 status=dry-run body="x"\n`.replace(/\\n/g, "\n"));
 const wfEnv = { QWEN_CRON_RUNS: cronFile, QWEN_DECLUTTER: declutterFile, QWEN_REAP: reapFile, QWEN_LEARN: learnFile, QWEN_AS_OF: "2026-11-08T15:00:00Z",
   QWEN_WRAP_DIR: wrapDir, QWEN_PR_SWEEP: prFile, QWEN_SESSION_FINISH: finishLog, QWEN_DECLUTTER_SWEEP: sweepLog };
@@ -304,8 +311,26 @@ test("history: run counts match the sources, dollars sum, a day with no record i
   assert.equal(h["pr-sweep"].runs, 3); assert.equal(h["pr-sweep"].usd, 2.25);
   assert.deepEqual(h["pr-sweep"].days.map((d) => d.usd_models), [{ sonnet: 1.5 }, { other: 0.25 }, { opus: 0.5 }]);
   assert.deepEqual(h["pr-sweep"].days.map((d) => d.models), [{ sonnet: 1 }, { other: 1 }, { opus: 1 }]);   // an unknown model string is "other"
-  assert.equal(h["session-cleanup"].runs, 3);                                                              // dry-run lines are not runs
-  assert.deepEqual(h["session-cleanup"].days.find((d) => d.day === "2026-11-08").models, { script: 2 });
+  assert.equal(h["session-cleanup"].runs, 3);                                                              // 2 apply lines + 1 sweep ok; idle and dry lines are not runs
+  assert.deepEqual(h["session-cleanup"].days.find((d) => d.day === "2026-11-08").models, { script: 3 });
+});
+
+// site#117: only work becomes bars. Idle checks and dry runs are counted once, from the log, and never appear as a day.
+test("session cleanup: idle checks and dry runs are not bars; sessions and actions come from the line's own fields", () => {
+  const c = hist()["session-cleanup"];
+  assert.deepEqual(c.days.map((d) => d.day), ["2026-11-08"]);                                  // 11-06 had only idle + dry lines: no bar, no zero
+  assert.equal(c.idle_checks, 2); assert.equal(c.dry_runs, 2);                                  // 2 clean + (1 finish dry, 1 sweep dry-run)
+  assert.deepEqual(c.work, { sessions: 3, actions: 4, applied: 1, runs_applied_any: 1 });       // 2 apply runs, only 1 applied anything: both counts shown
+  assert.deepEqual(c.days[0].work, { sessions: 3, actions: 4, applied: 1, runs_applied_any: 1 });
+  assert.deepEqual(c.stale_sources, []);                                                        // idle fires keep the source alive
+});
+
+test("session cleanup chart: the note says the idle count once and no bar is drawn for an idle day", async () => {
+  const { renderData } = await import("../src/qwen-render.mjs");
+  const page = renderData(JSON.parse(out)), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="fallbacks"'));
+  assert.match(sec, /2 scheduled checks found no idle session to work and are not drawn/);
+  assert.match(sec, /handled 3 sessions and applied 1 action of 4 planned; 1 of those runs applied at least one/);
+  assert.doesNotMatch(sec, /2026-11-06 Script/);
 });
 
 test("history: 7-day savings compares the last 7 days with the 7 before; no logged cost says so", () => {

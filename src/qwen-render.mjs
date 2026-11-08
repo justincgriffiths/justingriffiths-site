@@ -200,13 +200,20 @@ function interactiveLine(i) {
   return `<p class="interactive"><strong>Interactive (Claude Code):</strong> ${usd(i.usd)} over ${i.requests} requests since telemetry began; ${usd(i.last7_usd)} in the last 7 days. ${esc(by)}.</p>`;
 }
 
+// Session cleanup (site#117): bars are runs that did work. The idle checks are said once here, computed from the log, never drawn.
+function cleanupLine(c) {
+  if (c.idle_checks == null) return "";
+  const w = c.work || {}, n = (v, one, many) => `${v} ${v === 1 ? one : many}`;
+  return `<p class="note cleanup-count">${n(c.idle_checks, "scheduled check", "scheduled checks")} found no idle session to work and ${c.idle_checks === 1 ? "is" : "are"} not drawn. ${n(c.dry_runs || 0, "dry run", "dry runs")} changed nothing and ${c.dry_runs === 1 ? "is" : "are"} not drawn. The finish runs handled ${n(w.sessions || 0, "session", "sessions")} and applied ${n(w.applied || 0, "action", "actions")} of ${w.actions || 0} planned; ${w.runs_applied_any || 0} of those runs applied at least one.</p>`;
+}
+
 function historyOne(c, last) {
   const name = HNAMES[c.command] || c.command;
-  if (!c.days.length) return `<div class="callsjob"><h3>${esc(name)}</h3>${interactiveLine(c.interactive)}${empty("No runs logged.")}</div>`;
+  if (!c.days.length) return `<div class="callsjob"><h3>${esc(name)}</h3>${cleanupLine(c)}${interactiveLine(c.interactive)}${empty("No runs logged.")}</div>`;
   const by = Object.fromEntries(c.days.map((r) => [r.day, r])), first = c.days[0].day;
   const used = [...new Set(c.days.flatMap((r) => Object.keys(r.models)))], keys = Object.keys(HM).filter((k) => used.includes(k)).concat(used.filter((k) => !HM[k]));
   const lab = (k) => (HM[k] || [k, C.capped])[0], col = (k) => (HM[k] || [k, C.capped])[1];
-  const head = `<h3>${esc(name)}</h3>${savingsLine(c.savings)}${interactiveLine(c.interactive)}${(c.stale_sources || []).map((x) => `<p class="note stale-source">${x.covered ? `Source ${esc(x.source)} stopped on ${esc(x.last_day)}; runs since then come from the command's other source.` : `Source ${esc(x.source)} has no record since ${esc(x.last_day)}.`}</p>`).join("")}`;
+  const head = `<h3>${esc(name)}</h3>${savingsLine(c.savings)}${cleanupLine(c)}${interactiveLine(c.interactive)}${(c.stale_sources || []).map((x) => `<p class="note stale-source">${x.covered ? `Source ${esc(x.source)} stopped on ${esc(x.last_day)}; runs since then come from the command's other source.` : `Source ${esc(x.source)} has no record since ${esc(x.last_day)}.`}</p>`).join("")}`;
   const note = (extra) => `<p class="note">first logged ${esc(first)} · ${c.runs} ${c.runs === 1 ? "run" : "runs"}${c.usd == null ? " · cost not logged" : ` · ${usd(c.usd)} spent`}${extra}.</p>`;
   const mk = c.marker && c.marker.day ? ` · ${esc(c.marker.label)} since ${esc(c.marker.day)}` : "";
   if (c.days.length === 1) {
@@ -220,7 +227,7 @@ function historyOne(c, last) {
   const bars = days.map((d, i) => {
     const r = by[d], x = P.l + i * step + (step - bw) / 2; let y = H - P.b;
     if (!r) return `<rect x="${x}" y="${H - P.b - 1}" width="${bw}" height="1" class="gridline"><title>${esc(d)}: no runs</title></rect>`;
-    return keys.map((k) => { const v = val(r, k), h = yv(v); y -= h; return h ? `<rect x="${x}" y="${y}" width="${bw}" height="${h}" style="fill:${col(k)};stroke:var(--site-bg);stroke-width:1"><title>${esc(d)} ${esc(lab(k))}: ${money ? usd(v) : v}${money ? `, ${runsOf(r.runs)}` : r.usd == null ? "" : `, ${usd(r.usd)}`}</title></rect>` : ""; }).join("");
+    return keys.map((k) => { const v = val(r, k), h = yv(v); y -= h; return h ? `<rect x="${x}" y="${y}" width="${bw}" height="${h}" style="fill:${col(k)};stroke:var(--site-bg);stroke-width:1"><title>${esc(d)} ${esc(lab(k))}: ${money ? usd(v) : v}${money ? `, ${runsOf(r.runs)}` : r.usd == null ? "" : `, ${usd(r.usd)}`}${r.work && r.work.sessions ? `, ${r.work.sessions} sessions handled, ${r.work.applied} applied` : ""}</title></rect>` : ""; }).join("");
   }).join("");
   const peak = top && top.usd > 0 ? (() => { const i = days.indexOf(top.day), x = P.l + i * step + step / 2, anchor = i > days.length / 2 ? "end" : "start"; return `<text x="${x}" y="${H - P.b - yv(topv(top)) - 4}" text-anchor="${anchor}">${usd(top.usd)}</text>`; })() : "";
   const mi = c.marker && c.marker.day ? days.indexOf(c.marker.day) : -1;

@@ -387,18 +387,38 @@ def hist_pr_sweep():
     return out
 
 
+IDLE_CHECKS = {"idle": 0, "dry": 0}  # filled by hist_cleanup(): lines that are scheduler fires or dry runs, shown once in the note, never as bars
+
+
+def _field(pat, line):
+    m = re.search(pat, line)
+    return int(m[1]) if m else 0
+
+
 def hist_cleanup():
-    """Session cleanup: every live (not dry-run) line of the finish and declutter-sweep logs is one run. Both are scripts;
-    neither logs a model call or a cost. The line's body text is never read."""
-    out = defaultdict(lambda: {"runs": 0, "models": {"script": 0}, "usd": None})
+    """Session cleanup (site#117): a run is a line that did work, never a scheduler fire.
+    session-finish.log fires hourly: status=apply handled at least one session (a run), status=clean found no idle AGT_ session
+    (an idle check, counted in IDLE_CHECKS, not a run), status=dry is a dry run (not work, not a run).
+    "sessions handled" and "actions applied" are read from the line's own "N session(s), N action(s), N applied" fields.
+    declutter-sweep/sweep.log: status=ok lines stay counted as runs, a zero-action line included, because a run with 0 items
+    is Justin's call (see the PR audit); dry-run lines are dropped. Neither log records a model or a cost. Line bodies are never copied."""
+    IDLE_CHECKS["idle"] = IDLE_CHECKS["dry"] = 0
+    out = defaultdict(lambda: {"runs": 0, "models": {"script": 0}, "usd": None, "work": {"sessions": 0, "actions": 0, "applied": 0, "runs_applied_any": 0}})
     for p in CLEANUP_LOGS:
         try: lines = open(p).read().splitlines()
         except OSError: continue
+        src = os.path.splitext(os.path.basename(p))[0] + " log"
         for line in lines:
             m = re.match(r"\[(\d{4}-\d{2}-\d{2})T", line); st = re.search(r"\bstatus=([\w-]+)", line)
-            if not m or (st and st[1] in ("dry", "dry-run")) or "--dry-run" in line: continue
+            if not m: continue
+            status = st[1] if st else ""
+            seen("session-cleanup", src, m[1])  # a fire proves the source is alive, so an idle stretch is not "stopped writing"
+            if status in ("dry", "dry-run") or "--dry-run" in line: IDLE_CHECKS["dry"] += 1; continue
+            if status == "clean": IDLE_CHECKS["idle"] += 1; continue
             out[m[1]]["runs"] += 1; out[m[1]]["models"]["script"] += 1
-            seen("session-cleanup", os.path.splitext(os.path.basename(p))[0] + " log", m[1])
+            w = out[m[1]]["work"]
+            w["sessions"] += _field(r"(\d+) session\(s\)", line); w["actions"] += _field(r"(\d+) action\(s\)", line); w["applied"] += _field(r"(\d+) applied", line)
+            w["runs_applied_any"] += 1 if status == "apply" and _field(r"(\d+) applied", line) > 0 else 0  # both counts shown: whether a 0-applied run is work is Justin's call
     return out
 
 
@@ -496,7 +516,8 @@ def history(now_day, qwen_first, sc=None):
     for key, by, marker in cmds:
         days = [{"day": d, "runs": v["runs"], "models": {k: n for k, n in v["models"].items() if n},
                  "usd": None if v["usd"] is None else round(v["usd"], 4),
-                 **({"usd_models": {k: round(x, 4) for k, x in v["usd_models"].items() if x}} if v.get("usd_models") else {})} for d, v in sorted(by.items()) if v["runs"]]
+                 **({"usd_models": {k: round(x, 4) for k, x in v["usd_models"].items() if x}} if v.get("usd_models") else {}),
+                 **({"work": v["work"]} if v.get("work") else {})} for d, v in sorted(by.items()) if v["runs"]]
         logged = any(r["usd"] is not None for r in days)
         win = lambda lo, hi: [r for r in days if addd(now_day, lo) <= r["day"] <= addd(now_day, hi)]
         last, prior = win(-6, 0), win(-13, -7)
@@ -506,7 +527,10 @@ def history(now_day, qwen_first, sc=None):
         out.append({"command": key, "first_logged": days[0]["day"] if days else None, "runs": sum(r["runs"] for r in days),
                     "usd": round(sum(r["usd"] or 0 for r in days), 4) if logged else None,
                     "marker": {"day": marker, "label": "Qwen live"} if marker else None, "savings": sv,
-                    "stale_sources": stale_sources(key, now_day), "interactive": interactive(key, sc, now_day), "days": days})
+                    "stale_sources": stale_sources(key, now_day),
+                    **({"idle_checks": IDLE_CHECKS["idle"], "dry_runs": IDLE_CHECKS["dry"],
+                        "work": {k: sum(r["work"][k] for r in days) for k in ("sessions", "actions", "applied", "runs_applied_any")}} if key == "session-cleanup" else {}),
+                    "interactive": interactive(key, sc, now_day), "days": days})
     return {"through": now_day, "commands": out}
 
 
