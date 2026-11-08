@@ -117,6 +117,11 @@ test("a dry-run sidecar and its audit rows are excluded", () => {
   assert.equal(d.latency_ms.qwen.n, 2);
 });
 
+test("Haiku latency comes from live qwen_pair rows that carry latency_ms", () => {
+  const h = JSON.parse(out).latency_ms.haiku;
+  assert.deepEqual([h.n, h.p50, h.p90], [1, 800, 800]);   // the second pair row has no latency_ms; the dry run's pair row is dropped
+});
+
 test("no per-message string reaches the output", () => {
   for (const s of SENTINELS) assert.ok(!out.includes(s), `leaked: ${s}`);
   assert.ok(!/@/.test(out), "an @ reached the output");

@@ -277,6 +277,15 @@ def triage_shadow():
     return out
 
 
+def haiku_pair_latency():
+    """Haiku latency from live qwen_pair rows: the shadow call runs Haiku on the same prompt Qwen answered. Only latency_ms is read;
+    a row with none (or 0) is skipped. None until a pair row has one, so the page says Pending only when there is no data."""
+    lat = [_num(r.get("latency_ms")) for p in live_audits() for r in rows(p)
+           if r.get("tool") == "qwen_pair" and _num(r.get("latency_ms")) > 0]
+    s = lat_summary(lat, "item")
+    return {"n": s["n"], "p50": s["p50"], "p90": s["p90"], "source": "shadow pair"} if lat else None
+
+
 def haiku_only_triage():
     """Per day: messages the triage run read (unique get_message ids per run) in runs with no Qwen block, so Haiku did every one.
     Covers the runs before Qwen (audit logs reach back to 2026-10-12). Dry-run sidecars are dropped. Counts only."""
@@ -453,7 +462,7 @@ def build():
         },
         "latency_ms": {
             "qwen": {"n": len(lat), "p50": pctl(0.5), "p90": pctl(0.9)},
-            "haiku": None,  # PENDING: no Haiku latency is logged yet
+            "haiku": haiku_pair_latency(),  # None (page: Pending) only when no pair row carries latency_ms
         },
         "breakdowns": {
             "by_workflow": {w: {"answered": sum(r["answered"] for r in s), "fell_back": sum(r["fell_back"] for r in s), "capped": sum(r["capped"] for r in s)}
