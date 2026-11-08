@@ -56,6 +56,8 @@ for (const [file, current] of PAGES) {
 const assets = { fetch: async (req) => {
   let p = new URL(req.url).pathname.slice(1);
   if (p === "" || p.endsWith("/")) p += "index.html";
+  // The real binding serves /x from x.html (html_handling auto-trailing-slash).
+  if (!existsSync(dist(p)) && existsSync(dist(`${p}.html`))) p += ".html";
   return existsSync(dist(p)) ? new Response(readFileSync(dist(p))) : new Response("nf", { status: 404 });
 } };
 
