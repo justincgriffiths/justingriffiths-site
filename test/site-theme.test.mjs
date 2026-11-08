@@ -33,7 +33,7 @@ test("/qwen/ prints its as-of time; a missing stamp says so instead of hiding", 
   const data = JSON.parse(read("content/qwen/data.json"));
   assert.match(data.as_of, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
   const html = read("dist/qwen/index.html");
-  assert.match(html, new RegExp(`<p class="asof" data-asof="${data.as_of}">`));
+  assert.match(html, new RegExp(`<p class="asof cluster" data-asof="${data.as_of}">`));
   assert.match(html, /Data as of <time datetime="[^"]+">[A-Z][a-z]{2} \d{1,2}, \d{1,2}:\d\d [AP]M E[SD]T<\/time>/);
   assert.match(html, /labeling GitHub issues/);
 });

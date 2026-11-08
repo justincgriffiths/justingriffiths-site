@@ -35,10 +35,14 @@ const factValue = (v) => {
   }
   return esc(v);
 };
+// Frame classes (src/frame.css) go on the hub only; /pedal-design/ shares this renderer and keeps its own layout.
+let currentSkin = "classic";
+const F = (cls) => (currentSkin === "classic" ? cls : "");
+
 const facts = (rows) => `
-        <dl class="facts">${rows
+        <dl class="facts${F(" cq")}">${rows
           .map((r) => `
-          <div class="fact"><dt>${esc(r.label)}</dt><dd>${factValue(r.from ? get(r.from) : r)}</dd></div>`)
+          <div class="fact${F(" rows-item")}"><dt>${esc(r.label)}</dt><dd>${factValue(r.from ? get(r.from) : r)}</dd></div>`)
           .join("")}
         </dl>`;
 
@@ -88,7 +92,7 @@ const blocks = {
         <ul class="entries">${items(b)
           .map((e) => `
           <li class="entry">
-            <div class="entry-head">${e.url ? a(e.url, esc(e.name), "name") : `<span class="name">${esc(e.name)}</span>`}${
+            <div class="entry-head${F(" cluster")}">${e.url ? a(e.url, esc(e.name), "name") : `<span class="name">${esc(e.name)}</span>`}${
               e.role ? `<span class="meta">${esc(e.role)}</span>` : ""
             }${e.work ? `<cite>${esc(e.work)}</cite>` : ""}</div>${e.summary ? `
             <p class="note">${esc(e.summary)}</p>` : ""}
@@ -101,7 +105,7 @@ const blocks = {
         <h3 class="group">${esc(g.group)}</h3>${blocks.entries({ items: g.entries })}`)
       .join(""),
   exhibits: (b) => `
-        <div class="exhibits">${items(b).map((x) => exhibit(x)).join("")}
+        <div class="exhibits${F(" grid")}">${items(b).map((x) => exhibit(x)).join("")}
         </div>`,
   // Only real logos render. A placeholder (or an item with no src) is skipped, and a strip with
   // nothing real in it renders nothing at all: no "logo pending" tiles on a live page (site#51).
@@ -109,7 +113,7 @@ const blocks = {
     const real = items(b).filter((l) => l.src && !l.placeholder);
     if (!real.length) return "";
     return `
-        <ul class="logos" aria-label="${esc(b.label ?? "Organizations")}">${real
+        <ul class="logos${F(" cluster")}" aria-label="${esc(b.label ?? "Organizations")}">${real
           .map((l) => {
             const mark = `<img src="${esc(l.src)}" alt="${esc(l.name)}" loading="lazy">`;
             return `
@@ -147,12 +151,13 @@ const coverVisual = (v) => {
     ? (v.caption ? `<figcaption class="visual-note">${esc(v.caption)}</figcaption>` : "")
     : `<figcaption class="visual-note">Illustration slot for Justin: set <code>dossier.cover.visual</code> in bio.json to replace the mark.</figcaption>`;
   return `
-        <figure class="cover-visual">
+        <figure class="cover-visual${F(" fit")}">
           <div class="visual-card"><div class="visual-art">${art}</div></div>${note}
         </figure>`;
 };
 
 function renderPage(skin) {
+  currentSkin = skin;
   exhibitCount = 0;
   const updated = new Date().toISOString().slice(0, 10);
   const { cover = {} } = dossier;
@@ -160,21 +165,21 @@ function renderPage(skin) {
 
   const coverSheet = `
       <section class="cover" aria-labelledby="subject">
-        <div class="cover-body">
+        <div class="cover-body${F(" band switcher")}">
           ${cover.portrait ? exhibit(cover.portrait, "portrait") : ""}
           <div class="cover-id">
-            <h1 id="subject">${esc(bio.name)}</h1>
-            ${cover.lede ? `<p class="lede">${esc(get(cover.lede))}</p>` : ""}
-            <div class="cover-actions">
+            <h1 id="subject"${F(' class="t-display"')}>${esc(bio.name)}</h1>
+            ${cover.lede ? `<p class="lede${F(" fit")}">${esc(get(cover.lede))}</p>` : ""}
+            <div class="cover-actions${F(" cluster")}">
               ${bookButton("btn-lg")}${labId ? `
               <a class="cover-more" href="#${labId}">See what I am building${ICON.arrow}</a>` : ""}
             </div>
             ${cover.facts ? facts(cover.facts) : ""}
           </div>${cover.portrait ? "" : coverVisual(cover.visual)}
         </div>
-        <nav class="index" aria-label="Contents">
-          <h2 class="kicker">Index</h2>
-          <ol>${dossier.sections
+        <nav class="index${F(" band")}" aria-label="Contents">
+          <h2 class="kicker${F(" sr-only")}">Index</h2>
+          <ol${F(' class="cluster"')}>${dossier.sections
             .map((s, i) => `
             <li><a href="#${esc(s.id)}"><span class="num">${pad(i + 1)}</span><span class="title">${esc(s.title)}</span></a></li>`)
             .join("")}
@@ -185,7 +190,7 @@ function renderPage(skin) {
   const sections = dossier.sections
     .map(
       (s, i) => `
-      <section class="section" id="${esc(s.id)}" aria-labelledby="${esc(s.id)}-title">
+      <section class="section${F(" band sidebar sidebar-sticky")}" id="${esc(s.id)}" aria-labelledby="${esc(s.id)}-title">
         <h2 class="section-title" id="${esc(s.id)}-title"><span class="num">${pad(i + 1)}</span>${esc(s.title)}</h2>
         <div class="section-body">${s.blocks.map(renderBlock).join("")}
         </div>
@@ -224,7 +229,7 @@ function renderPage(skin) {
     <main id="main" class="sheet">${coverSheet}${sections}
     </main>
 
-    <footer class="footer">
+    <footer class="footer${F(" band cluster")}">
       <p>Set from ${a(`${REPO}/blob/main/bio.json`, "bio.json")}, the same text I use on every profile. Updated <time datetime="${updated}">${updated}</time>.</p>
       ${bookButton("btn-sm")}
     </footer>
@@ -244,10 +249,10 @@ writeFileSync(new URL("./dist/index.html", import.meta.url), classicHtml);
 mkdirSync(new URL("./dist/pedal-design/", import.meta.url), { recursive: true });
 writeFileSync(new URL("./dist/pedal-design/index.html", import.meta.url), pedalHtml);
 copyFileSync(new URL("./src/pedal-design.css", import.meta.url), new URL("./dist/pedal-design/style.css", import.meta.url));
-// /site.css is the token layer plus the shared chrome; every page loads it. /style.css is the hub's own rules.
+// /site.css is the token layer, the shared chrome and the frame (src/frame.css); every page loads it. /style.css is the hub's own rules.
 writeFileSync(
   new URL("./dist/site.css", import.meta.url),
-  readFileSync(new URL("./src/tokens.css", import.meta.url), "utf8") + "\n" + readFileSync(new URL("./src/chrome.css", import.meta.url), "utf8")
+  ["tokens", "chrome", "frame"].map((f) => readFileSync(new URL(`./src/${f}.css`, import.meta.url), "utf8")).join("\n")
 );
 copyFileSync(new URL("./src/style.css", import.meta.url), new URL("./dist/style.css", import.meta.url));
 for (const f of ["favicon.svg", "robots.txt", "construction.html"]) {

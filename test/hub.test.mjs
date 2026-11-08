@@ -7,7 +7,7 @@ execFileSync("node", ["build.mjs"], { cwd: new URL("../", import.meta.url), stdi
 const html = readFileSync(new URL("../dist/index.html", import.meta.url), "utf8");
 
 test("nav has a Lab anchor between Work and the influences section", () => {
-  const start = html.indexOf('<nav class="index"');
+  const start = html.indexOf('<nav class="index');
   const nav = html.slice(start, html.indexOf("</nav>", start));
   assert.match(nav, /href="#lab"/);
   assert.ok(nav.indexOf("#work") < nav.indexOf("#lab") && nav.indexOf("#lab") < nav.indexOf("#influences"));
