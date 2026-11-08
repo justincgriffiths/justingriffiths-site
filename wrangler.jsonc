@@ -25,8 +25,8 @@
   // AUD = Access app "Fleet" (justingriffiths.com/fleet, id 8d4de6fd…), created 2026-11-07.
   "vars": { "ACCESS_TEAM_DOMAIN": "tempoadv.cloudflareaccess.com", "ACCESS_AUD": "e6bb94773c8ffcc302b96784de10095657451b7f3dbcf344217e8baa8ec7869b" },
   // Live fleet state: /fleet/state.json reads key "state.json" from this KV binding (the mini writes it,
-  // bin/fleet-kv.sh). Not bound yet: a binding needs the namespace id, so it is added at go-live
-  // (see README, Live feed). Unbound means /fleet/state.json answers 404.
-  // "kv_namespaces": [{ "binding": "FLEET_KV", "id": "<namespace id from go-live step 1>" }],
+  // bin/fleet-kv.sh). Namespace "fleet-state" in JG Personal, created 2026-11-07 (site#43). Takes effect on deploy;
+  // until the pusher writes a key, /fleet/state.json answers 404.
+  "kv_namespaces": [{ "binding": "FLEET_KV", "id": "7683fca9f60d446cb3799db66178df15" }],
   "workers_dev": true
 }

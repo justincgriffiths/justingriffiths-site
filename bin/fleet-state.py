@@ -101,7 +101,7 @@ def armies_map():
     path = os.environ.get("FLEET_ARMIES", os.path.join(STATE_DIR, "armies.json"))
     try:
         return [(a["slug"], a["name"]) for a in json.load(open(path, encoding="utf-8"))]
-    except (OSError, ValueError, KeyError, TypeError) as e:
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as e:
         print(f"no armies ({path}): {e}", file=sys.stderr)
         return []
 
@@ -110,23 +110,32 @@ def sweeps():
     """The declutter sweep's per-host summary (routine-library#261: summary.json), as counts and a run
     time only. An allowlist: host, run_at, status and four integers survive; leftover_issue and any other
     field (a name, id or path) never reach the page. A file that fails the shape check is skipped.
-    FLEET_SWEEP_FILES (colon list) names the summaries to read; default is this host's summary.json."""
-    files = [f for f in os.environ.get("FLEET_SWEEP_FILES", os.path.join(SWEEP_DIR, "summary.json")).split(":") if f]
+    FLEET_SWEEP_FILES (colon list) names the summaries to read; default is this host's summary.json plus every
+    *.json in hosts/ (routine-library#265: each host's sweep copies its summary there). One row per host:
+    the newest run_at wins when a host appears twice."""
+    env = os.environ.get("FLEET_SWEEP_FILES")
+    files = [f for f in env.split(":") if f] if env is not None else \
+        [os.path.join(SWEEP_DIR, "summary.json")] + sorted(glob.glob(os.path.join(SWEEP_DIR, "hosts", "*.json")))
     out = []
     for f in files:
         try:
             d = json.load(open(f, encoding="utf-8"))
             ints = {k: d[k] for k in ("removed", "tombstoned", "left", "errors")}
+            d["host"] = d["host"].lower()   # `hostname -s` is mixed case (Justins-MacBook-Air); the panel keys on lowercase
             ok = (d["schema"] == 1 and HOST.match(d["host"]) and STAMP.match(d["run_at"]) and d["status"] in ("ok", "error")
                   and all(type(v) is int and 0 <= v < 10**6 for v in ints.values()))
-        except (OSError, ValueError, KeyError, TypeError) as e:
+        except (OSError, ValueError, KeyError, TypeError, AttributeError) as e:
             print(f"skip sweep summary ({os.path.basename(f)}): {e}", file=sys.stderr)
             continue
         if not ok:
             print(f"skip sweep summary ({os.path.basename(f)}): bad shape", file=sys.stderr)
             continue
         out.append({"host": d["host"], "run_at": d["run_at"], "status": d["status"], **ints})
-    return sorted(out, key=lambda r: r["host"])
+    newest = {}
+    for r in out:
+        if r["host"] not in newest or r["run_at"] > newest[r["host"]]["run_at"]:
+            newest[r["host"]] = r
+    return sorted(newest.values(), key=lambda r: r["host"])
 
 
 def main():

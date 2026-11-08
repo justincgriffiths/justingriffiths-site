@@ -93,12 +93,26 @@ Go-live, when Justin says go: `op run --env-file=bin/access.env -- bin/access-lo
 
 The mini pushes fleet state to Cloudflare KV; the Worker reads it only behind the `/fleet/` gate. Nothing is public and the data is minutes old.
 
-- **Writer** (`bin/fleet-kv.sh`) runs `bin/fleet-state.py` and PUTs the JSON to KV key `state.json` with a 30-minute expiry, so a dead mini means 404, not stale data. `bin/fleet-kv.sh --dry-run` prints the write (key, bytes) and touches nothing. Live: `op run --env-file=bin/fleet-kv.env -- bin/fleet-kv.sh`. Log: `bin/fleet-kv.log`.
+- **Writer** (`bin/fleet-kv.sh`) runs `bin/fleet-state.py` and PUTs the JSON to KV key `state.json` with a 30-minute expiry, so a dead mini means 404, not stale data. `bin/fleet-kv.sh --dry-run` prints the write (key, bytes) and touches nothing. Live by hand: `op run --env-file=bin/fleet-kv.env -- bin/fleet-kv.sh`; unattended it reads `~/.config/justingriffiths-site/fleet-kv.token` (mode 0600, refused otherwise) and `fleet-kv.namespace-id` (`op` needs Touch ID and fails under launchd). Log: `bin/fleet-kv.log`.
 - **Schedule** (`bin/com.justin.fleet-kv.plist`) runs it every 5 minutes. It ships unloaded (`RunAtLoad` false, not in `~/Library/LaunchAgents`).
 - **Reader** (`src/worker.js`) answers `/fleet/state.json` from the `FLEET_KV` binding inside the Access check. No token, no binding or no key all return 404.
 - **Sweeps panel** (`sweeps` key in the state JSON): `bin/fleet-state.py` reads the declutter sweep's `~/.local/state/declutter-sweep/summary.json` (routine-library#261; `FLEET_SWEEP_FILES` takes a colon list for more hosts) and keeps only host, run time, status and four counts. `leftover_issue` and any other field are dropped, and a row whose host or time is not the plain shape is skipped. `test/fleet-sweeps.test.mjs` fails if a name, id or path gets through. Same route, same gate: no new endpoint.
 
-Go-live (each line is a Cloudflare write, Justin's go): see the PR body of the live-feed PR for the exact commands.
+Go-live (each line is a Cloudflare write, done by ◆MYCROFT_COS, not the builder):
+
+1. Create the KV namespace `fleet-state` in JG Personal (`6d4a918d…`). Done 2026-11-07.
+2. Create an API token scoped to Workers KV Storage: Edit on that account only; nothing else. Write it to `~/.config/justingriffiths-site/fleet-kv.token` (mode 0600) on the machine that runs the writer, and the namespace id to `fleet-kv.namespace-id` beside it. Never print it.
+3. `wrangler.jsonc` binds `FLEET_KV` to the `fleet-state` namespace (`7683fca9…`, created 2026-11-07, site#43). Merge, then deploy (Justin or ◆MYCROFT_COS).
+4. On Minnie (`justins-mac-mini`, the pusher), `bin/fleet-kv.sh` once by hand (dry run passed there 2026-11-07, 1650 bytes), confirm one key with `npx wrangler kv key get state.json --binding FLEET_KV --remote | head -c 200`, then copy `bin/com.justin.fleet-kv.plist` to `~/Library/LaunchAgents` and `launchctl bootstrap` it.
+
+### Meta rollout (`/fleet/meta/`, Justin only)
+
+Per-client built / verified / live / first-hour delivery / issues, from `~/.local/state/meta-rollout/<client>.json` (schema `meta-rollout-report/1`, pearmill/pedal#636). Counts and statuses only; clients show as "Client A, B, C".
+
+- **Reader** (`bin/meta-state.py`) is thin: `shape()` is the only code that knows the schema, and copies through an allowlist (no account id, flag detail, spend, plan or CPA). `test/meta-state.test.mjs` blocks names, ids and creative text.
+- **Feed**: `bin/fleet-kv.sh` also PUTs KV key `meta.json`; the Worker serves it at `/fleet/meta/state.json`. `fleet/meta-fixture.json` is baked into the page so a preview renders without KV.
+- **Gate**: the Fleet Access token is checked first, then `src/worker.js` requires the token's email to be in the `META_ALLOWLIST` secret (comma-separated). Unset means nobody (404). Set it: `printf 'justin@...' | npx wrangler secret put META_ALLOWLIST` (◆MYCROFT_COS). A separate Access app for `/fleet/meta` would not work as-is: its token carries another AUD, which `src/access.js` rejects.
+- **Not public**: no link from the hub, sitemap or nav; `noindex`.
 
 ## Qwen refresh (`/qwen/`)
 

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, readFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -52,4 +52,35 @@ test("gating: the sweeps ride the existing /fleet/state.json route; no new route
   assert.ok(!/sweep/i.test(w), "worker needs no sweeps route");
   const kv = readFileSync("bin/fleet-kv.sh", "utf8");
   assert.match(kv, /fleet-state\.py/);
+});
+
+// routine-library#265: the default reads this host's summary.json plus every file in hosts/, one row per host.
+const readHome = (home) => {
+  const py = 'import importlib.util,json;s=importlib.util.spec_from_file_location("fs","bin/fleet-state.py");m=importlib.util.module_from_spec(s);s.loader.exec_module(m);print(json.dumps(m.sweeps()))';
+  const r = spawnSync("python3", ["-c", py], { encoding: "utf8", env: { PATH: process.env.PATH, HOME: home } });
+  assert.equal(r.status, 0, r.stderr);
+  return JSON.parse(r.stdout);
+};
+const sweepDir = (home) => { const d = join(home, ".local/state/declutter-sweep"); mkdirSync(join(d, "hosts"), { recursive: true }); return d; };
+
+test("default reads every host's file in hosts/, sorted by host", () => {
+  const home = mkdtempSync(join(tmpdir(), "home-")); const d = sweepDir(home);
+  writeFileSync(join(d, "hosts", "Justins-Mac-mini.json"), JSON.stringify({ ...good, host: "Justins-Mac-mini" }));
+  writeFileSync(join(d, "hosts", "Justins-MacBook-Air.json"), JSON.stringify({ ...good, host: "Justins-MacBook-Air", removed: 0 }));
+  assert.deepEqual(readHome(home).map((r) => r.host), ["justins-mac-mini", "justins-macbook-air"]);
+});
+
+test("a host in both summary.json and hosts/ shows once, newest run wins", () => {
+  const home = mkdtempSync(join(tmpdir(), "home-")); const d = sweepDir(home);
+  writeFileSync(join(d, "summary.json"), JSON.stringify({ ...good, host: "Justins-Mac-mini", run_at: "2026-11-07T20:00:00Z", removed: 1 }));
+  writeFileSync(join(d, "hosts", "Justins-Mac-mini.json"), JSON.stringify({ ...good, host: "Justins-Mac-mini", run_at: "2026-11-07T23:00:00Z", removed: 5 }));
+  const rows = readHome(home);
+  assert.equal(rows.length, 1); assert.equal(rows[0].removed, 5);
+});
+
+test("a bad file in hosts/ is skipped and the good one still shows", () => {
+  const home = mkdtempSync(join(tmpdir(), "home-")); const d = sweepDir(home);
+  writeFileSync(join(d, "hosts", "a.json"), "{not json");
+  writeFileSync(join(d, "hosts", "b.json"), JSON.stringify(good));
+  assert.equal(readHome(home).length, 1);
 });

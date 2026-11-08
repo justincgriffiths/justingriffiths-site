@@ -104,3 +104,31 @@ test("kv: the state is reachable at no path outside /fleet/", async () => {
     assert.doesNotMatch(await r.text(), /seats/, p);
   }
 });
+
+// /fleet/meta/: Justin-only on top of the Fleet Access gate. The email claim must be in META_ALLOWLIST; unset means nobody.
+const META = JSON.stringify({ clients: [] });
+async function metaHit(path, email, allow) {
+  const t = await token(email ? { email } : {});
+  resetKeyCache();
+  const realFetch = globalThis.fetch; globalThis.fetch = certs;
+  try {
+    return await worker.fetch(new Request(`https://justingriffiths.com${path}`, { headers: { "Cf-Access-Jwt-Assertion": t } }),
+      { ASSETS: assets, FLEET_KV: { get: async (k) => (k === "meta.json" ? META : null) }, ...env, ...(allow === undefined ? {} : { META_ALLOWLIST: allow }) });
+  } finally { globalThis.fetch = realFetch; }
+}
+test("meta: allowlisted email gets the page and the feed", async () => {
+  assert.equal((await metaHit("/fleet/meta/", "Me@Example.com", "me@example.com,x@y.z")).status, 200);
+  const r = await metaHit("/fleet/meta/state.json", "me@example.com", "me@example.com");
+  assert.equal(r.status, 200);
+  assert.equal(await r.text(), META);
+});
+test("meta: another Fleet user, no email, or unset allowlist is 404", async () => {
+  assert.equal((await metaHit("/fleet/meta/", "other@example.com", "me@example.com")).status, 404);
+  assert.equal((await metaHit("/fleet/meta/state.json", "other@example.com", "me@example.com")).status, 404);
+  assert.equal((await metaHit("/fleet/meta/", null, "me@example.com")).status, 404);
+  assert.equal((await metaHit("/fleet/meta/", "me@example.com")).status, 404);
+});
+test("meta: no token is 404 and /fleet/state.json is unaffected", async () => {
+  assert.equal((await hit("/fleet/meta/")).status, 404);
+  assert.equal((await authed("/fleet/state.json", kv(STATE))).status, 200);
+});
