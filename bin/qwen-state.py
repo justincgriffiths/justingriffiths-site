@@ -83,10 +83,14 @@ def triage():
         dy = day_of_run(p)
         if not isinstance(q, dict) or not dy: continue
         seen, ans, esc = int(q.get("seen") or 0), int(q.get("qwen") or 0), int(q.get("escalated") or 0)
+        # Reason "cap" is the ramp holding a message back on purpose, not a Qwen failure: the
+        # sidecar counts it in escalated, so move it to capped and keep it out of fallback reasons.
+        cap = int((q.get("reasons") or {}).get("cap") or 0)
         share[dy]["answered"] += ans
-        share[dy]["fell_back"] += esc
-        share[dy]["capped"] += max(seen - ans - esc, 0)
+        share[dy]["fell_back"] += esc - cap
+        share[dy]["capped"] += cap + max(seen - ans - esc, 0)
         for r, n in (q.get("reasons") or {}).items():
+            if r == "cap": continue
             reasons[reason_bucket(r)] += int(n or 0)
     for p in live_audits():
         for r in rows(p):
@@ -100,7 +104,7 @@ def triage():
 
 
 def costs():
-    """Per day: usd per run for triage, split Qwen-era (any run whose sidecar logged qwen) vs before."""
+    """Per day: usd per run for triage, split Qwen-era (a day Qwen answered a live message) vs before."""
     out = defaultdict(lambda: {"runs": 0, "usd": 0.0})
     try:
         con = sqlite3.connect(f"file:{COST_DB}?mode=ro", uri=True)
@@ -177,7 +181,9 @@ def build():
     t_share, reasons, labels, lat = triage()
     i_share, i_models = issue_tag()
     c = costs()
-    qdays = qwen_run_days()
+    # A day is Qwen era only if Qwen answered at least one live message. A cap set on a day it
+    # answered nothing (2026-11-08: Minnie unreachable, 0 of 2) would credit Qwen with Haiku's cost.
+    qdays = {d for d in qwen_run_days() if t_share.get(d, {}).get("answered", 0) > 0}
     agree, clean = tag_accuracy()
     t_agree, t_clean = triage_accuracy(len(lat))
     pre = [v for d, v in c.items() if d not in qdays]

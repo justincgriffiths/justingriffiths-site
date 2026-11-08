@@ -101,3 +101,22 @@ test("worker: /qwen/ serves the page, not the .info catch-all", async () => {
   const r = await hit("/qwen");
   assert.equal(r.status, 301); assert.equal(r.headers.get("location"), "https://justingriffiths-site.jg-personal.workers.dev/qwen/");
 });
+
+test("a ramp cap is capped, not a fallback, and a day Qwen answered nothing is not Qwen era", () => {
+  // 2026-11-08 07:00 ET: cap 1, Minnie unreachable. One message failed on Qwen (exit-1), one was held by the cap.
+  const d2 = mkdtempSync(join(tmpdir(), "qwen-cap-"));
+  const r2 = join(d2, "runs"); mkdirSync(r2);
+  writeFileSync(join(r2, "20261107-120000-a.json"), JSON.stringify({ mode: "create", qwen: { cap: 1, seen: 1, qwen: 1, escalated: 0, reasons: {} } }));
+  writeFileSync(join(r2, "20261108-070000-a.json"), JSON.stringify({ mode: "create", qwen: { cap: 1, seen: 2, qwen: 0, escalated: 2, reasons: { "exit-1": 1, cap: 1 } } }));
+  const db = join(d2, "cost.db");
+  execFileSync("python3", ["-c", `import sqlite3,sys; c=sqlite3.connect(sys.argv[1]); c.execute("create table runs(ts text, job text, usd real)"); c.executemany("insert into runs values(?,?,?)", [("2026-11-06T12:00:00Z","triage",0.5),("2026-11-07T12:00:00Z","triage",0.4),("2026-11-08T12:00:00Z","triage",0.3)]); c.commit()`, db]);
+  const d = JSON.parse(execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env,
+    QWEN_RUNS: r2, QWEN_COST_DB: db, QWEN_TAG_LOG: join(d2, "none.log"), QWEN_TAG_JSONL: join(d2, "none.jsonl") } }));
+  const day8 = d.share_by_day.triage.find((r) => r.day === "2026-11-08");
+  assert.deepEqual([day8.answered, day8.fell_back, day8.capped], [0, 1, 1]);
+  assert.equal(d.fallback_reasons["exit-N"], 1);
+  assert.equal(d.fallback_reasons.other, 0);                  // "cap" is not a failure reason
+  const era = Object.fromEntries(d.cost_per_run.triage_by_day.map((r) => [r.day, r.qwen_era]));
+  assert.deepEqual(era, { "2026-11-06": false, "2026-11-07": true, "2026-11-08": false });
+  assert.equal(d.cost_per_run.triage_qwen_era_usd_per_run, 0.4);
+});
