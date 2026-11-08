@@ -135,7 +135,13 @@ test("meta: no token is 404 and /fleet/state.json is unaffected", async () => {
 
 // site#56: .com answers every path with the construction page; workers.dev is the staging host with the full site.
 const STAGING = "justingriffiths-site.jg-personal.workers.dev";
-const page = { fetch: async (r) => new Response(new URL(r.url).pathname === "/construction.html" ? "<html><head></head>construction" : "<html><head></head>hub", { headers: { "Content-Type": "text/html" } }) };
+// Like the real ASSETS binding (html_handling auto-trailing-slash): /construction.html 307s to
+// /construction with an empty body, and /construction serves the page. Live .com was blank on 2026-11-08.
+const page = { fetch: async (r) => {
+  const p = new URL(r.url).pathname;
+  if (p === "/construction.html") return new Response(null, { status: 307, headers: { Location: "/construction" } });
+  return new Response(p === "/construction" ? "<html><head></head>construction" : "<html><head></head>hub", { headers: { "Content-Type": "text/html" } });
+} };
 const on = (host, path) => worker.fetch(new Request(`https://${host}${path}`), { ASSETS: page, ...env });
 test("worker: .com serves the construction page on / and /anything", async () => {
   for (const p of ["/", "/anything", "/learn/x"]) {

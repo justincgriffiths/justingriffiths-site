@@ -42,7 +42,7 @@ export default {
     }
 
     if (CONSTRUCTION && url.hostname === APEX && url.pathname !== GATED_PREFIX && !url.pathname.startsWith(`${GATED_PREFIX}/`) && url.pathname !== "/media" && !url.pathname.startsWith("/media/") && url.pathname !== "/qwen" && !url.pathname.startsWith("/qwen/")) {
-      const res = await env.ASSETS.fetch(new Request(new URL("/construction.html", url), request));
+      const res = await env.ASSETS.fetch(new Request(new URL("/construction", url), request));
       return new Response(res.body, { status: res.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" } });
     }
 
