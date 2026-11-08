@@ -137,14 +137,15 @@ test("meta: no token is 404 and /fleet/state.json is unaffected", async () => {
 const STAGING = "justingriffiths-site.jg-personal.workers.dev";
 const page = { fetch: async (r) => new Response(new URL(r.url).pathname === "/construction.html" ? "<html><head></head>construction" : "<html><head></head>hub", { headers: { "Content-Type": "text/html" } }) };
 const on = (host, path) => worker.fetch(new Request(`https://${host}${path}`), { ASSETS: page, ...env });
-test("worker: .com serves the construction page on /, /qwen/ and /anything", async () => {
-  for (const p of ["/", "/qwen/", "/anything", "/learn/x"]) {
+test("worker: .com serves the construction page on / and /anything", async () => {
+  for (const p of ["/", "/anything", "/learn/x"]) {
     const r = await on("justingriffiths.com", p);
     assert.equal(r.status, 200, p);
     assert.match(await r.text(), /construction/, p);
   }
 });
-test("worker: /fleet/ and /media/ are not replaced on .com", async () => {
+test("worker: /fleet/, /media/ and /qwen/ are not replaced on .com", async () => {
+  for (const p of ["/qwen/", "/qwen"]) assert.doesNotMatch(await (await on("justingriffiths.com", p)).text(), /construction/, p);
   assert.equal((await on("justingriffiths.com", "/fleet/")).status, 404);
   assert.doesNotMatch(await (await on("justingriffiths.com", "/media/a.png")).text(), /^<html><head><\/head>construction/);
 });
