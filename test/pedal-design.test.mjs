@@ -37,7 +37,7 @@ test("/pedal-design without the slash redirects to it", async () => {
 });
 
 test("both versions render the same sections, in the same order", () => {
-  const ids = (h) => [...h.matchAll(/<section class="section" id="([^"]+)"/g)].map((m) => m[1]);
+  const ids = (h) => [...h.matchAll(/<section class="section[^"]*" id="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(ids(pedal()), ids(classic()));
   assert.ok(ids(pedal()).length > 0);
 });

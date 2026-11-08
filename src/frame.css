@@ -1,0 +1,71 @@
+/* The frame (site#62): how every page lays out, whatever it looks like.
+   Breakpoints, the column, gutters, the layout primitives ("Every Layout": Stack, Cluster, Sidebar,
+   Switcher, Grid, Center, Cover), fluid type and container queries. It holds no color and no font:
+   it reads spacing and size tokens, and the semantic --site-* names a skin defines. Swapping the skin
+   moves no box (test/qa/skin.spec.mjs checks that).
+   Breakpoints are the Pedal DS pair, mobile-first: 768px (tablet) and 1024px (desktop). Media queries
+   cannot read custom properties, so the numbers are written here and nowhere else. The primitives size
+   themselves from the space they are given and need no breakpoint at all.
+   A page composes these classes and may not set its own widths or breakpoints (test/frame-lint.test.mjs).
+   Each primitive takes its dials as custom properties (--stack-gap, --grid-min, ...); docs/responsive.md. */
+
+/* ---- Center: a column held to --center-max, with the site gutters ---- */
+.center, .wrap {
+  --center-pad: var(--site-gutter);
+  inline-size: 100%; max-inline-size: calc(var(--center-max, var(--site-max)) + 2 * var(--center-pad));
+  margin-inline: auto; padding-inline: var(--center-pad);
+}
+@media (min-width: 768px) { .center, .wrap { --center-pad: var(--site-gutter-wide); } }
+
+/* ---- Band: a full-bleed background whose content sits in the same column as Center ---- */
+.band { padding-inline: max(var(--site-gutter), (100% - var(--site-max)) / 2); }
+@media (min-width: 768px) { .band { padding-inline: max(var(--site-gutter-wide), (100% - var(--site-max)) / 2); } }
+
+/* ---- Stack: children one under another, one gap between them ---- */
+.stack { display: flex; flex-direction: column; gap: var(--stack-gap, var(--space-6)); min-inline-size: 0; }
+
+/* ---- Cluster: children in a row that wraps, however many there are ---- */
+.cluster {
+  display: flex; flex-wrap: wrap; gap: var(--cluster-gap, var(--space-3));
+  align-items: var(--cluster-align, center); justify-content: var(--cluster-justify, flex-start);
+}
+
+/* ---- Sidebar: a fixed-width side (--sidebar-w) beside a main that takes the rest; they stack
+   when main would get less than half the row ---- */
+.sidebar { display: flex; flex-wrap: wrap; gap: var(--sidebar-gap, var(--space-6)); align-items: var(--sidebar-align, flex-start); }
+.sidebar > :first-child { flex: 1 1 var(--sidebar-w, 16rem); }
+.sidebar > :last-child { flex: 999 1 0; min-inline-size: var(--sidebar-min, 50%); }
+.sidebar-end > :first-child { order: 2; }
+/* a sticky side only while it sits beside the main (desktop and up) */
+@media (min-width: 1024px) { .sidebar-sticky > :first-child { position: sticky; top: calc(var(--header-h) + var(--space-6)); } }
+
+/* ---- Switcher: a row while every child gets at least --switcher-at, a stack below that ---- */
+.switcher { display: flex; flex-wrap: wrap; gap: var(--switcher-gap, var(--space-6)); align-items: var(--switcher-align, stretch); }
+.switcher > * { flex: var(--switcher-g, 1) 1 calc((var(--switcher-at, 40rem) - 100%) * 999); min-inline-size: 0; }
+.switcher > :nth-child(1) { flex-grow: var(--switcher-g1, var(--switcher-g, 1)); }
+.switcher > :nth-child(2) { flex-grow: var(--switcher-g2, var(--switcher-g, 1)); }
+
+/* ---- Grid: as many columns of at least --grid-min as fit, never wider than the container ---- */
+.grid { display: grid; gap: var(--grid-gap, var(--space-6)); grid-template-columns: repeat(var(--grid-fit, auto-fit), minmax(min(100%, var(--grid-min, 16rem)), 1fr)); }
+
+/* ---- Cover: fills at least --cover-min of the screen, one child centered ---- */
+.cover-screen { display: flex; flex-direction: column; min-block-size: var(--cover-min, 0); }
+.cover-screen > .cover-mid { margin-block: auto; }
+
+/* ---- Fit: a box no wider than --fit, narrower when the container is ---- */
+.fit { max-inline-size: var(--fit, 100%); }
+
+/* ---- Tap: a control at least 44 x 44, text kept where it was ---- */
+.tap { display: inline-flex; align-items: center; min-block-size: var(--tap); min-inline-size: var(--tap); }
+.tap-pull { margin-block: calc((var(--tap) - 1lh) / -2); }
+
+/* ---- Fluid type: between two scale steps, by the width of the screen (no breakpoint) ---- */
+.t-display { font-size: clamp(var(--text-h1), 2.4vw + 1.6rem, var(--text-display-xl)); }
+.t-title { font-size: clamp(var(--text-h4), 1.2vw + 1rem, var(--text-h3)); }
+.t-lede { font-size: clamp(var(--text-body-lg), 1vw + 0.9rem, var(--text-h3)); }
+
+/* ---- Container queries: a component answers to its own width, not the screen's ---- */
+.cq { container-type: inline-size; }
+/* Rows of label and value: stacked in a narrow box, side by side in a wide one (--rows-label) */
+.rows-item { display: grid; gap: var(--space-1); }
+@container (min-width: 28rem) { .rows-item { grid-template-columns: var(--rows-label, 8rem) 1fr; gap: var(--space-4); align-items: baseline; } }

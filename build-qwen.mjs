@@ -12,13 +12,13 @@ const C = { answered: "var(--site-series-1)", fell_back: "var(--site-series-2)",
 const W = 560, H = 190, P = { l: 44, r: 12, t: 12, b: 28 };
 
 const empty = (msg) => `<p class="empty">${esc(msg)}</p>`;
-const legend = (items) => `<p class="legend">${items.map(([k, c]) => `<span><i style="background:${c}"></i>${esc(k)}</span>`).join("")}</p>`;
+const legend = (items) => `<p class="legend cluster">${items.map(([k, c]) => `<span><i style="background:${c}"></i>${esc(k)}</span>`).join("")}</p>`;
 const svg = (label, inner) => `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${inner}</svg>`;
 
 function axisY(max, fmt = (v) => v) {
   return [0, 0.5, 1].map((f) => {
     const y = P.t + (H - P.t - P.b) * (1 - f);
-    return `<line x1="${P.l}" x2="${W - P.r}" y1="${y}" y2="${y}" class="grid"/><text x="${P.l - 6}" y="${y + 4}" text-anchor="end">${esc(fmt(+(max * f).toFixed(2)))}</text>`;
+    return `<line x1="${P.l}" x2="${W - P.r}" y1="${y}" y2="${y}" class="gridline"/><text x="${P.l - 6}" y="${y + 4}" text-anchor="end">${esc(fmt(+(max * f).toFixed(2)))}</text>`;
   }).join("");
 }
 
@@ -86,7 +86,7 @@ const fresh = asOfText
 const section = (id, title, why, body) => `<section id="${id}"><h2>${esc(title)}</h2><p class="why">${esc(why)}</p>${body}</section>`;
 const bd = data.breakdowns;
 const dataBody = `${section("share", "Share on Qwen", "How much of the work Qwen took each day, and how much went back to Claude. This shows the ramp from 1 item to all.",
-  `<div class="cols"><div><h3>Inbox triage</h3>${stacked(data.share_by_day.triage, "Triage items per day by who answered")}</div><div><h3>Issue labels</h3>${stacked(data.share_by_day["issue-tag"], "Issue-tag items per day by who answered")}</div></div>`)}
+  `<div class="cols grid"><div><h3>Inbox triage</h3>${stacked(data.share_by_day.triage, "Triage items per day by who answered")}</div><div><h3>Issue labels</h3>${stacked(data.share_by_day["issue-tag"], "Issue-tag items per day by who answered")}</div></div>`)}
 ${section("fallbacks", "Fallback reasons", "Why Qwen's answer was thrown out and Claude did the item instead.", horizontal(data.fallback_reasons, "Fallbacks by reason", C.fell_back))}
 ${section("cost", "Cost per run", "Dollars per triage run over time, against the average before Qwen.", costChart())}
 ${section("latency", "Latency", "How long Qwen takes per item, next to Haiku.", latency())}
@@ -104,7 +104,7 @@ ${chromeHead()}
 <style>${readFileSync(new URL("./content/qwen/page.css", import.meta.url), "utf8")}</style></head><body>
 <a class="skip" href="#main">Skip to content</a>
 ${siteHeader("qwen")}
-<main id="main" class="wrap qwen">
+<main id="main" class="center stack qwen">
 <h1>Qwen rollout</h1>
 ${disclosure({ id: "background", title: "Background", body: `<p class="why">Two chores moved from paid Claude calls to a free model running on my own machine (qwen3-coder:30b): sorting my inboxes and labeling GitHub issues. Aggregates only: counts, dollars and milliseconds, never a message, sender or issue.</p>` })}
 ${disclosure({ id: "data", title: "Data", open: true, summaryExtra: fresh, body: dataBody })}

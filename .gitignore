@@ -7,3 +7,9 @@ bin/*.log
 *.launchd.log
 bin/access-*.log
 fleet/target/
+qa/*/*.png
+!qa/*/contact-*.png
+playwright-report/
+test-results/
+qa/*/.contact-*.html
+qa/*/remote/

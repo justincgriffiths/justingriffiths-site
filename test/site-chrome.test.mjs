@@ -21,7 +21,7 @@ const PAGES = [
 ];
 
 test("every page stylesheet reads tokens only: no hex outside src/tokens.css and src/shallan.css (site#51 verify grep)", () => {
-  const files = ["src/style.css", "src/chrome.css", "src/pedal-design.css", "content/qwen/page.css", "content/marketing-101/page.css", "content/archive/page.css"];
+  const files = ["src/style.css", "src/chrome.css", "src/frame.css", "src/pedal-design.css", "content/qwen/page.css", "content/marketing-101/page.css", "content/archive/page.css"];
   for (const f of files) {
     const css = readFileSync(new URL(f, root), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
     assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/, f);

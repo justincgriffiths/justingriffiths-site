@@ -6,7 +6,7 @@
 .archive h2 { font-size: var(--text-h3); line-height: var(--leading-snug); font-weight: var(--weight-bold); margin: var(--space-12) 0 var(--space-4); }
 .collections { list-style: none; border-top: var(--border-width) solid var(--site-line); }
 .collections li { border-bottom: 1px solid var(--site-hairline); }
-.collections a { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); min-height: 56px; padding-block: var(--space-3); text-decoration: none; color: var(--site-text); }
+.collections a { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--space-4); min-height: 56px; padding-block: var(--space-3); text-decoration: none; color: var(--site-text); }
 .collections a:hover .c-name { color: var(--site-link); text-decoration: underline; }
-.c-name { font-size: var(--text-h4); font-weight: var(--weight-bold); }
+.c-name { font-size: var(--text-h4); font-weight: var(--weight-bold); min-width: 0; overflow-wrap: anywhere; }
 .c-n { color: var(--site-text-soft); font-size: var(--text-body-sm); font-variant-numeric: tabular-nums; white-space: nowrap; }
