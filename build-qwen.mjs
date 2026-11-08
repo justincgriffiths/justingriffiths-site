@@ -33,15 +33,10 @@ ${chromeHead()}
 ${siteHeader("qwen")}
 <main id="main" class="center stack qwen">
 <h1>Qwen rollout</h1>
-${disclosure({ id: "background", title: "Background", body: `<p class="why">coding with agents is expensive. At Pedal, we use Claude for almost everything, and it's been a constant challenge to manage cost without interrupting my work.</p>
-<ul class="why">
-<li>i hit session token limits</li>
-<li>i hit weekly and monthly spend caps</li>
-<li>i switch models, accounts and credit cards to make sure i don't run out while im working on something important.</li>
-</ul>
-<p class="why">This week, i did an analysis and found that a lot of the things i use my budget on are....not really client facing. they're barely even coding--its cleanup, QA, reminders, and documentation. almost all of it is rote, repeated, and (to be frank) quite mundane.</p>
-<p class="why">So, I designed a game for my agents to play to incentivize using free, open source models instead of relying solely on cheaper Anthropic models.</p>
-<p class="why">Two chores moved from paid Claude calls to a free model running on my own machine (qwen3-coder:30b): sorting my inboxes and labeling GitHub issues. Aggregates only: counts, dollars and milliseconds, never a message, sender or issue.</p>` })}
+${disclosure({ id: "background", title: "Background", body: `<p class="why">Coding with agents is expensive. At Pedal, we use Claude for almost everything, and managing cost without interrupting my work has been a constant challenge. I hit session token limits and weekly and monthly spend caps, and I switch models, accounts and credit cards to avoid running out during important work.</p>
+<p class="why">This week, I analyzed my usage and found that much of my budget goes to work that is not client-facing and barely involves coding: cleanup, QA, reminders and documentation. Almost all of it is rote and repeated.</p>
+<p class="why">I designed a game for my agents to encourage them to use free, open source models instead of relying solely on paid Anthropic models.</p>
+<p class="why">Two chores moved from paid Claude calls to a free model running on my own machine (qwen3-coder:30b): sorting my inboxes and labeling GitHub issues. This page shows aggregates only: counts, dollars and milliseconds, never a message, sender or issue.</p>` })}
 ${disclosure({ id: "data", title: "Data", open: true, summaryExtra: fresh, body: `<div id="qwen-data">${dataBody}</div>` })}
 ${LIVE_SCRIPT}
 <p class="learn-more">${quietLink("/#about", "Learn more")}</p>
