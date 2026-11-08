@@ -31,7 +31,7 @@ const items = (block) => (block.from ? get(block.from) : block.items) ?? [];
 const factValue = (v) => {
   if (Array.isArray(v)) return v.map((x) => `<span class="line">${factValue(x)}</span>`).join("");
   if (v && typeof v === "object") {
-    const text = esc(v.value ?? [v.role, v.name].filter(Boolean).join(", "));
+    const text = esc(v.value ?? [v.role, v.name].filter(Boolean).join(" @ "));
     return v.url ? a(v.url, text) : text;
   }
   return esc(v);
