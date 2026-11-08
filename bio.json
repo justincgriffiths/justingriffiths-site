@@ -23,11 +23,6 @@
   ],
   "links": [
     {
-      "label": "Email",
-      "value": "hi@justingriffiths.com",
-      "url": "mailto:hi@justingriffiths.com"
-    },
-    {
       "label": "Book a call",
       "value": "cal.com/justin-griffiths",
       "url": "https://cal.com/justin-griffiths"
