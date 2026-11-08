@@ -41,9 +41,10 @@ let currentSkin = "classic";
 const F = (cls) => (currentSkin === "classic" ? cls : "");
 // The cover lede is one sentence per line, so a job title never breaks across two (Justin,
 // 2026-11-08: "Sr." alone at the end of a line on mobile). "Sr." is not a sentence end, and
-// it stays glued to the next word.
+// it stays glued to the next word. Line breaks, not one block per sentence: separate blocks at
+// the snug line-height made the glyph boxes overlap by 4px (site#85).
 const ledeLines = (text) => text.split(/(?<!\b(?:Sr|Jr|Dr|Mr|Ms|St)\.)(?<=\.)\s+(?=[A-Z])/)
-  .map((s) => `<span class="lede-line">${esc(s).replace(/\b(Sr|Jr|Dr)\. /g, "$1.&nbsp;")}</span>`).join(" ");
+  .map((s) => esc(s).replace(/\b(Sr|Jr|Dr)\. /g, "$1.&nbsp;")).join("<br>");
 
 const facts = (rows) => `
         <dl class="facts${F(" cq")}">${rows
