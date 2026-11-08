@@ -93,12 +93,17 @@ Go-live, when Justin says go: `op run --env-file=bin/access.env -- bin/access-lo
 
 The mini pushes fleet state to Cloudflare KV; the Worker reads it only behind the `/fleet/` gate. Nothing is public and the data is minutes old.
 
-- **Writer** (`bin/fleet-kv.sh`) runs `bin/fleet-state.py` and PUTs the JSON to KV key `state.json` with a 30-minute expiry, so a dead mini means 404, not stale data. `bin/fleet-kv.sh --dry-run` prints the write (key, bytes) and touches nothing. Live: `op run --env-file=bin/fleet-kv.env -- bin/fleet-kv.sh`. Log: `bin/fleet-kv.log`.
+- **Writer** (`bin/fleet-kv.sh`) runs `bin/fleet-state.py` and PUTs the JSON to KV key `state.json` with a 30-minute expiry, so a dead mini means 404, not stale data. `bin/fleet-kv.sh --dry-run` prints the write (key, bytes) and touches nothing. Live by hand: `op run --env-file=bin/fleet-kv.env -- bin/fleet-kv.sh`; unattended it reads `~/.config/justingriffiths-site/fleet-kv.token` (mode 0600, refused otherwise) and `fleet-kv.namespace-id` (`op` needs Touch ID and fails under launchd). Log: `bin/fleet-kv.log`.
 - **Schedule** (`bin/com.justin.fleet-kv.plist`) runs it every 5 minutes. It ships unloaded (`RunAtLoad` false, not in `~/Library/LaunchAgents`).
 - **Reader** (`src/worker.js`) answers `/fleet/state.json` from the `FLEET_KV` binding inside the Access check. No token, no binding or no key all return 404.
 - **Sweeps panel** (`sweeps` key in the state JSON): `bin/fleet-state.py` reads the declutter sweep's `~/.local/state/declutter-sweep/summary.json` (routine-library#261; `FLEET_SWEEP_FILES` takes a colon list for more hosts) and keeps only host, run time, status and four counts. `leftover_issue` and any other field are dropped, and a row whose host or time is not the plain shape is skipped. `test/fleet-sweeps.test.mjs` fails if a name, id or path gets through. Same route, same gate: no new endpoint.
 
-Go-live (each line is a Cloudflare write, Justin's go): see the PR body of the live-feed PR for the exact commands.
+Go-live (each line is a Cloudflare write, done by ◆MYCROFT_COS, not the builder):
+
+1. Create the KV namespace `fleet-state` in JG Personal (`6d4a918d…`).
+2. Create an API token scoped to Workers KV Storage: Edit on that account only; nothing else. Write it to `~/.config/justingriffiths-site/fleet-kv.token` (mode 0600) on the machine that runs the writer, and the namespace id to `fleet-kv.namespace-id` beside it. Never print it.
+3. In `wrangler.jsonc`, replace `PLACEHOLDER_NAMESPACE_ID`, uncomment the `kv_namespaces` line, merge, deploy.
+4. `bin/fleet-kv.sh` once by hand, then copy `bin/com.justin.fleet-kv.plist` to `~/Library/LaunchAgents` and `launchctl bootstrap` it.
 
 ## Qwen refresh (`/qwen/`)
 
