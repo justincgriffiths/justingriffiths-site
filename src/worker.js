@@ -117,6 +117,15 @@ export default {
       return env.ASSETS.fetch(request);
     }
 
+    // /resume/ is the full-titles resume, served from dist/resume/.
+    if (url.pathname === "/resume") {
+      url.pathname = "/resume/";
+      return Response.redirect(url.toString(), 301);
+    }
+    if (url.pathname === "/resume/" || url.pathname === "/resume/index.html") {
+      return env.ASSETS.fetch(request);
+    }
+
     // /pedal-design/ is the hub in the Pedal Design System, served from dist/pedal-design/.
     if (url.pathname === "/pedal-design") {
       url.pathname = "/pedal-design/";

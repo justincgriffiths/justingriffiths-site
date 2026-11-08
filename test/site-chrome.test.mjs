@@ -16,12 +16,13 @@ const PAGES = [
   ["index.html", "home"],
   ["pedal-design/index.html", "pedal-design"],
   ["qwen/index.html", "qwen"],
+  ["resume/index.html", "resume"],
   ["marketing-101/index.html", "marketing-101"],
   ["archive/index.html", "archive"],
 ];
 
 test("every page stylesheet reads tokens only: no hex outside src/tokens.css and src/shallan.css (site#51 verify grep)", () => {
-  const files = ["src/style.css", "src/chrome.css", "src/frame.css", "src/pedal-design.css", "content/qwen/page.css", "content/marketing-101/page.css", "content/archive/page.css"];
+  const files = ["src/style.css", "src/chrome.css", "src/frame.css", "src/pedal-design.css", "content/qwen/page.css", "content/resume/page.css", "content/marketing-101/page.css", "content/archive/page.css"];
   for (const f of files) {
     const css = readFileSync(new URL(f, root), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
     assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/, f);
@@ -30,10 +31,10 @@ test("every page stylesheet reads tokens only: no hex outside src/tokens.css and
   assert.doesNotMatch(readFileSync(new URL("build-qwen.mjs", root), "utf8"), /#[0-9a-fA-F]{6}\b/);
 });
 const header = (html) => html.slice(html.indexOf('<header class="site-header"'), html.indexOf("</header>"));
-const EXPECTED = ["/", "/qwen/", "/fleet/", "/fleet/game/", "/fleet/flows/", "/pedal-design/", "/marketing-101/", "/archive/"];
+const EXPECTED = ["/", "/qwen/", "/fleet/", "/fleet/game/", "/fleet/flows/", "/resume/", "/pedal-design/", "/marketing-101/", "/archive/"];
 
-test("the nav is Home, Lab (Qwen, Fleet, Flows), Pedal Design, Marketing 101, Archive", () => {
-  assert.deepEqual(NAV.map((n) => n.label), ["Home", "Lab", "Pedal Design", "Marketing 101", "Archive"]);
+test("the nav is Home, Lab (Qwen, Fleet, Flows), Resume, Pedal Design, Marketing 101, Archive", () => {
+  assert.deepEqual(NAV.map((n) => n.label), ["Home", "Lab", "Resume", "Pedal Design", "Marketing 101", "Archive"]);
   assert.deepEqual(NAV[1].items.map((n) => n.label), ["Qwen", "Fleet", "Game", "Flows"]);
 });
 
@@ -68,7 +69,7 @@ const assets = { fetch: async (req) => {
 } };
 
 test("the public nav targets and /site.css answer 200 through the Worker", async () => {
-  for (const path of ["/", "/site.css", "/qwen/", "/pedal-design/", "/marketing-101/", "/archive/"]) {
+  for (const path of ["/", "/site.css", "/qwen/", "/resume/", "/pedal-design/", "/marketing-101/", "/archive/"]) {
     const r = await worker.fetch(new Request(`https://justingriffiths.com${path}`), { ASSETS: assets });
     assert.equal(r.status, 200, path);
   }

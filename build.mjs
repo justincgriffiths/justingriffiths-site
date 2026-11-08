@@ -31,7 +31,7 @@ const items = (block) => (block.from ? get(block.from) : block.items) ?? [];
 const factValue = (v) => {
   if (Array.isArray(v)) return v.map((x) => `<span class="line">${factValue(x)}</span>`).join("");
   if (v && typeof v === "object") {
-    const text = esc(v.value ?? [v.role, v.name].filter(Boolean).join(", "));
+    const text = esc(v.value ?? [v.role, v.name].filter(Boolean).join(" @ "));
     return v.url ? a(v.url, text) : text;
   }
   return esc(v);
@@ -177,7 +177,8 @@ function renderPage(skin) {
             <div class="cover-actions${F(" cluster")}">
               ${labId ? `<a class="cover-more" href="#${labId}">See what I am building${ICON.arrow}</a>` : ""}
             </div>
-            ${cover.facts ? facts(cover.facts) : ""}
+            ${cover.facts ? facts(cover.facts) : ""}${bio.resume && skin === "classic" ? `
+            <a class="cover-more" href="/resume/">Full resume${ICON.arrow}</a>` : ""}
           </div>${cover.portrait ? "" : coverVisual(cover.visual)}
         </div>
         <nav class="index${F(" band")}" aria-label="Contents">
@@ -284,3 +285,6 @@ await import("./build-marketing.mjs");
 
 // The Qwen rollout page at /qwen/ (see build-qwen.mjs; data from bin/qwen-state.sh).
 await import("./build-qwen.mjs");
+
+// The full-titles resume at /resume/ (see build-resume.mjs; data is bio.json's resume block).
+await import("./build-resume.mjs");

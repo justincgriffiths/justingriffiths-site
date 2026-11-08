@@ -33,6 +33,7 @@ export function contextFor(d, landscape = false) {
 export const PAGES = [
   { id: "home", path: "/", framed: true },
   { id: "qwen", path: "/qwen/", framed: true },
+  { id: "resume", path: "/resume/" },
   { id: "marketing-101", path: "/marketing-101/" },
   { id: "archive", path: "/archive/" },
   { id: "archive-research", path: "/archive/research/", nav: false, report: "a stripped Tailwind snapshot of justingriffiths.info: no site chrome, no skip link, small taps; re-take it onto the site chrome (bin/archive-snap.mjs)" },

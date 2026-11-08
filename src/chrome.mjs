@@ -23,6 +23,7 @@ export const NAV = [
       { key: "flows", href: "/fleet/flows/", label: "Flows", note: "How work moves through it. Sign-in required" },
     ],
   },
+  { key: "resume", href: "/resume/", label: "Resume" },
   { key: "pedal-design", href: "/pedal-design/", label: "Pedal Design" },
   { key: "marketing-101", href: "/marketing-101/", label: "Marketing 101" },
   { key: "archive", href: "/archive/", label: "Archive" },
