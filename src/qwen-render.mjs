@@ -58,19 +58,51 @@ function horizontal(obj, label, color = C.qwen) {
   return `<svg viewBox="0 0 ${W} ${e.length * rh + 4}" role="img" aria-label="${esc(label)}">${bars}</svg>`;
 }
 
+// Cost combo (site#107): daily calls as bars stacked by job on the left axis, dollars per triage run as a line on its own right
+// axis, the pre-Qwen average dashed, the first Qwen-era day marked. Every day from the first logged day to the newest gets a slot
+// (an empty day is a hairline); a day with no triage run breaks the line. One day of data is one number, never a lone bar.
+const JOB_COLORS = { triage: C.answered, "issue-tag": C.fell_back, "cron-triage": C.haiku, declutter: C.sonnet, "session-reap": C.capped };
+const niceCeil = (v, unit) => Math.max(unit, Math.ceil(v / unit - 1e-9) * unit);
 function costChart() {
-  const rows = data.cost_per_run.triage_by_day;
-  if (!rows.length) return empty("No cost rows yet.");
-  const max = Math.max(...rows.map((r) => r.usd_per_run)) * 1.1, step = (W - P.l - P.r) / Math.max(rows.length - 1, 1);
-  const x = (i) => P.l + (rows.length === 1 ? (W - P.l - P.r) / 2 : i * step), y = (v) => H - P.b - (v / max) * (H - P.t - P.b);
-  const line = rows.map((r, i) => `${i ? "L" : "M"}${x(i)},${y(r.usd_per_run)}`).join("");
-  const dots = rows.map((r, i) => `<circle cx="${x(i)}" cy="${y(r.usd_per_run)}" r="3.5" style="fill:${r.qwen_era ? C.qwen : C.haiku}"><title>${esc(r.day)} $${r.usd_per_run} per run (${r.runs} runs)</title></circle>`).join("");
-  const b = data.cost_per_run.triage_baseline_usd_per_run;
-  const base = b == null ? "" : `<line x1="${P.l}" x2="${W - P.r}" y1="${y(b)}" y2="${y(b)}" style="stroke:${C.capped}" stroke-dasharray="4 3"/><text x="${P.l + 4}" y="${y(b) - 4}">pre-Qwen average $${b}</text>`;
-  const ticks = rows.filter((_, i) => i % Math.ceil(rows.length / 8) === 0).map((r) => `<text x="${x(rows.indexOf(r))}" y="${H - 10}" text-anchor="middle">${esc(r.day.slice(5))}</text>`).join("");
-  const it = data.cost_per_run.issue_tag_usd_per_item;
+  const cost = data.cost_per_run, rows = cost.triage_by_day, calls = data.calls_by_day || [];
+  if (!rows.length && !calls.length) return empty("No cost rows yet.");
+  const it = cost.issue_tag_usd_per_item;
   const itNote = Object.keys(it).length ? `<p class="note">Issue-tag, dollars per issue: ${Object.entries(it).map(([m, v]) => `${esc(m)} $${v}`).join(", ")}.</p>` : "";
-  return legend([["triage run, before Qwen", C.haiku], ["triage run, Qwen on", C.qwen]]) + svg("Triage dollars per run by day", axisY(max, (v) => `$${v}`) + base + `<path d="${line}" fill="none" class="trend"/>` + dots + ticks) + itNote;
+  const b = cost.triage_baseline_usd_per_run, usd = Object.fromEntries(rows.map((r) => [r.day, r]));
+  const all = [...rows.map((r) => r.day), ...calls.map((r) => r.day)].sort(), first = all[0], last = all[all.length - 1];
+  const days = []; for (let d = first; d <= last; d = dayAdd(d, 1)) days.push(d);
+  if (days.length === 1) {
+    const r = usd[first], n = calls.reduce((s, c) => s + c.calls, 0);
+    return `<p class="single"><span class="big">${r ? `$${r.usd_per_run}` : n}</span> ${r ? `per triage run on ${esc(first)}${r.runs ? ` (${r.runs} ${r.runs === 1 ? "run" : "runs"})` : ""}` : `${n === 1 ? "call" : "calls"} on ${esc(first)}`}</p><p class="note">${r ? `${n} ${n === 1 ? "call" : "calls"} that day. ` : ""}First day logged, so there is no history to chart yet.</p>${itNote}`;
+  }
+  const jobs = Object.keys(JOB_NAMES).filter((j) => calls.some((c) => c.job === j)).concat([...new Set(calls.map((c) => c.job))].filter((j) => !JOB_NAMES[j]));
+  const jc = (j) => JOB_COLORS[j] || C.capped;
+  const byDay = {}; for (const c of calls) (byDay[c.day] ||= {})[c.job] = c.calls;
+  const Pc = { l: 44, r: 66, t: 56, b: 28 }, Hc = 226, ph = Hc - Pc.t - Pc.b, pw = W - Pc.l - Pc.r;
+  const maxCalls = niceCeil(Math.max(1, ...days.map((d) => Object.values(byDay[d] || {}).reduce((s, v) => s + v, 0))), 4);
+  const maxUsd = niceCeil(Math.max(0.1, b || 0, ...rows.map((r) => r.usd_per_run)), 0.2);
+  const step = pw / days.length, bw = Math.max(2, Math.min(28, step - 4)), cx = (i) => Pc.l + i * step + step / 2;
+  const yc = (v) => Hc - Pc.b - (v / maxCalls) * ph, yu = (v) => Hc - Pc.b - (v / maxUsd) * ph;
+  const grid = [0, 0.5, 1].map((f) => { const y = Hc - Pc.b - ph * f; return `<line x1="${Pc.l}" x2="${W - Pc.r}" y1="${y}" y2="${y}" class="gridline"/><text x="${Pc.l - 6}" y="${y + 4}" text-anchor="end">${+(maxCalls * f).toFixed(1)}</text><text x="${W - Pc.r + 6}" y="${y + 4}">$${(maxUsd * f).toFixed(2)}</text>`; }).join("");
+  const titles = `<text x="0" y="12">Calls per day</text><text x="${W}" y="12" text-anchor="end">Dollars per run</text>`;
+  const bars = days.map((d, i) => {
+    const x = cx(i) - bw / 2, m = byDay[d];
+    if (!m) return `<rect x="${x}" y="${Hc - Pc.b - 1}" width="${bw}" height="1" class="gridline"><title>${esc(d)}: no calls</title></rect>`;
+    let y = Hc - Pc.b;
+    return jobs.map((j) => { const h = ((m[j] || 0) / maxCalls) * ph; y -= h; return h ? `<rect x="${x}" y="${y}" width="${bw}" height="${h}" style="fill:${jc(j)};stroke:var(--site-bg);stroke-width:1"><title>${esc(d)} ${esc(JOB_NAMES[j] || j)}: ${m[j]} calls</title></rect>` : ""; }).join("");
+  }).join("");
+  let path = "", prev = false;
+  days.forEach((d, i) => { const r = usd[d]; if (!r) { prev = false; return; } path += `${prev ? "L" : "M"}${cx(i)},${yu(r.usd_per_run)}`; prev = true; });
+  const dots = days.map((d, i) => usd[d] ? `<circle cx="${cx(i)}" cy="${yu(usd[d].usd_per_run)}" r="4" class="dollar-dot"><title>${esc(d)} $${usd[d].usd_per_run} per run (${usd[d].runs} runs)</title></circle>` : "").join("");
+  const base = b == null ? "" : `<line x1="${Pc.l}" x2="${W - Pc.r}" y1="${yu(b)}" y2="${yu(b)}" class="baseline" stroke-dasharray="4 3"><title>Pre-Qwen average $${b} per run</title></line>`;
+  const li = days.indexOf((rows.find((r) => r.qwen_era) || {}).day);
+  const live = li < 0 ? "" : `<line x1="${cx(li)}" x2="${cx(li)}" y1="${Pc.t - 14}" y2="${Hc - Pc.b}" class="livemark" stroke-dasharray="2 3"/><text x="${cx(li) + (li > days.length / 2 ? -6 : 6)}" y="${Pc.t - 18}" text-anchor="${li > days.length / 2 ? "end" : "start"}">Qwen live</text>`;
+  const idx = [...new Set([0, Math.floor((days.length - 1) / 2), days.length - 1])];
+  const ticks = idx.map((i) => `<text x="${cx(i)}" y="${Hc - 8}" text-anchor="${i === 0 ? "start" : i === days.length - 1 ? "end" : "middle"}" dx="${i === 0 ? -step / 2 + 2 : i === days.length - 1 ? step / 2 - 2 : 0}">${esc(days[i].slice(5))}</text>`).join("");
+  const lg = jobs.map((j) => `<span><i style="background:${jc(j)}"></i>${esc(JOB_NAMES[j] || j)}</span>`).join("")
+    + `<span><i class="sw-line"></i>Dollars per triage run</span>` + (b == null ? "" : `<span><i class="sw-dash"></i>Pre-Qwen average $${b}</span>`);
+  return `<p class="legend cluster">${lg}</p>` + `<svg viewBox="0 0 ${W} ${Hc}" role="img" aria-label="Calls per day by job, and dollars per triage run, ${days.length} days">${grid + titles + bars + base + live + (path ? `<path d="${path}" fill="none" class="dollar-line"/>` : "") + dots + ticks}</svg>`
+    + `<p class="note">Bars: calls per day, left axis, stacked by job. Line: dollars per triage run, right axis (a separate scale). A day with no calls is an empty slot; a day with no triage run breaks the line.</p>` + itNote;
 }
 
 function latency() {
@@ -207,7 +239,7 @@ ${section("workflows", "Every job that uses Qwen", "Each job's own counts by day
 ${section("calls", "Calls by day", "How many calls each job made per day since it started, and which model took them.", callsCharts(data.calls_by_day))}
 ${section("history", "History and savings", "Runs per day for wrap, PR sweeps and session cleanup, by model, with the last 7 days of spend against the 7 before.", historyCharts(data.history))}
 ${section("fallbacks", "Fallback reasons", "Why Qwen's answer was thrown out and Claude did the item instead.", horizontal(data.fallback_reasons, "Fallbacks by reason", C.fell_back))}
-${section("cost", "Cost per run", "Dollars per triage run over time, against the average before Qwen.", costChart())}
+${section("cost", "Cost per run", "Calls per day by job, and dollars per triage run, against the average before Qwen.", costChart())}
 ${section("latency", "Latency", "How long Qwen takes per item, next to Haiku.", latency())}
 ${section("accuracy", "Accuracy", "Whether the free model holds up. Live measures fill in as the checks land.", accuracy())}
 ${section("breakdowns", "Breakdowns", "The same counts cut three ways.",
