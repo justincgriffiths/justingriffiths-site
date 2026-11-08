@@ -16,6 +16,7 @@ export const NAV = [
     items: [
       { key: "qwen", href: "/qwen/", label: "Qwen", note: "Moving chores onto a local model" },
       { key: "fleet", href: "/fleet/", label: "Fleet", note: "The agent fleet, live. Sign-in required" },
+      { key: "game", href: "/fleet/game/", label: "Game", note: "The Qwen cost game, round by round. Sign-in required" },
       { key: "flows", href: "/fleet/flows/", label: "Flows", note: "How work moves through it. Sign-in required" },
     ],
   },
