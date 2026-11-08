@@ -1,6 +1,6 @@
 /* Site chrome (site#51): the base every page shares, the sticky header and nav, and the buttons.
-   Reads only the --site-* aliases and DS scale tokens in src/tokens.css; build.mjs ships the two
-   together as /site.css. Header pattern from pedal-performance.com (pearmill/pedal-agency css/styles.css §4):
+   Reads only the --site-* aliases and scale tokens. build.mjs ships it twice: with src/shallan.css as
+   /site.css (every personal page), and with src/tokens.css as /pedal-design/site.css (the Pedal DS). Header pattern from pedal-performance.com (pearmill/pedal-agency css/styles.css §4):
    a 72px sticky bar with a 2px rule under it, links in a row from 1024px, a menu button below that. */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -19,8 +19,9 @@ body {
   background-size: var(--site-grid-size) var(--site-grid-size);
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
-/* Serif for sentences, sans for titles (site#60). /pedal-design/ keeps the DS: sans throughout. */
-body:not(.skin-pedal) { font-family: var(--site-prose-font); font-optical-sizing: auto; }
+/* Sentences in --site-prose-font, titles in --site-font (site#60). Shallan sets the first to its serif
+   (one-line revert: --shallan-sentence-face); the Pedal DS sets both to sans. */
+body { font-family: var(--site-prose-font); font-optical-sizing: auto; }
 h1, h2, h3, h4, h5, h6, .site-header, .site-footer .btn, .btn, button, summary, label, th, dt, legend, caption, svg text,
 .eyebrow, .meta, .group, .tag, .num, .legend, nav { font-family: var(--site-font); }
 ::selection { background: var(--site-selection); color: var(--site-selection-text); }

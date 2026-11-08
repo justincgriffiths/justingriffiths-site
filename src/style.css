@@ -1,5 +1,5 @@
 /* The hub at / (site#51). Pedal Design System, night lane only (Justin, 2026-11-08).
-   Loaded after /site.css (src/tokens.css + src/chrome.css), which carries the base, header and buttons.
+   Loaded after /site.css (src/shallan.css + src/chrome.css), which carries the base, header and buttons.
    Reads only --site-* aliases and DS scale tokens; no hex, no font names.
    Layout follows pedal-performance.com: mobile-first, full-bleed bands with a 2px rule between them,
    a 1200px content column, 20px gutters on phones and 40px from 768px, steps at 768px and 1024px.

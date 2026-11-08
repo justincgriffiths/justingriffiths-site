@@ -1,0 +1,17 @@
+<!-- @dsCard group="Spacing" viewport="720x260" name="Corners, a step smaller" subtitle="Before (Marketing 101 on the Pedal DS) and after (Shallan): box 14 to 10, inner 8 to 6, pills unchanged" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet"><link rel="stylesheet" href="shallan.css">
+<style>body{margin:0;padding:24px;background-color:var(--site-bg);background-image:linear-gradient(var(--site-grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--site-grid-line) 1px,transparent 1px);background-size:var(--site-grid-size) var(--site-grid-size);color:var(--site-text);font-family:var(--site-font)}.lbl{font-size:var(--text-overline);font-weight:var(--weight-bold);letter-spacing:var(--tracking-wide);text-transform:uppercase;color:var(--site-text-soft)}
+.grid{display:grid;grid-template-columns:7rem repeat(3,1fr);gap:var(--space-4);align-items:center;margin-top:var(--space-4)}
+.t{width:100%;height:64px;background:var(--site-box);border:var(--site-card-border);box-shadow:var(--site-shadow)}
+.pill{height:40px}.n{font-size:var(--text-caption);color:var(--site-text-soft);margin-top:var(--space-2)}</style></head><body>
+<div class="grid">
+<span></span><span class="lbl">Box</span><span class="lbl">Inner</span><span class="lbl">Pill</span>
+<span class="lbl">Before</span>
+<div><div class="t" style="border-radius:14px"></div><div class="n">14px</div></div>
+<div><div class="t" style="border-radius:8px"></div><div class="n">8px</div></div>
+<div><div class="t pill" style="border-radius:999px"></div><div class="n">999px</div></div>
+<span class="lbl">Shallan</span>
+<div><div class="t" style="border-radius:var(--shallan-radius-box)"></div><div class="n">10px</div></div>
+<div><div class="t" style="border-radius:var(--shallan-radius-inner)"></div><div class="n">6px</div></div>
+<div><div class="t pill" style="border-radius:var(--shallan-radius-pill)"></div><div class="n">999px, unchanged</div></div>
+</div></body></html>

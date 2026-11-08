@@ -24,7 +24,7 @@ test("no Light | Night switch on either version: dark only (Justin, 2026-11-08)"
 });
 
 test("both versions and their stylesheets resolve through the Worker, public, with a 200", async () => {
-  for (const path of ["/", "/site.css", "/style.css", "/pedal-design/", "/pedal-design/style.css"]) {
+  for (const path of ["/", "/site.css", "/style.css", "/pedal-design/", "/pedal-design/style.css", "/pedal-design/site.css"]) {
     const r = await get(path);
     assert.equal(r.status, 200, path);
   }
