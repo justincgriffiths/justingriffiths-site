@@ -27,7 +27,7 @@
    "label": "Pre-production trial, 4 items"
   }
  },
- "as_of": "2026-11-08T16:16:00Z",
+ "as_of": "2026-11-08T17:50:42Z",
  "breakdowns": {
   "by_task_label": {
    "archive": 6,
@@ -41,7 +41,7 @@
   },
   "by_workflow": {
    "cron-triage": {
-    "answered": 43,
+    "answered": 53,
     "capped": 0,
     "fell_back": 11
    },
@@ -67,6 +67,316 @@
    }
   }
  },
+ "calls_by_day": [
+  {
+   "calls": 64,
+   "day": "2026-11-08",
+   "haiku_capped": 0,
+   "haiku_fallback": 11,
+   "haiku_shadow": 0,
+   "job": "cron-triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 53
+  },
+  {
+   "calls": 13,
+   "day": "2026-11-08",
+   "haiku_capped": 1,
+   "haiku_fallback": 1,
+   "haiku_shadow": 11,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 11
+  },
+  {
+   "calls": 4,
+   "day": "2026-11-07",
+   "haiku_capped": 2,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "declutter",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 2
+  },
+  {
+   "calls": 10,
+   "day": "2026-11-07",
+   "haiku_capped": 0,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "issue-tag",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 10
+  },
+  {
+   "calls": 5,
+   "day": "2026-11-07",
+   "haiku_capped": 5,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "session-reap",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 11,
+   "day": "2026-11-07",
+   "haiku_capped": 11,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 6,
+   "day": "2026-11-06",
+   "haiku_capped": 6,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 22,
+   "day": "2026-11-05",
+   "haiku_capped": 22,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 16,
+   "day": "2026-11-04",
+   "haiku_capped": 16,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 20,
+   "day": "2026-11-03",
+   "haiku_capped": 20,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 11,
+   "day": "2026-10-31",
+   "haiku_capped": 11,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 14,
+   "day": "2026-10-30",
+   "haiku_capped": 14,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 24,
+   "day": "2026-10-29",
+   "haiku_capped": 24,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 8,
+   "day": "2026-10-28",
+   "haiku_capped": 8,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 6,
+   "day": "2026-10-27",
+   "haiku_capped": 6,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 6,
+   "day": "2026-10-26",
+   "haiku_capped": 6,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 9,
+   "day": "2026-10-25",
+   "haiku_capped": 9,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 11,
+   "day": "2026-10-24",
+   "haiku_capped": 11,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 9,
+   "day": "2026-10-23",
+   "haiku_capped": 9,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 13,
+   "day": "2026-10-22",
+   "haiku_capped": 13,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 11,
+   "day": "2026-10-20",
+   "haiku_capped": 11,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 7,
+   "day": "2026-10-19",
+   "haiku_capped": 7,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 8,
+   "day": "2026-10-17",
+   "haiku_capped": 8,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 5,
+   "day": "2026-10-16",
+   "haiku_capped": 5,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 3,
+   "day": "2026-10-15",
+   "haiku_capped": 3,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 17,
+   "day": "2026-10-14",
+   "haiku_capped": 17,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 5,
+   "day": "2026-10-13",
+   "haiku_capped": 5,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  },
+  {
+   "calls": 35,
+   "day": "2026-10-12",
+   "haiku_capped": 35,
+   "haiku_fallback": 0,
+   "haiku_shadow": 0,
+   "job": "triage",
+   "model_haiku": "claude-haiku-5-5",
+   "model_qwen": "qwen3-coder:30b",
+   "qwen": 0
+  }
+ ],
  "cost_per_run": {
   "issue_tag_usd_per_item": {
    "haiku": 0.0063,
@@ -204,27 +514,27 @@
  },
  "workflows": {
   "cron-triage": {
-   "answered": 43,
+   "answered": 53,
    "capped": 0,
    "fell_back": 11,
    "first_logged": "2026-11-08",
    "latency_ms": {
-    "n": 9,
-    "p50": 37930.0,
-    "p90": 42089.0,
+    "n": 11,
+    "p50": 37777.0,
+    "p90": 41751.0,
     "unit": "run"
    },
    "policy": 0,
    "policy_reasons": {},
-   "runs": 10,
+   "runs": 12,
    "share_by_day": [
     {
-     "answered": 43,
+     "answered": 53,
      "capped": 0,
      "day": "2026-11-08",
      "fell_back": 11,
      "policy": 0,
-     "runs": 10,
+     "runs": 12,
      "usd": 0.0134
     }
    ],

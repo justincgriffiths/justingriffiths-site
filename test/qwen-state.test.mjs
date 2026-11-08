@@ -7,7 +7,7 @@ import { join } from "node:path";
 import worker from "../src/worker.js";
 
 // PUBLIC page: poison every source with per-message fields; none may reach the exporter output.
-const SENTINELS = ["SENTINEL_CRON_JOB_NAME", "SENTINEL_CRON_RUNID", "SENTINEL_FLAGGED_TEXT", "SENTINEL_DECLUTTER_JOB", "SENTINEL_SESSION_NAME", "SENTINEL_REAP_JOB", "SENTINEL REASON declutter 5521", "SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841", "SENTINEL_LABEL_xyz", "secret-repo-sentinel2", "7771299", "SENTINEL_PAIR_LABEL", "SENTINEL_MSGID_PAIR", "SENTINEL_CORR_ISSUE_8842"];
+const SENTINELS = ["SENTINEL_CRON_JOB_NAME", "SENTINEL_CRON_RUNID", "SENTINEL_FLAGGED_TEXT", "SENTINEL_DECLUTTER_JOB", "SENTINEL_SESSION_NAME", "SENTINEL_REAP_JOB", "SENTINEL REASON declutter 5521", "SENTINEL_MSGID_9f3a", "SENTINEL SUBJECT Q3 invoice", "sender-sentinel@example.com", "SENTINEL_ISSUE_TITLE", "secret-repo-sentinel", "SENTINEL_ACCOUNT", "SENTINEL REASON free text 8841", "SENTINEL_LABEL_xyz", "secret-repo-sentinel2", "7771299", "SENTINEL_PAIR_LABEL", "SENTINEL_MSGID_PAIR", "SENTINEL_CORR_ISSUE_8842", "SENTINEL_LEARN_STORE", "SENTINEL_LEARN_REASON", "SENTINEL_MODEL_ROW"];
 const FORBIDDEN_KEYS = ["id", "ids", "subject", "sender", "from", "title", "number", "repo", "account", "labels", "pair", "haiku_add", "dimension", "from", "to", "model_of_origin", "applied_at", "qwen_label", "haiku_label", "from_label", "to_label", "issue", "match", "haiku_usd", "context", "input", "message_id", "email", "report"];
 
 const dir = mkdtempSync(join(tmpdir(), "qwen-"));
@@ -29,6 +29,11 @@ writeFileSync(join(runs, "20261107-160000-dry.audit.jsonl"), [
   { tool: "qwen_classify", label: "task", escalated: false, latency_ms: 50 },
   { tool: "qwen_pair", match: false, qwen_label: "fyi", haiku_label: "task" },
 ].map((r) => JSON.stringify(r)).join("\n") + "\n");
+// Before Qwen: a run with no qwen block (Haiku did every message). Unique message ids per run count; a dry-run sidecar does not.
+writeFileSync(join(runs, "20261020-120000-pedal.json"), JSON.stringify({ mode: "create", account: "x", report: "r.md" }));
+writeFileSync(join(runs, "20261020-120000-pedal.audit.jsonl"), ["hid-a", "hid-b", "hid-a"].map((id) => JSON.stringify({ tool: "mcp__mail__get_message", input: { id } })).join("\n") + "\n");
+writeFileSync(join(runs, "20261019-120000-pedal.json"), JSON.stringify({ mode: "dry-run" }));
+writeFileSync(join(runs, "20261019-120000-pedal.audit.jsonl"), JSON.stringify({ tool: "mcp__mail__get_message", input: { id: "hid-c" } }) + "\n");
 writeFileSync(join(runs, "corrections.audit.jsonl"), JSON.stringify({ tool: "qwen_correction", id: "SENTINEL_MSGID_9f3a", from_label: "SENTINEL_PAIR_LABEL", to_label: "task", model_of_origin: "qwen3-coder:30b", issue: "SENTINEL_CORR_ISSUE_8842" }) + "\n");
 writeFileSync(join(dir, "tag.log"),
   "[2026-11-07T06:00:00Z] argv=[secret-repo-sentinel personal limit=1 apply=1] exit=0 tagged=1 failed=0 qwen=1 fallback=0 haiku=2\n" +
@@ -62,7 +67,12 @@ const reapFile = jl("reap.jsonl", [
   { ts: "2026-11-07T23:17:24+00:00", job: "SENTINEL_SESSION_NAME", tool: "qwen_classify", model: "claude-haiku-5-5", escalated: true, reason: "needs-del", latency_ms: 0 },
   { ts: "2026-11-07T23:17:25+00:00", job: "SENTINEL_SESSION_NAME", tool: "qwen_classify", model: "claude-haiku-5-5", escalated: true, reason: "needs-name", latency_ms: 0 },
 ]);
-const wfEnv = { QWEN_CRON_RUNS: cronFile, QWEN_DECLUTTER: declutterFile, QWEN_REAP: reapFile };
+// site#88: learn store-pick is a fourth qwen.jsonl source; its job names, reasons and per-row model strings are sentinels too.
+const learnFile = jl("learn.jsonl", [
+  { ts: "2026-11-08T12:00:00+00:00", job: "SENTINEL_LEARN_STORE", tool: "qwen_classify", model: "SENTINEL_MODEL_ROW", escalated: false, reason: "", latency_ms: 500 },
+  { ts: "2026-11-08T12:00:01+00:00", job: "SENTINEL_LEARN_STORE", tool: "qwen_classify", model: "SENTINEL_MODEL_ROW", escalated: true, reason: "SENTINEL_LEARN_REASON", latency_ms: 0 },
+]);
+const wfEnv = { QWEN_CRON_RUNS: cronFile, QWEN_DECLUTTER: declutterFile, QWEN_REAP: reapFile, QWEN_LEARN: learnFile };
 
 const out = execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env, ...wfEnv,
   QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"), QWEN_TAG_LOG: join(dir, "tag.log"), QWEN_TAG_JSONL: join(dir, "tag.jsonl") } });
@@ -181,11 +191,82 @@ test("the page renders one chart per job with runs and says so for a job with no
   const base = JSON.parse(readFileSync("content/qwen/data.json", "utf8"));
   const d = JSON.parse(out);
   const html = renderData({ ...base, workflows: { ...d.workflows, declutter: { ...d.workflows.declutter, runs: 0, share_by_day: [] } } });
-  const sec = html.slice(html.indexOf('id="workflows"'), html.indexOf('id="fallbacks"'));
+  const sec = html.slice(html.indexOf('id="workflows"'), html.indexOf('id="calls"'));
   assert.match(sec, /Cron triage<\/h3><p class="note">first logged 2026-11-08 · 4 runs · 8 answered by Qwen · 7 fell back to Claude/);
   assert.match(sec, /Declutter<\/h3><p class="empty">No runs logged\.<\/p>/);
   assert.match(sec, /held back by rule \(needs-del 1, needs-name 2\)/);
-  assert.equal((sec.match(/<svg /g) || []).length, 2);
+  assert.equal((sec.match(/<svg /g) || []).length, 1);                           // the one job with 2+ days draws a chart
+  assert.match(sec, /<p class="single"><span class="big">\d+<\/span> items on 2026-11-0\d<\/p>/);   // a one-day job is a datapoint, not a bar
   assert.doesNotMatch(sec, /NaN|undefined|0%/);
   assert.doesNotMatch(renderData(base), /NaN|undefined/);   // the older snapshot without workflows still renders
+});
+
+test("calls by day: one row per (day, job) with calls, newest first, counts and fixed model names only", () => {
+  const rows = JSON.parse(out).calls_by_day;
+  const pick = (day, job) => rows.find((r) => r.day === day && r.job === job);
+  const n = (r) => [r.calls, r.qwen, r.haiku_fallback, r.haiku_capped, r.haiku_shadow];
+  assert.deepEqual(n(pick("2026-11-07", "triage")), [3, 1, 1, 1, 2]);          // seen 3: 1 answered, 1 escalated (exit-2), 1 not offered; both live pair rows land on the run's day
+  assert.deepEqual(n(pick("2026-11-07", "issue-tag")), [3, 1, 0, 2, 0]);       // apply=0 dry run dropped; pair rows carry no day
+  assert.deepEqual(n(pick("2026-11-08", "cron-triage")), [12, 5, 7, 0, 0]);
+  assert.deepEqual(n(pick("2026-11-07", "declutter")), [3, 1, 1, 1, 0]);
+  assert.deepEqual(n(pick("2026-11-07", "session-reap")), [3, 0, 0, 3, 0]);    // a fixed rule (needs-name/needs-del) counts under cap, not fallback
+  assert.deepEqual(n(pick("2026-11-08", "learn-store-pick")), [2, 1, 1, 0, 0]);
+  assert.equal(pick("2026-11-08", "triage"), undefined);                        // a job with no runs that day has no row, not zeros
+  const order = rows.map((r) => r.day);
+  assert.deepEqual(order, [...order].sort().reverse());
+  for (const r of rows) { assert.equal(r.calls, r.qwen + r.haiku_fallback + r.haiku_capped); assert.equal(r.model_qwen, "qwen3-coder:30b"); assert.equal(r.model_haiku, "claude-haiku-5-5"); }
+});
+
+test("calls by day: runs before Qwen count as Haiku calls Qwen was not offered, from unique messages per run; dry runs do not", () => {
+  const rows = JSON.parse(out).calls_by_day, t = rows.find((r) => r.day === "2026-10-20" && r.job === "triage");
+  assert.deepEqual([t.calls, t.qwen, t.haiku_fallback, t.haiku_capped, t.haiku_shadow], [2, 0, 0, 2, 0]);
+  assert.equal(rows.find((r) => r.day === "2026-10-19"), undefined);
+});
+
+test("Share on Qwen: a chart with one day of data is a single datapoint", async () => {
+  const { renderData } = await import("../src/qwen-render.mjs");
+  const base = JSON.parse(readFileSync("content/qwen/data.json", "utf8"));
+  const one = [{ day: "2026-11-08", answered: 10, fell_back: 1, capped: 2 }];
+  const html = renderData({ ...base, share_by_day: { triage: one, "issue-tag": one } });
+  const sec = html.slice(html.indexOf('id="share"'), html.indexOf('id="workflows"'));
+  assert.equal((sec.match(/<svg /g) || []).length, 0);
+  assert.equal((sec.match(/class="single"/g) || []).length, 2);
+  assert.match(sec, /<span class="big">13<\/span> items on 2026-11-08/);
+});
+
+test("a missing learn source adds no learn rows", () => {
+  const d = JSON.parse(execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...process.env, ...wfEnv, QWEN_LEARN: none, QWEN_RUNS: runs, QWEN_COST_DB: join(dir, "none.db"),
+    QWEN_TAG_LOG: join(dir, "tag.log"), QWEN_TAG_JSONL: join(dir, "tag.jsonl") } }));
+  assert.ok(d.calls_by_day.length && !d.calls_by_day.some((r) => r.job === "learn-store-pick"));
+});
+
+const row = (day, job, q, fb, cap, shd) => ({ day, job, calls: q + fb + cap, qwen: q, haiku_fallback: fb, haiku_capped: cap, haiku_shadow: shd, model_qwen: "qwen3-coder:30b", model_haiku: "claude-haiku-5-5" });
+const callsSec = async (rows) => {
+  const { renderData } = await import("../src/qwen-render.mjs");
+  const base = JSON.parse(readFileSync("content/qwen/data.json", "utf8"));
+  const html = renderData({ ...base, calls_by_day: rows });
+  return html.slice(html.indexOf('id="calls"'), html.indexOf('id="fallbacks"'));
+};
+
+test("calls by day: no table; a job with one day of data is a single datapoint, not a bar", async () => {
+  const sec = await callsSec([row("2026-11-08", "cron-triage", 48, 11, 0, 0)]);
+  assert.doesNotMatch(sec, /<table|<details/);
+  assert.match(sec, /<span class="big">59<\/span> calls on 2026-11-08/);
+  assert.match(sec, /48 Qwen · 11 Haiku fallback · 0 Haiku cap/);
+  assert.doesNotMatch(sec, /<svg|<rect/);
+});
+
+test("calls by day: 2+ days draw one bar per day, empty days included, Haiku shadow a ring outside the stack", async () => {
+  const sec = await callsSec([row("2026-11-05", "triage", 2, 1, 0, 3), row("2026-11-08", "triage", 11, 1, 1, 11), row("2026-11-07", "declutter", 2, 0, 2, 0)]);
+  const triage = sec.slice(sec.indexOf("Inbox triage"), sec.indexOf("Declutter"));
+  assert.equal((triage.match(/<title>2026-1\d-\d\d(?: [^<]*)?<\/title>/g) || []).length >= 4, true);  // 11-05..11-08 = 4 days
+  assert.match(triage, /2026-11-06: no calls/);                                  // gap day drawn empty, not skipped
+  assert.match(triage, /2026-11-07: no calls/);
+  assert.equal((triage.match(/<circle /g) || []).length, 2);                    // one ring per day with shadow calls
+  assert.match(triage, /<text[^>]*>11-05<\/text>/);
+  assert.equal((triage.match(/<text[^>]*text-anchor="(?:start|middle|end)">\d\d-\d\d<\/text>/g) || []).length <= 3, true);   // few ticks for a phone
+  assert.match(sec, /<span class="big">4<\/span> calls on 2026-11-07/);           // declutter: one day only -> datapoint beside triage's chart
+  assert.doesNotMatch(sec, /NaN|undefined/);
+  const { renderData } = await import("../src/qwen-render.mjs");
+  assert.doesNotMatch(renderData(JSON.parse(readFileSync("content/qwen/data.json", "utf8"))), /NaN|undefined/);
 });
