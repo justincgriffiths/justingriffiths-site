@@ -64,7 +64,7 @@
 }
 /* Truth matrix (site#119): the raw cells sit in a closed element and scroll inside a fixed height instead of growing the page. */
 .truth-rows { margin-block: var(--space-3); }
-.truth-rows summary { cursor: pointer; color: var(--site-text); font-size: var(--text-body-sm); }
+.truth-rows summary { display: flex; align-items: center; min-block-size: var(--tap); cursor: pointer; color: var(--site-text); font-size: var(--text-body-sm); }
 .truth-scroll { max-height: 18rem; overflow: auto; margin-top: var(--space-2); }
 .truth-scroll:focus-visible { outline: 2px solid var(--site-text); outline-offset: 2px; }
 .truth-scroll table { margin-top: 0; }

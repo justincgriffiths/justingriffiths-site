@@ -236,7 +236,7 @@ function historyOne(c, last) {
   const mark = mi >= 0 ? `<line x1="${mx}" x2="${mx}" y1="-14" y2="${H - P.b}" class="trend" stroke-dasharray="4 3"/><text x="${mx + (mi > days.length / 2 ? -4 : 4)}" y="-20" text-anchor="${mi > days.length / 2 ? "end" : "start"}">${esc(c.marker.label)}</text>` : "";
   const idx = [...new Set([0, Math.floor((days.length - 1) / 2), days.length - 1])];
   const ticks = idx.map((i) => `<text x="${P.l + i * step + step / 2}" y="${H - 10}" text-anchor="${i === 0 ? "start" : i === days.length - 1 ? "end" : "middle"}">${esc(days[i].slice(5))}</text>`).join("");
-  const axis = [0, max].map((v) => { const y = H - P.b - yv(v); return `<line x1="${P.l}" x2="${W - P.r}" y1="${y}" y2="${y}" class="gridline"/><text x="${P.l - 6}" y="${y + 4}" text-anchor="end">${money ? (v === 0 ? "$0" : `$${v < 1 ? v.toFixed(2) : Math.round(v)}`) : v}</text>`; }).join("");
+  const axis = [0, max].map((v) => { const y = H - P.b - yv(v); return `<line x1="${P.l}" x2="${W - P.r}" y1="${y}" y2="${y}" class="gridline"/><text x="${P.l - 6}" y="${y + 4}" text-anchor="end">${money ? (v === 0 ? "$0" : v < 0.1 ? `${+(v * 100).toFixed(1)}¢` : `$${v < 1 ? v.toFixed(2) : Math.round(v)}`) : v}</text>`; }).join("");
   return `<div class="callsjob">${head}${note(`${mk}${top && top.usd > 0 ? `; the label marks the costliest day, ${esc(top.day.slice(5))}` : ""}${money ? "; bar height is dollars per day" : ""}`)}${legend(keys.map((k) => [lab(k), col(k)]))}${svg(`${name} ${money ? "dollars" : "runs"} per day by model, ${days.length} days`, axis + bars + mark + peak + ticks, MB)}</div>`;
 }
 
@@ -255,27 +255,34 @@ function historyCharts(h, sc) {
 
 
 // Truth matrix (site#119): per job, one row per run with three fields, each 1, 0 or unknown. Justin's ruling: a chart and one line per job; the raw cells sit in a
-// closed, scrolling element. The segment mapping lives in bin/qwen-state.py segment(); each run is in exactly one segment, so a bar sums to n.
+// closed, scrolling element. The segment mapping is truthSegments() below, the one place to change it; it reads the cell counts the exporter already carries, so an older
+// snapshot still renders. Each run is in exactly one segment, so a bar sums to n.
 const TRUTH_NAMES = { "session-finish": "Session finish", "declutter-sweep": "Declutter sweep", "pr-sweep": "PR sweeps", "cron-triage": "Cron triage" };
 const TRUTH_SEGS = [["missed", "Missed", C.fell_back], ["found", "Found", C.answered], ["quiet", "Quiet", C.haiku], ["unknown", "Unknown", C.capped]];
+
+// missed: work existed, not found. found: the run said it found work, whatever the work status. quiet: no work, not found. unknown: everything else (work unknown and not found).
+function truthSegments(j) {
+  const found = j.found_work + j.false_alarm + j.work_unknown_found;
+  return { missed: j.missed, found, quiet: j.quiet, unknown: j.n - j.missed - found - j.quiet };
+}
 
 function truthBars(jobs) {
   const RH = 46, w = W - P.l - P.r;
   const rows = jobs.map((j, i) => {
-    const y = i * RH, n = Math.max(j.n, 1); let x = P.l;
+    const y = i * RH, n = Math.max(j.n, 1), seg = truthSegments(j); let x = P.l;
     const segs = TRUTH_SEGS.map(([k, lab, c]) => {
-      const v = j.segments[k]; if (!v) return "";
+      const v = seg[k]; if (!v) return "";
       const sw = Math.max(2, (v / n) * w), r = `<rect x="${x}" y="${y + 22}" width="${sw}" height="16" style="fill:${c};stroke:var(--site-bg);stroke-width:1"><title>${esc(TRUTH_NAMES[j.job] || j.job)} ${lab}: ${v} of ${j.n}</title></rect>`;
       x += sw; return r;
     }).join("");
     return `<text x="${P.l}" y="${y + 16}">${esc(TRUTH_NAMES[j.job] || j.job)}</text>${segs}`;
   }).join("");
-  const desc = jobs.map((j) => `${TRUTH_NAMES[j.job] || j.job}: ${TRUTH_SEGS.map(([k, lab]) => `${j.segments[k]} ${lab.toLowerCase()}`).join(", ")}`).join("; ");
+  const desc = jobs.map((j) => `${TRUTH_NAMES[j.job] || j.job}: ${TRUTH_SEGS.map(([k, lab]) => `${truthSegments(j)[k]} ${lab.toLowerCase()}`).join(", ")}`).join("; ");
   return svg(`Runs per job by outcome. ${desc}`, rows, 0).replace(`viewBox="0 0 ${W} ${H}"`, `viewBox="0 0 ${W} ${jobs.length * RH}"`);
 }
 
 // Counts only, no because-clause.
-const truthLine = (j) => `${TRUTH_NAMES[j.job] || j.job}: ${runsOf(j.n)}, ${j.with_truth} with ground truth, ${j.segments.missed} missed, ${j.segments.found} found, ${j.segments.quiet} quiet, ${j.segments.unknown} unknown.`;
+const truthLine = (j) => { const s = truthSegments(j); return `${TRUTH_NAMES[j.job] || j.job}: ${runsOf(j.n)}, ${j.n - j.work_unknown} with ground truth, ${s.missed} missed, ${s.found} found, ${s.quiet} quiet, ${s.unknown} unknown.`; };
 
 function truthRaw(jobs) {
   const cells = [["Work existed, not found (miss)", "missed"], ["Work existed, found", "found_work"], ["No work, found", "false_alarm"], ["No work, quiet", "quiet"], ["Work unknown, found", "work_unknown_found"],
@@ -290,7 +297,7 @@ function truthRaw(jobs) {
 }
 
 function truthCharts(t) {
-  if (!t || !t.jobs || !t.jobs.length || t.jobs.some((j) => !j.segments)) return empty("No truth matrix logged yet.");   // a snapshot from before the segments existed
+  if (!t || !t.jobs || !t.jobs.length) return empty("No truth matrix logged yet.");
   return `${legend(TRUTH_SEGS.map(([, lab, c]) => [lab, c]))}${truthBars(t.jobs)}${t.jobs.map((j) => `<p class="note truth-line">${esc(truthLine(j))}</p>`).join("")}${truthRaw(t.jobs)}`;
 }
 

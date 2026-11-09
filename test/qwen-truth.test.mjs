@@ -147,22 +147,22 @@ test("leakcheck: counts and dates only; no session name, job detail, body or run
   assert.equal(r.status, 0, r.stderr);
 });
 
-test("segments: every mapping cell lands in exactly one segment and the segments sum to n", () => {
-  const spec = `import importlib.util,json
-sp=importlib.util.spec_from_file_location("q","bin/qwen-state.py"); q=importlib.util.module_from_spec(sp); sp.loader.exec_module(q)
-r=lambda w,i: {"day":"2026-11-01","work":w,"ident":i,"correct":None,"src":"log"}
-cells=[(1,0),(1,1),(0,1),(None,1),(0,0),(None,0),(1,None),(0,None),(None,None)]
-print(json.dumps([q.segment(r(w,i)) for w,i in cells]), json.dumps(q.matrix([r(w,i) for w,i in cells])["segments"]), q.SEGMENTS)`;
-  const x = spawnSync("python3", ["-c", spec], { encoding: "utf8", env });
-  assert.equal(x.status, 0, x.stderr);
-  const [one, sum] = x.stdout.trim().split(/\n/)[0].match(/^(\[.*?\]) (\{.*\}) /).slice(1).map((v) => JSON.parse(v));
-  // missed, found (work), found (no work: still found), found (work unknown), quiet, unknown (work unknown), then an unknown identified falls to unknown
-  assert.deepEqual(one, ["missed", "found", "found", "found", "quiet", "unknown", "unknown", "unknown", "unknown"]);
-  assert.deepEqual(sum, { missed: 1, found: 3, quiet: 1, unknown: 4 });
-  assert.equal(Object.values(sum).reduce((a, b) => a + b, 0), 9);
-  for (const j of data.truth.jobs) assert.equal(Object.values(j.segments).reduce((a, b) => a + b, 0), j.n, j.job);
-  assert.deepEqual(job_("session-finish").segments, { missed: 1, found: 3, quiet: 1, unknown: 2 });         // finish fixture: miss, found, rebuilt found, false alarm found, quiet, 2 unknown
-  assert.equal(job_("session-finish").with_truth, 5);
+test("segments: every mapping cell lands in exactly one segment and the segments sum to n", async () => {
+  const { renderData } = await import("../src/qwen-render.mjs");
+  // One run in each cell the exporter counts: miss, found with work, found with no work, found with work unknown, quiet, work unknown and quiet, found unknown.
+  const cells = { n: 7, missed: 1, found_work: 1, false_alarm: 1, quiet: 1, work_unknown: 2, work_unknown_found: 1, work_unknown_quiet: 1, identified_unknown: 1, found_right: 0, found_wrong: 0, correct_unknown: 4, ground_truth_from: "2026-11-01" };
+  const page = renderData({ ...data, truth: { jobs: [{ job: "session-finish", ...cells }] } });
+  const segs = Object.fromEntries([...page.matchAll(/Session finish (Missed|Found|Quiet|Unknown): (\d+) of 7/g)].map((m) => [m[1], +m[2]]));
+  // work_unknown_quiet (1) and identified_unknown (1) are the only runs that are neither missed, found nor quiet.
+  assert.deepEqual(segs, { Missed: 1, Found: 3, Quiet: 1, Unknown: 2 });
+  assert.equal(Object.values(segs).reduce((a, b) => a + b, 0), 7);
+  assert.match(page, /Session finish: 7 runs, 5 with ground truth, 1 missed, 3 found, 1 quiet, 2 unknown\./);
+  // The exporter's own fixtures: every job's four segments sum to n.
+  const page2 = renderData(data);
+  for (const j of data.truth.jobs) {
+    const got = [...page2.matchAll(new RegExp(`${{ "session-finish": "Session finish", "declutter-sweep": "Declutter sweep", "pr-sweep": "PR sweeps", "cron-triage": "Cron triage" }[j.job]} (?:Missed|Found|Quiet|Unknown): (\\d+) of ${j.n}`, "g"))].reduce((a, m) => a + +m[1], 0);
+    assert.equal(got, j.n, j.job);
+  }
 });
 
 test("page: one bar per job, one counts-only line per job, the raw cells in a closed scrolling element", async () => {
@@ -182,6 +182,5 @@ test("page: one bar per job, one counts-only line per job, the raw cells in a cl
   assert.doesNotMatch(sec, /NaN|undefined|null/);
   assert.match(page, /Cost est\.: not available in this snapshot/);
   assert.doesNotThrow(() => renderData({ ...data, truth: undefined }));            // an older snapshot without the block still renders
-  const oldSnap = { ...data, truth: { jobs: data.truth.jobs.map(({ segments, ...j }) => j) } };   // the committed snapshot predates segments
-  assert.match(renderData(oldSnap), /No truth matrix logged yet/);
+  assert.match(renderData({ ...data, truth: { jobs: [] } }), /No truth matrix logged yet/);
 });
