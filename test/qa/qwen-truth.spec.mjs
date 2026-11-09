@@ -9,10 +9,19 @@ async function check(page, w, h) {
   await page.goto("/qwen/");
   await page.addStyleTag({ content: ".site-header, header { position: static !important; }" });   // the sticky bar would cross an element shot
   const truth = page.locator("#truth");
-  await expect(truth.locator("table").first()).toBeVisible();
+  await expect(truth.locator("svg").first()).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  expect(await truth.locator("h3").count()).toBeGreaterThanOrEqual(4);
+  expect(await truth.locator("svg rect").count()).toBeGreaterThanOrEqual(4);
+  expect(await truth.locator(".truth-line").count()).toBe(4);
+  const det = truth.locator("details.truth-rows");
+  expect(await det.evaluate((d) => d.open)).toBe(false);
+  console.log(`truth section height at ${w}: ${Math.round((await truth.boundingBox()).height)}px`);
   await truth.screenshot({ path: out(`truth-${w}`) });
+  await det.locator("summary").click();
+  const box = truth.locator(".truth-scroll");
+  expect(await box.evaluate((e) => e.scrollHeight > e.clientHeight || e.clientHeight <= 18 * 16)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await truth.screenshot({ path: out(`truth-open-${w}`) });
   await page.locator("#history").screenshot({ path: out(`history-all-${w}`) });
 }
 

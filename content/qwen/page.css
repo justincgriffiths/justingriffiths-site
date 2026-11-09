@@ -62,3 +62,11 @@
   .qwen table.stack td[data-label] { display: flex; justify-content: space-between; gap: var(--space-3); }
   .qwen table.stack td[data-label]::before { content: attr(data-label); color: var(--site-text-soft); }
 }
+/* Truth matrix (site#119): the raw cells sit in a closed element and scroll inside a fixed height instead of growing the page. */
+.truth-rows { margin-block: var(--space-3); }
+.truth-rows summary { cursor: pointer; color: var(--site-text); font-size: var(--text-body-sm); }
+.truth-scroll { max-height: 18rem; overflow: auto; margin-top: var(--space-2); }
+.truth-scroll:focus-visible { outline: 2px solid var(--site-text); outline-offset: 2px; }
+.truth-scroll table { margin-top: 0; }
+.truth-scroll thead th { position: sticky; top: 0; background: var(--site-bg); }
+.truth-scroll th, .truth-scroll td { white-space: nowrap; }

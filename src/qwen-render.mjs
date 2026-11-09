@@ -254,27 +254,44 @@ function historyCharts(h, sc) {
 }
 
 
-// Truth matrix (site#119): per job, one row per run with three fields, each 1, 0 or unknown. Counts only; misses (work existed, not found) are listed first.
+// Truth matrix (site#119): per job, one row per run with three fields, each 1, 0 or unknown. Justin's ruling: a chart and one line per job; the raw cells sit in a
+// closed, scrolling element. The segment mapping lives in bin/qwen-state.py segment(); each run is in exactly one segment, so a bar sums to n.
 const TRUTH_NAMES = { "session-finish": "Session finish", "declutter-sweep": "Declutter sweep", "pr-sweep": "PR sweeps", "cron-triage": "Cron triage" };
-function truthOne(j) {
-  const row = (label, n) => `<tr><th>${esc(label)}</th><td data-label="Runs">${n}</td></tr>`;
-  const known = j.missed + j.found_work + j.false_alarm + j.quiet;
-  const gt = j.ground_truth_from ? `ground truth from ${esc(j.ground_truth_from)}` : "no ground truth yet";
-  return `<div class="callsjob"><h3>${esc(TRUTH_NAMES[j.job] || j.job)}</h3>
-    <p class="note">${runsOf(j.n)} · ${gt} · ${j.work_unknown} with work unknown · ${known} with work known.</p>
-    <table class="stack"><thead><tr><th>Run</th><th>Runs</th></tr></thead><tbody>
-      ${row("Work existed, not found (miss)", j.missed)}${row("Work existed, found", j.found_work)}${row("No work, found", j.false_alarm)}${row("No work, quiet", j.quiet)}
-      ${row("Work unknown, found", j.work_unknown_found)}${row("Work unknown, quiet", j.work_unknown_quiet)}${j.identified_unknown ? row("Found unknown", j.identified_unknown) : ""}
-    </tbody></table>
-    <table class="stack"><thead><tr><th>Runs that found work</th><th>Runs</th></tr></thead><tbody>
-      ${row("Found, right", j.found_right)}${row("Found, wrong", j.found_wrong)}${row("Found, right or wrong unknown", j.correct_unknown)}
-    </tbody></table></div>`;
+const TRUTH_SEGS = [["missed", "Missed", C.fell_back], ["found", "Found", C.answered], ["quiet", "Quiet", C.haiku], ["unknown", "Unknown", C.capped]];
+
+function truthBars(jobs) {
+  const RH = 46, w = W - P.l - P.r;
+  const rows = jobs.map((j, i) => {
+    const y = i * RH, n = Math.max(j.n, 1); let x = P.l;
+    const segs = TRUTH_SEGS.map(([k, lab, c]) => {
+      const v = j.segments[k]; if (!v) return "";
+      const sw = Math.max(2, (v / n) * w), r = `<rect x="${x}" y="${y + 22}" width="${sw}" height="16" style="fill:${c};stroke:var(--site-bg);stroke-width:1"><title>${esc(TRUTH_NAMES[j.job] || j.job)} ${lab}: ${v} of ${j.n}</title></rect>`;
+      x += sw; return r;
+    }).join("");
+    return `<text x="${P.l}" y="${y + 16}">${esc(TRUTH_NAMES[j.job] || j.job)}</text>${segs}`;
+  }).join("");
+  const desc = jobs.map((j) => `${TRUTH_NAMES[j.job] || j.job}: ${TRUTH_SEGS.map(([k, lab]) => `${j.segments[k]} ${lab.toLowerCase()}`).join(", ")}`).join("; ");
+  return svg(`Runs per job by outcome. ${desc}`, rows, 0).replace(`viewBox="0 0 ${W} ${H}"`, `viewBox="0 0 ${W} ${jobs.length * RH}"`);
+}
+
+// Counts only, no because-clause.
+const truthLine = (j) => `${TRUTH_NAMES[j.job] || j.job}: ${runsOf(j.n)}, ${j.with_truth} with ground truth, ${j.segments.missed} missed, ${j.segments.found} found, ${j.segments.quiet} quiet, ${j.segments.unknown} unknown.`;
+
+function truthRaw(jobs) {
+  const cells = [["Work existed, not found (miss)", "missed"], ["Work existed, found", "found_work"], ["No work, found", "false_alarm"], ["No work, quiet", "quiet"], ["Work unknown, found", "work_unknown_found"],
+    ["Work unknown, quiet", "work_unknown_quiet"], ["Found unknown", "identified_unknown"], ["Found, right", "found_right"], ["Found, wrong", "found_wrong"], ["Found, right or wrong unknown", "correct_unknown"]];
+  const gt = (j) => (j.ground_truth_from ? esc(j.ground_truth_from) : "none yet");
+  return `<details class="truth-rows"><summary>Show all runs</summary><div class="truth-scroll" tabindex="0" role="region" aria-label="All runs, counts per cell and job">
+    <table><thead><tr><th>Cell</th>${jobs.map((j) => `<th>${esc(TRUTH_NAMES[j.job] || j.job)}</th>`).join("")}</tr></thead><tbody>
+      <tr><th>Runs</th>${jobs.map((j) => `<td>${j.n}</td>`).join("")}</tr>
+      <tr><th>Ground truth from</th>${jobs.map((j) => `<td>${gt(j)}</td>`).join("")}</tr>
+      ${cells.map(([lab, k]) => `<tr><th>${esc(lab)}</th>${jobs.map((j) => `<td>${j[k]}</td>`).join("")}</tr>`).join("")}
+    </tbody></table></div><p class="note">One row per run, idle checks included. Missed: work existed and the run did not find it. Found: the run said it found work. Quiet: no work and the run found none. Unknown: work unknown and the run found none. Where the job's own log records ground truth, that is the source: the idle count in the session-finish log, should-handle against tombstoned and gate-refused in the declutter sweep log (a refusal is handled with a reason). Runs before those fields existed are rebuilt only for work existed = 1: a session still on this machine, named AGT_, was done at the run time in its own timeline. A run with no such session is unknown, because a deleted session cannot be seen. Right needs a recorded action of Justin's on the run's output; none is recorded for these jobs, so it is unknown.</p></details>`;
 }
 
 function truthCharts(t) {
-  if (!t || !t.jobs || !t.jobs.length) return empty("No truth matrix logged yet.");
-  return `<div class="cols grid">${t.jobs.map(truthOne).join("")}</div>
-    <p class="note">One row per run, idle checks included. Work existed: there was work the run should have handled. Found: the run said it found work. Right: what it did was right, asked only of runs that found work. Each is 1, 0 or unknown, and unknown is never guessed. Where the job's own log records ground truth, that is the source: the idle count in the session-finish log, should-handle against tombstoned and gate-refused in the declutter sweep log (a refusal is handled with a reason). Runs before those fields existed are rebuilt only for work existed = 1: a session still on this machine, named AGT_, was done at the run time in its own timeline. A run with no such session is unknown, because a deleted session cannot be seen. Right needs a recorded action of Justin's on the run's output; none is recorded for these jobs, so it is unknown.</p>`;
+  if (!t || !t.jobs || !t.jobs.length || t.jobs.some((j) => !j.segments)) return empty("No truth matrix logged yet.");   // a snapshot from before the segments existed
+  return `${legend(TRUTH_SEGS.map(([, lab, c]) => [lab, c]))}${truthBars(t.jobs)}${t.jobs.map((j) => `<p class="note truth-line">${esc(truthLine(j))}</p>`).join("")}${truthRaw(t.jobs)}`;
 }
 
 const section = (id, title, why, body) => `<section id="${id}"><h2>${esc(title)}</h2><p class="why">${esc(why)}</p>${body}</section>`;
@@ -288,7 +305,7 @@ ${section("workflows", "Every job that uses Qwen", "Each job's own counts by day
   `<div class="cols grid">${Object.keys(WORKFLOW_NAMES).map((k) => workflowBlock(k, (data.workflows || {})[k])).join("")}</div>`)}
 ${section("calls", "Calls by day", "How many calls each job made per day since it started, and which model took them.", callsCharts(data.calls_by_day))}
 ${section("history", "History and savings", "Runs per day for wrap, PR sweeps, session cleanup and cron triage, every run counted whether it found work or not, by model, with the last 7 days of spend against the 7 before.", historyCharts(data.history, data.skill_cost))}
-${section("truth", "Was there work, and did the run find it", "Per job, one row per run: did work exist, did the run find it, was what it did right. Misses first.", truthCharts(data.truth))}
+${section("truth", "Was there work, and did the run find it", "Per job, how many runs missed work, found it, stayed quiet, or have no ground truth yet. Misses first.", truthCharts(data.truth))}
 ${section("fallbacks", "Fallback reasons", "Why Qwen's answer was thrown out and Claude did the item instead.", horizontal(data.fallback_reasons, "Fallbacks by reason", C.fell_back))}
 ${section("cost", "Cost per run", "Calls per day by job, and dollars per triage run, against the average before Qwen.", costChart())}
 ${section("latency", "Latency", "How long Qwen takes per item, next to Haiku.", latency())}

@@ -322,19 +322,19 @@ test("history: no session id, ask text, repo or log body reaches the output", ()
 
 test("history charts: empty days drawn, one day is a number, no savings guess without a logged cost", async () => {
   const { renderData } = await import("../src/qwen-render.mjs");
-  const h = JSON.parse(out), page = renderData(h), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="fallbacks"'));
+  const h = JSON.parse(out), page = renderData(h), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="truth"'));
   assert.match(sec, /Cost not logged, so no savings figure/);
   assert.match(sec, /\$0\.75 over 2 runs, against \$1\.50 over 1 run\b/);
   assert.match(sec, /2026-11-02: no runs/);
   assert.doesNotMatch(sec, /NaN|undefined/);
   const one = { ...h, history: { through: "2026-11-08", commands: [{ ...h.history.commands[0], days: [h.history.commands[0].days[0]], runs: 2 }] } };
-  const s1 = renderData(one); const sec1 = s1.slice(s1.indexOf('id="history"'), s1.indexOf('id="fallbacks"'));
+  const s1 = renderData(one); const sec1 = s1.slice(s1.indexOf('id="history"'), s1.indexOf('id="truth"'));
   assert.match(sec1, /<span class="big">2<\/span> runs on 2026-11-01/); assert.doesNotMatch(sec1, /<rect/);
 });
 
 test("history charts: PR sweep bar height is dollars per day, other commands stay runs", async () => {
   const { renderData } = await import("../src/qwen-render.mjs");
-  const page = renderData(JSON.parse(out)), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="fallbacks"'));
+  const page = renderData(JSON.parse(out)), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="truth"'));
   assert.match(sec, /PR sweeps dollars per day by model/); assert.match(sec, /bar height is dollars per day/);
   assert.match(sec, /Wrap runs per day by model/); assert.match(sec, /2026-11-01 Sonnet: \$1\.50, 1 run/);
 });
@@ -354,7 +354,7 @@ test("stale sources: when every source of a command is quiet, each is flagged as
 
 test("stale sources: the page says which source stopped and when, only under that command, and the output stays leakcheck-clean", async () => {
   const { renderData } = await import("../src/qwen-render.mjs");
-  const page = renderData(JSON.parse(out)), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="fallbacks"'));
+  const page = renderData(JSON.parse(out)), sec = page.slice(page.indexOf('id="history"'), page.indexOf('id="truth"'));
   assert.match(sec, /Source wrap session records stopped on 2026-11-03; runs since then come from the command's other source/);
   assert.doesNotMatch(sec, /missing, not zero|has no record since/);
   assert.equal((sec.match(/stale-source/g) || []).length, 1);

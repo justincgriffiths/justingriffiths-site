@@ -649,12 +649,26 @@ def cron_rows():
             for r in rows(CRON_RUNS) if day(r.get("started"))]
 
 
+SEGMENTS = ("missed", "found", "quiet", "unknown")  # drawn left to right; misses first
+
+
+def segment(r):
+    """The one place a run becomes a chart segment (site#119, Justin's ruling). Every run lands in exactly one, so the segments sum to n.
+    missed: work existed, not found. found: the run said it found work, whatever the work status. quiet: no work, not found.
+    unknown: work unknown and not found (an unknown `identified` falls here too)."""
+    if r["ident"] == 1: return "found"
+    if r["work"] == 1 and r["ident"] == 0: return "missed"
+    if r["work"] == 0 and r["ident"] == 0: return "quiet"
+    return "unknown"
+
+
 def matrix(rs):
     """Counts only. The four cells need work_existed known; a run whose work is unknown is split by what the run said. found_wrong / found_right need
     identified = 1 and correct known; identified = 1 with correct unknown is correct_unknown. ground_truth_from = the first day any run has a known work_existed."""
     c = lambda f: sum(1 for r in rs if f(r))
     known = [r["day"] for r in rs if r["work"] is not None]
-    return {"n": len(rs),
+    seg = [segment(r) for r in rs]
+    return {"n": len(rs), "with_truth": len(known), "segments": {k: seg.count(k) for k in SEGMENTS},
             "missed": c(lambda r: r["work"] == 1 and r["ident"] == 0), "found_work": c(lambda r: r["work"] == 1 and r["ident"] == 1),
             "false_alarm": c(lambda r: r["work"] == 0 and r["ident"] == 1), "quiet": c(lambda r: r["work"] == 0 and r["ident"] == 0),
             "work_unknown": c(lambda r: r["work"] is None), "work_unknown_found": c(lambda r: r["work"] is None and r["ident"] == 1),

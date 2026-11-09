@@ -147,15 +147,41 @@ test("leakcheck: counts and dates only; no session name, job detail, body or run
   assert.equal(r.status, 0, r.stderr);
 });
 
-test("page: misses first, n and unknown shown, ground truth date or none, no NaN", async () => {
+test("segments: every mapping cell lands in exactly one segment and the segments sum to n", () => {
+  const spec = `import importlib.util,json
+sp=importlib.util.spec_from_file_location("q","bin/qwen-state.py"); q=importlib.util.module_from_spec(sp); sp.loader.exec_module(q)
+r=lambda w,i: {"day":"2026-11-01","work":w,"ident":i,"correct":None,"src":"log"}
+cells=[(1,0),(1,1),(0,1),(None,1),(0,0),(None,0),(1,None),(0,None),(None,None)]
+print(json.dumps([q.segment(r(w,i)) for w,i in cells]), json.dumps(q.matrix([r(w,i) for w,i in cells])["segments"]), q.SEGMENTS)`;
+  const x = spawnSync("python3", ["-c", spec], { encoding: "utf8", env });
+  assert.equal(x.status, 0, x.stderr);
+  const [one, sum] = x.stdout.trim().split(/\n/)[0].match(/^(\[.*?\]) (\{.*\}) /).slice(1).map((v) => JSON.parse(v));
+  // missed, found (work), found (no work: still found), found (work unknown), quiet, unknown (work unknown), then an unknown identified falls to unknown
+  assert.deepEqual(one, ["missed", "found", "found", "found", "quiet", "unknown", "unknown", "unknown", "unknown"]);
+  assert.deepEqual(sum, { missed: 1, found: 3, quiet: 1, unknown: 4 });
+  assert.equal(Object.values(sum).reduce((a, b) => a + b, 0), 9);
+  for (const j of data.truth.jobs) assert.equal(Object.values(j.segments).reduce((a, b) => a + b, 0), j.n, j.job);
+  assert.deepEqual(job_("session-finish").segments, { missed: 1, found: 3, quiet: 1, unknown: 2 });         // finish fixture: miss, found, rebuilt found, false alarm found, quiet, 2 unknown
+  assert.equal(job_("session-finish").with_truth, 5);
+});
+
+test("page: one bar per job, one counts-only line per job, the raw cells in a closed scrolling element", async () => {
   const { renderData } = await import("../src/qwen-render.mjs");
   const page = renderData(data), sec = page.slice(page.indexOf('id="truth"'), page.indexOf('id="fallbacks"'));
-  assert.match(sec, /Session finish/); assert.match(sec, /7 runs · ground truth from 2026-11-02 · 2 with work unknown · 5 with work known/);
-  assert.match(sec, /PR sweeps<\/h3>\s*<p class="note">2 runs · no ground truth yet · 2 with work unknown/);
-  const first = sec.indexOf("<tbody>"), miss = sec.indexOf("not found (miss)", first), found = sec.indexOf("Work existed, found", first);
-  assert.ok(miss > 0 && miss < found, "the miss row comes before the found row");
-  assert.match(sec, /Found, wrong/); assert.match(sec, /right or wrong unknown/);
+  assert.equal((sec.match(/<svg/g) || []).length, 1);
+  assert.equal((sec.match(/class="note truth-line"/g) || []).length, 4);
+  assert.match(sec, /Session finish: 7 runs, 5 with ground truth, 1 missed, 3 found, 1 quiet, 2 unknown\./);
+  assert.match(sec, /PR sweeps: 2 runs, 0 with ground truth, 0 missed, 1 found, 0 quiet, 1 unknown\./);
+  assert.match(sec, /Session finish: 1 missed/);                                   // the aria label carries the counts
+  const rects = [...sec.matchAll(/Session finish (Missed|Found|Quiet|Unknown): (\d+) of 7/g)].map((m) => [m[1], +m[2]]);
+  assert.deepEqual(rects, [["Missed", 1], ["Found", 3], ["Quiet", 1], ["Unknown", 2]]);   // misses left-most, in order
+  assert.match(sec, /<details class="truth-rows"><summary>Show all runs<\/summary>/);
+  assert.doesNotMatch(sec, /<details[^>]*\bopen\b/);                                // closed by default
+  assert.match(sec, /class="truth-scroll" tabindex="0" role="region"/);
+  assert.match(sec, /Ground truth from<\/th><td>2026-11-02<\/td>/); assert.match(sec, /none yet/);
   assert.doesNotMatch(sec, /NaN|undefined|null/);
   assert.match(page, /Cost est\.: not available in this snapshot/);
-  assert.doesNotThrow(() => renderData({ ...data, truth: undefined }));      // an older snapshot without the block still renders
+  assert.doesNotThrow(() => renderData({ ...data, truth: undefined }));            // an older snapshot without the block still renders
+  const oldSnap = { ...data, truth: { jobs: data.truth.jobs.map(({ segments, ...j }) => j) } };   // the committed snapshot predates segments
+  assert.match(renderData(oldSnap), /No truth matrix logged yet/);
 });
