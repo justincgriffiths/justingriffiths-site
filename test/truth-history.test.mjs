@@ -51,7 +51,7 @@ test("runs: ledger zero is 0, a transcript-proven idle AGT_ session is 1, an unp
   py("runs", "--write");
   const rows = readFileSync(out, "utf8").trim().split("\n").map((l) => JSON.parse(l));
   const at = (ts, job = "session-finish") => rows.find((r) => r.ts === ts && r.job === job);
-  assert.deepEqual([at("2026-11-01T11:00:00Z").work_existed, at("2026-11-01T11:00:00Z").method, at("2026-11-01T11:00:00Z").n_idle], [1, "transcript", 2]);   // A and B are both AGT_ and idle at 11:00 (B is renamed DEL_ only at 12:30+)
+  assert.deepEqual([at("2026-11-01T11:00:00Z").work_existed, at("2026-11-01T11:00:00Z").method, at("2026-11-01T11:00:00Z").n_idle], [1, "transcript;backoff=job-rule", 2]);   // A and B are both AGT_ and idle at 11:00 (B is renamed DEL_ only at 12:30+)
   assert.deepEqual([at("2026-11-01T13:00:00Z").work_existed, at("2026-11-01T13:00:00Z").method], [0, "ledger"]);
   assert.deepEqual([at("2026-11-01T15:00:00Z").work_existed, at("2026-11-01T15:00:00Z").method, at("2026-11-01T15:00:00Z").n_nonlive], [null, "unproven", 1]);
   assert.deepEqual([at("2026-11-01T16:00:00Z").work_existed, at("2026-11-01T16:00:00Z").n_nonlive], [null, null]);   // the --md call is not matched
@@ -87,7 +87,7 @@ test("24h back-off is a switch: the job's own rule (a) and back-off counts as wo
   const both = join(dir, "history-ab.jsonl");
   execFileSync("python3", ["bin/truth-history.py", "runs", "--write"], { encoding: "utf8", env: { ...env, QWEN_HANDLED: handledAB, QWEN_TRUTH_HISTORY: both } });
   const r = readFileSync(both, "utf8").trim().split("\n").map((l) => JSON.parse(l)).find((x) => x.ts === "2026-11-01T11:00:00Z" && x.job === "session-finish");
-  assert.deepEqual([r.work_existed, r.work_existed_b, r.n_idle, r.n_eligible, r.method], [0, 1, 2, 0, "transcript+backoff"]);   // both idle sessions backed off, and the ledger's one non-live session is one of them
+  assert.deepEqual([r.work_existed, r.work_existed_b, r.n_idle, r.n_eligible, r.method], [0, 1, 2, 0, "transcript+backoff;backoff=job-rule"]);   // both idle sessions backed off, and the ledger's one non-live session is one of them
   const sc = { QWEN_AS_OF: "2026-11-02T00:00:00Z", PGPASSWORD: "", QWEN_RUNS: join(dir, "none"), QWEN_COST_DB: join(dir, "none"), QWEN_TAG_LOG: join(dir, "none"), QWEN_TAG_JSONL: join(dir, "none"), QWEN_DECLUTTER: join(dir, "none"),
     QWEN_REAP: join(dir, "none"), QWEN_LEARN: join(dir, "none"), QWEN_WRAP_DIR: join(dir, "none"), QWEN_PR_SWEEP: join(dir, "none"), QWEN_CRON_RUNS: join(dir, "none"), QWEN_JOBS_DIR: join(dir, "none"), QWEN_TRUTH_HISTORY: both };
   const seg = (b) => { const f = JSON.parse(execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...env, ...sc, ...(b ? { QWEN_BACKOFF: b } : {}) } })).truth.jobs.find((j) => j.job === "session-finish"); return [f.missed, f.found_work, f.false_alarm, f.quiet, f.work_unknown]; };

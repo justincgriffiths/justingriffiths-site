@@ -258,12 +258,13 @@ function historyCharts(h, sc) {
 // closed, scrolling element. The segment mapping is truthSegments() below, the one place to change it; it reads the cell counts the exporter already carries, so an older
 // snapshot still renders. Each run is in exactly one segment, so a bar sums to n.
 const TRUTH_NAMES = { "session-finish": "Session finish", "declutter-sweep": "Declutter sweep", "pr-sweep": "PR sweeps", "cron-triage": "Cron triage" };
-const TRUTH_SEGS = [["missed", "Missed", C.fell_back], ["found", "Found", C.answered], ["quiet", "Quiet", C.haiku], ["unknown", "Unknown", C.capped]];
+const TRUTH_SEGS = [["missed", "Missed", C.fell_back], ["unexplained", "Transcript says idle, job quiet, unexplained", C.sonnet], ["found", "Found", C.answered], ["quiet", "Quiet", C.haiku], ["unknown", "Unknown", C.capped]];
 
-// missed: work existed, not found. found: the run said it found work, whatever the work status. quiet: no work, not found. unknown: everything else (work unknown and not found).
+// missed: work existed per the job's own log fields, not found. unexplained: a transcript proxy says a session was idle and the job was quiet. found: the run said it found work, whatever the work status. quiet: no work, not found. unknown: everything else (work unknown and not found).
 function truthSegments(j) {
   const found = j.found_work + j.false_alarm + j.work_unknown_found;
-  return { missed: j.missed, found, quiet: j.quiet, unknown: j.n - j.missed - found - j.quiet };
+  const un = j.unexplained || 0;   // a snapshot from before the cell existed has none
+  return { missed: j.missed, unexplained: un, found, quiet: j.quiet, unknown: j.n - j.missed - un - found - j.quiet };
 }
 
 function truthBars(jobs) {
@@ -282,18 +283,18 @@ function truthBars(jobs) {
 }
 
 // Counts only, no because-clause.
-const truthLine = (j) => { const s = truthSegments(j); return `${TRUTH_NAMES[j.job] || j.job}: ${runsOf(j.n)}, ${j.n - j.work_unknown} with ground truth, ${s.missed} missed, ${s.found} found, ${s.quiet} quiet, ${s.unknown} unknown.`; };
+const truthLine = (j) => { const s = truthSegments(j); return `${TRUTH_NAMES[j.job] || j.job}: ${runsOf(j.n)}, ${j.n - j.work_unknown} with ground truth, ${s.missed} missed, ${s.unexplained} unexplained, ${s.found} found, ${s.quiet} quiet, ${s.unknown} unknown.`; };
 
 function truthRaw(jobs) {
-  const cells = [["Work existed, not found (miss)", "missed"], ["Work existed, found", "found_work"], ["No work, found", "false_alarm"], ["No work, quiet", "quiet"], ["Work unknown, found", "work_unknown_found"],
+  const cells = [["Work existed, not found (miss)", "missed"], ["Transcript says idle, job quiet, unexplained", "unexplained"], ["Work existed, found", "found_work"], ["No work, found", "false_alarm"], ["No work, quiet", "quiet"], ["Work unknown, found", "work_unknown_found"],
     ["Work unknown, quiet", "work_unknown_quiet"], ["Found unknown", "identified_unknown"], ["Found, right", "found_right"], ["Found, wrong", "found_wrong"], ["Found, right or wrong unknown", "correct_unknown"]];
   const gt = (j) => (j.ground_truth_from ? esc(j.ground_truth_from) : "none yet");
   return `<details class="truth-rows"><summary>Show all runs</summary><div class="truth-scroll" tabindex="0" role="region" aria-label="All runs, counts per cell and job">
     <table><thead><tr><th>Cell</th>${jobs.map((j) => `<th>${esc(TRUTH_NAMES[j.job] || j.job)}</th>`).join("")}</tr></thead><tbody>
       <tr><th>Runs</th>${jobs.map((j) => `<td>${j.n}</td>`).join("")}</tr>
       <tr><th>Ground truth from</th>${jobs.map((j) => `<td>${gt(j)}</td>`).join("")}</tr>
-      ${cells.map(([lab, k]) => `<tr><th>${esc(lab)}</th>${jobs.map((j) => `<td>${j[k]}</td>`).join("")}</tr>`).join("")}
-    </tbody></table></div><p class="note">One row per run, idle checks included. Missed: work existed and the run did not find it. Found: the run said it found work. Quiet: no work and the run found none. Unknown: work unknown and the run found none. Where the job's own log records ground truth, that is the source: the idle count in the session-finish log, should-handle against tombstoned and gate-refused in the declutter sweep log (a refusal is handled with a reason). Runs before those fields existed are rebuilt from the session ledger log and the session transcripts: no non-live AGT_ session in the ledger at the run time is 0; a session proven named AGT_ and idle in its transcript is 1; every other run is unknown, because a deleted session cannot be seen. The job's own rule applies: a session handled in the last 24h is skipped on purpose, so it is not work. The sweep is rebuilt for 0 only. Right needs a recorded action of Justin's on the run's output; none is recorded for these jobs, so it is unknown.</p></details>`;
+      ${cells.map(([lab, k]) => `<tr><th>${esc(lab)}</th>${jobs.map((j) => `<td>${j[k] ?? 0}</td>`).join("")}</tr>`).join("")}
+    </tbody></table></div><p class="note">One row per run, idle checks included. Missed: work existed by the job's own log fields and the run did not find it. Found: the run said it found work. Quiet: no work and the run found none. Unknown: work unknown and the run found none. Where the job's own log records ground truth, that is the source: the idle count in the session-finish log, should-handle against tombstoned and gate-refused in the declutter sweep log (a refusal is handled with a reason). Runs before those fields existed are rebuilt from the session ledger log and the session transcripts: no non-live AGT_ session in the ledger at the run time is 0; a session proven named AGT_ and idle in its transcript is 1; every other run is unknown, because a deleted session cannot be seen. The job's own rule applies: a session handled in the last 24h is skipped on purpose, so it is not work. The sweep is rebuilt for 0 only. Right needs a recorded action of Justin's on the run's output; none is recorded for these jobs, so it is unknown.</p></details>`;
 }
 
 function truthCharts(t) {

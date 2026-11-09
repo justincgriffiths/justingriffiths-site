@@ -184,7 +184,7 @@ def decide(ts, job, sessions, led, handled=()):
       transcript: a background session proven named AGT_ at ts and idle at ts (a turn ended, no later user or assistant record yet): 1 for session-finish. The
               sweep also needs the session mechanically clean, which a transcript cannot show, so the sweep is never 1 from here.
       otherwise unknown: non-live sessions existed but idle against blocked, or a name, is unprovable.
-    The 24h back-off is a switch, both answers kept: work_existed (the job's own rule: a session handled in the last 24h is skipped on purpose, so it is not work)
+    Every transcript-derived method ends in backoff=job-rule: the 24h back-off follows the job's own rule (Justin, 2026-11-09). The back-off is a switch, both answers kept: work_existed (the job's own rule: a session handled in the last 24h is skipped on purpose, so it is not work)
     and work_existed_b (back-off sessions count as work). Under the job's rule a run whose every proven idle session is backed off is 0 only when every non-live
     session in the ledger is one of those proven idle ones; otherwise unknown. n_idle = proven idle by transcript (a lower bound); n_eligible = those not backed off;
     n_nonlive = the ledger's sessions - live, or None when no ledger call matches."""
@@ -195,9 +195,9 @@ def decide(ts, job, sessions, led, handled=()):
     if work == 1 and job == "session-finish":
         elig = [i for i in ids if i not in backed_off(ts, handled)]
         base["n_eligible"] = len(elig)
-        if elig: return {**base, "work_existed": 1, "work_existed_b": 1, "method": "transcript"}
+        if elig: return {**base, "work_existed": 1, "work_existed_b": 1, "method": "transcript;backoff=job-rule"}
         a = 0 if nonlive is not None and nonlive <= len(ids) else None
-        return {**base, "work_existed": a, "work_existed_b": 1, "method": "transcript+backoff" if a == 0 else "unproven"}
+        return {**base, "work_existed": a, "work_existed_b": 1, "method": "transcript+backoff;backoff=job-rule" if a == 0 else "unproven;backoff=job-rule"}
     return {**base, "work_existed": None, "work_existed_b": None, "method": "unproven"}
 
 
