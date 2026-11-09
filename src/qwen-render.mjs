@@ -258,7 +258,7 @@ function historyCharts(h, sc) {
 // closed, scrolling element. The segment mapping is truthSegments() below, the one place to change it; it reads the cell counts the exporter already carries, so an older
 // snapshot still renders. Each run is in exactly one segment, so a bar sums to n.
 const TRUTH_NAMES = { "session-finish": "Session finish", "declutter-sweep": "Declutter sweep", "pr-sweep": "PR sweeps", "cron-triage": "Cron triage" };
-const TRUTH_SEGS = [["missed", "Missed", C.fell_back], ["unexplained", "Transcript says idle, job quiet, unexplained", C.sonnet], ["found", "Found", C.answered], ["quiet", "Quiet", C.haiku], ["unknown", "Unknown", C.capped]];
+const TRUTH_SEGS = [["missed", "Missed", C.fell_back], ["unexplained", "Transcript says idle, job quiet, unexplained (under review)", C.sonnet], ["found", "Found", C.answered], ["quiet", "Quiet", C.haiku], ["unknown", "Unknown", C.capped]];
 
 // missed: work existed per the job's own log fields, not found. unexplained: a transcript proxy says a session was idle and the job was quiet. found: the run said it found work, whatever the work status. quiet: no work, not found. unknown: everything else (work unknown and not found).
 function truthSegments(j) {
@@ -286,7 +286,7 @@ function truthBars(jobs) {
 const truthLine = (j) => { const s = truthSegments(j); return `${TRUTH_NAMES[j.job] || j.job}: ${runsOf(j.n)}, ${j.n - j.work_unknown} with ground truth, ${s.missed} missed, ${s.unexplained} unexplained, ${s.found} found, ${s.quiet} quiet, ${s.unknown} unknown.`; };
 
 function truthRaw(jobs) {
-  const cells = [["Work existed, not found (miss)", "missed"], ["Transcript says idle, job quiet, unexplained", "unexplained"], ["Work existed, found", "found_work"], ["No work, found", "false_alarm"], ["No work, quiet", "quiet"], ["Work unknown, found", "work_unknown_found"],
+  const cells = [["Work existed, not found (miss)", "missed"], ["Transcript says idle, job quiet, unexplained (under review)", "unexplained"], ["Work existed, found", "found_work"], ["No work, found", "false_alarm"], ["No work, quiet", "quiet"], ["Work unknown, found", "work_unknown_found"],
     ["Work unknown, quiet", "work_unknown_quiet"], ["Found unknown", "identified_unknown"], ["Found, right", "found_right"], ["Found, wrong", "found_wrong"], ["Found, right or wrong unknown", "correct_unknown"]];
   const gt = (j) => (j.ground_truth_from ? esc(j.ground_truth_from) : "none yet");
   return `<details class="truth-rows"><summary>Show all runs</summary><div class="truth-scroll" tabindex="0" role="region" aria-label="All runs, counts per cell and job">

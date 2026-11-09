@@ -95,3 +95,49 @@ test("24h back-off is a switch: the job's own rule (a) and back-off counts as wo
   assert.deepEqual(seg("a"), [0, 0, 1, 1, 2]);
   assert.deepEqual(seg("b"), [0, 1, 0, 1, 2]); // (b): the same run is work and found
 });
+
+// ---- linking a continued session to the handled.tsv id (synthetic names and ids only) ----
+const ldir = mkdtempSync(join(tmpdir(), "truth-link-")); mkdirSync(join(ldir, "projects", "p"), { recursive: true });
+const lt = (id, title, cwd, first, turnEnd, kind = "bg") => writeFileSync(join(ldir, "projects", "p", `${id}-0000.jsonl`), J([
+  { type: "custom-title", customTitle: title }, { ...rec("user", first), cwd, sessionKind: kind }, { ...rec("system", turnEnd, { subtype: "turn_duration" }), cwd, sessionKind: kind }, { ...rec("user", `${first.slice(0, 10)}T12:00:00Z`), cwd, sessionKind: kind }]));   // the session is resumed at noon, so 11:00 sits inside an idle gap
+// Each case is its own day: an old session OLD (idle, handled), a continued session NEW (new transcript id, idle at the run) and a daemon.log claim of OLD before NEW starts.
+const cases = [
+  ["2026-11-02", "all three agree", { }, true],
+  ["2026-11-03", "name differs", { newTitle: "AGT_SYN_OTHER" }, false],
+  ["2026-11-04", "project dir differs", { newCwd: "/syn/elsewhere" }, false],
+  ["2026-11-05", "claim outside the window", { claimGapSec: 1200 }, false],
+  ["2026-11-06", "no claim at all", { noClaim: true }, false],
+  ["2026-11-07", "two handled ids match", { twin: true }, false],
+];
+const hl = [], dl = [], ll = [], fl = [];
+cases.forEach(([day, , o], i) => {
+  const o1 = `a${i}000000`, nw = `b${i}000000`, o2 = `c${i}000000`;
+  lt(o1, "AGT_SYN_JOB", "/syn/p1", `${day}T09:00:00Z`, `${day}T09:30:00Z`);
+  lt(nw, o.newTitle ?? "AGT_SYN_JOB", o.newCwd ?? "/syn/p1", `${day}T10:00:20Z`, `${day}T10:05:00Z`);
+  hl.push(`${day}T09:40:00Z\t${o1}`);
+  if (o.twin) { lt(o2, "AGT_SYN_JOB", "/syn/p1", `${day}T09:10:00Z`, `${day}T09:35:00Z`); hl.push(`${day}T09:41:00Z\t${o2}`); dl.push(`[${day}T10:00:10.000Z] [bg] bg claimed-spare ${o2} (fleet)`); }
+  if (!o.noClaim) { const c = new Date(Date.parse(`${day}T10:00:20Z`) - (o.claimGapSec ?? 15) * 1000).toISOString(); dl.push(`[${c}] [bg] bg claimed-spare ${o1} (fleet)`); }
+  ll.push(L(`${day}T10:59:58Z`, "['--json']", 1, 0));
+  fl.push(`[${day}T11:00:00Z] argv=[] exit=0 status=clean body="x"`);
+});
+const lhand = join(ldir, "handled.tsv"), ldaemon = join(ldir, "daemon.log"), lledger = join(ldir, "ledger.log"), lfinish = join(ldir, "finish.log"), lidx = join(ldir, "idx.jsonl"), lout = join(ldir, "out.jsonl");
+writeFileSync(lhand, hl.join("\n") + "\n"); writeFileSync(ldaemon, dl.join("\n") + "\n"); writeFileSync(lledger, ll.join("\n") + "\n"); writeFileSync(lfinish, fl.join("\n") + "\n"); writeFileSync(join(ldir, "sweep.log"), "");
+const lenv = { ...process.env, QWEN_TRANSCRIPTS: join(ldir, "projects"), QWEN_TRUTH_SESSIONS: lidx, QWEN_TRUTH_HISTORY: lout, QWEN_AGT_LEDGER_LOG: lledger, QWEN_HANDLED: lhand, QWEN_DAEMON_LOG: ldaemon, QWEN_SESSION_FINISH: lfinish, QWEN_DECLUTTER_SWEEP: join(ldir, "sweep.log") };
+
+test("link: a continued session inherits the handled id's back-off only when name, project dir and a daemon claim in the window all agree on exactly one id", () => {
+  execFileSync("python3", ["bin/truth-history.py", "index", "--limit", "100"], { env: lenv });
+  execFileSync("python3", ["bin/truth-history.py", "runs", "--write"], { env: lenv });
+  const rows = readFileSync(lout, "utf8").trim().split("\n").map((l) => JSON.parse(l));
+  for (const [day, why, , linked] of cases) {
+    const r = rows.find((x) => x.ts === `${day}T11:00:00Z`);
+    assert.equal(r.method.includes("link=inferred"), linked, why);
+    assert.equal(r.work_existed, linked ? 0 : 1, why);                                   // linked: backed off, so not work; unlinked: the session is eligible
+    assert.equal(r.n_eligible, linked ? 0 : 1, why);
+  }
+});
+
+test("link: the index holds hashes of names and directories, never the text, and the output stays counts and methods", () => {
+  const raw = readFileSync(lidx, "utf8") + readFileSync(lout, "utf8");
+  for (const sent of ["AGT_SYN", "/syn/", "SENTINEL_MESSAGE_TEXT"]) assert.equal(raw.includes(sent), false, sent);
+  assert.equal(readFileSync(lout, "utf8").includes("linked"), false);
+});

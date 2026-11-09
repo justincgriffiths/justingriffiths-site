@@ -622,7 +622,7 @@ def backed_off(ts, ids):
 
 def finish_rows(sessions=None):
     """session-finish.log: every non-dry line is a run, an idle check included. identified = the run planned a session (planned > 0; older lines: status apply).
-    work_existed = idle_agt > 0 from the line's own field (routine-library#275); "unknown" stays unknown; a line without the field is reconstructed (jobs_idle_at)
+    work_existed = idle_agt > 0 from the line's own field (the finish log's ground-truth fields); "unknown" stays unknown; a line without the field is reconstructed (jobs_idle_at)
     or unknown. correct: no recorded action of Justin's on a finish run, so unknown."""
     sessions = load_agt_sessions() if sessions is None else sessions
     hist, out = history_truth("session-finish"), []
@@ -647,7 +647,7 @@ def finish_rows(sessions=None):
 
 
 def sweep_rows():
-    """sweep.log: every non-dry line is a run. From the first line with should_handle (routine-library#274): work_existed = should_handle > 0, identified =
+    """sweep.log: every non-dry line is a run. From the first line with should_handle (the sweep log's should_handle field): work_existed = should_handle > 0, identified =
     the run handled one (tombstoned + gate_refused > 0; a gate refusal is the gate saying no with a reason, not a miss). Older lines have no ground truth:
     identified = the run did any action (tombstoned, removed, laned, drafted, refused), work_existed unknown. correct: unknown."""
     hist, out = history_truth("declutter-sweep"), []
