@@ -28,8 +28,12 @@ writeFileSync(finish, [`[2026-11-01T11:00:00Z] argv=[] exit=0 status=apply body=
   `[2026-11-01T16:00:00Z] argv=[] exit=0 status=clean body="x"`,                                                              // only an ad-hoc --md call: no match, unknown
   `[2026-11-01T17:00:00Z] argv=[--dry-run] exit=0 status=dry body="x"`].join("\n") + "\n");
 writeFileSync(sweep, `[2026-11-01T13:00:30Z] argv=[--max 10] exit=0 status=ok tombstoned=0 refused=0 removed=0 laned=0 drafted=0 body="x"\n[2026-11-01T11:00:30Z] argv=[--max 10] exit=0 status=ok tombstoned=1 refused=0 removed=0 laned=0 drafted=0 body="x"\n`);
+// handled.tsv is the job's own 24h back-off list. Only A was handled in the day before 11:00, so B is eligible and the run is work either way.
+const handledA = join(dir, "handled-a.tsv"), handledAB = join(dir, "handled-ab.tsv");
+writeFileSync(handledA, "2026-11-01T05:00:00Z\taaaaaaaa\n2026-10-30T05:00:00Z\tbbbbbbbb\n");
+writeFileSync(handledAB, "2026-11-01T05:00:00Z\taaaaaaaa\n2026-11-01T06:00:00Z\tbbbbbbbb\n");
 const idx = join(dir, "sessions.jsonl"), out = join(dir, "history.jsonl");
-const env = { ...process.env, QWEN_TRANSCRIPTS: join(dir, "projects"), QWEN_TRUTH_SESSIONS: idx, QWEN_TRUTH_HISTORY: out, QWEN_AGT_LEDGER_LOG: ledger, QWEN_SESSION_FINISH: finish, QWEN_DECLUTTER_SWEEP: sweep };
+const env = { ...process.env, QWEN_TRANSCRIPTS: join(dir, "projects"), QWEN_TRUTH_SESSIONS: idx, QWEN_TRUTH_HISTORY: out, QWEN_AGT_LEDGER_LOG: ledger, QWEN_HANDLED: handledA, QWEN_SESSION_FINISH: finish, QWEN_DECLUTTER_SWEEP: sweep };
 const py = (...a) => execFileSync("python3", ["bin/truth-history.py", ...a], { encoding: "utf8", env });
 
 test("index is bounded and resumes: --limit 1 reads one transcript, the next call reads the next", () => {
@@ -54,7 +58,8 @@ test("runs: ledger zero is 0, a transcript-proven idle AGT_ session is 1, an unp
   assert.equal(rows.some((r) => r.ts === "2026-11-01T17:00:00Z"), false);                                          // dry run: not a run
   assert.equal(at("2026-11-01T13:00:30Z", "declutter-sweep").work_existed, 0);                                    // the sweep gets 0 from the ledger ...
   assert.equal(at("2026-11-01T11:00:30Z", "declutter-sweep").work_existed, null);                                  // ... and never 1 from a transcript
-  assert.deepEqual(Object.keys(rows[0]).sort(), ["job", "method", "n_idle", "n_nonlive", "ts", "work_existed"]);
+  assert.deepEqual(Object.keys(rows[0]).sort(), ["job", "method", "n_eligible", "n_idle", "n_nonlive", "ts", "work_existed", "work_existed_b"]);
+  assert.equal(at("2026-11-01T11:00:00Z").n_eligible, 1);                                                          // A is backed off, B is not
   assert.equal(readFileSync(out, "utf8").includes("SENTINEL"), false);
 });
 
@@ -76,4 +81,17 @@ test("the exporter reads the history by run ts: a known row fills work_existed, 
   assert.equal(f.n, 4); assert.equal(f.from_history, 2);                           // 11:00 (1) and 13:00 (0); 15:00 and 16:00 stay unknown
   assert.equal(f.found_work, 1); assert.equal(f.quiet, 1); assert.equal(f.work_unknown, 2);
   assert.equal(f.ground_truth_from, "2026-11-01");
+});
+
+test("24h back-off is a switch: the job's own rule (a) and back-off counts as work (b) give two segment sets, counts only", () => {
+  const both = join(dir, "history-ab.jsonl");
+  execFileSync("python3", ["bin/truth-history.py", "runs", "--write"], { encoding: "utf8", env: { ...env, QWEN_HANDLED: handledAB, QWEN_TRUTH_HISTORY: both } });
+  const r = readFileSync(both, "utf8").trim().split("\n").map((l) => JSON.parse(l)).find((x) => x.ts === "2026-11-01T11:00:00Z" && x.job === "session-finish");
+  assert.deepEqual([r.work_existed, r.work_existed_b, r.n_idle, r.n_eligible, r.method], [0, 1, 2, 0, "transcript+backoff"]);   // both idle sessions backed off, and the ledger's one non-live session is one of them
+  const sc = { QWEN_AS_OF: "2026-11-02T00:00:00Z", PGPASSWORD: "", QWEN_RUNS: join(dir, "none"), QWEN_COST_DB: join(dir, "none"), QWEN_TAG_LOG: join(dir, "none"), QWEN_TAG_JSONL: join(dir, "none"), QWEN_DECLUTTER: join(dir, "none"),
+    QWEN_REAP: join(dir, "none"), QWEN_LEARN: join(dir, "none"), QWEN_WRAP_DIR: join(dir, "none"), QWEN_PR_SWEEP: join(dir, "none"), QWEN_CRON_RUNS: join(dir, "none"), QWEN_JOBS_DIR: join(dir, "none"), QWEN_TRUTH_HISTORY: both };
+  const seg = (b) => { const f = JSON.parse(execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...env, ...sc, ...(b ? { QWEN_BACKOFF: b } : {}) } })).truth.jobs.find((j) => j.job === "session-finish"); return [f.missed, f.found_work, f.false_alarm, f.quiet, f.work_unknown]; };
+  assert.deepEqual(seg(), [0, 0, 1, 1, 2]);    // default is (a): no work existed at 11:00, and the run found one (false alarm)
+  assert.deepEqual(seg("a"), [0, 0, 1, 1, 2]);
+  assert.deepEqual(seg("b"), [0, 1, 0, 1, 2]); // (b): the same run is work and found
 });

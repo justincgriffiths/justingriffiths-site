@@ -602,8 +602,10 @@ def _int(v):
 
 
 def history_truth(job):
-    """{run ts: work_existed} for the rows of truth-history that are 1 or 0; a null row stays out, so that run is unknown."""
-    return {r["ts"]: r["work_existed"] for r in rows(TRUTH_HISTORY) if r.get("job") == job and r.get("work_existed") in (0, 1)}
+    """{run ts: work_existed} for the rows of truth-history that are 1 or 0; a null row stays out, so that run is unknown. QWEN_BACKOFF picks how the 24h
+    back-off counts: "a" (default, the job's own rule: a session handled in the last 24h is skipped on purpose, so it is not work) or "b" (it counts as work)."""
+    k = "work_existed_b" if os.environ.get("QWEN_BACKOFF", "a") == "b" else "work_existed"
+    return {r["ts"]: r[k] for r in rows(TRUTH_HISTORY) if r.get("job") == job and r.get(k) in (0, 1)}
 
 
 def finish_rows(sessions=None):

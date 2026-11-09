@@ -8,7 +8,7 @@ Two steps, each its own subcommand, each bounded:
   runs              for every non-dry run in the session-finish and sweep logs, reconstruct work_existed by the job's own definition and write one row per run
                     to the truth-history file (ts, job, work_existed 1/0/unknown, n_idle, method), counts and short ids only.
 
-The job's own definition (session-finish/plan.py, agt-ledger.py): idle = a session named AGT_ at that time, not live (state not working, tempo idle). The
+The job's own definition (session-finish/plan.py, agt-ledger.py): idle = a session named AGT_ at that time, not live (state not working, tempo idle), and not handled in the last 24h (the back-off, from handled.tsv). The
 daemon's tempo is not in a transcript, so it is approximated by the turn boundary: a session is idle from a turn_duration record until the next user,
 assistant or scheduled_task_fire record. Paths: QWEN_TRUTH_SESSIONS (index), QWEN_TRUTH_HISTORY (output), QWEN_TRANSCRIPTS (default ~/.claude/projects).
 Usage: bin/truth-history.py index --limit 1 | runs [--limit N]
@@ -76,6 +76,7 @@ def cmd_index(a):
 # ---- reconstruction ---------------------------------------------------------------------------------------------------------------------------------
 LEDGER = os.environ.get("QWEN_AGT_LEDGER_LOG", f"{HOME}/.local/state/finish-sessions/agt-ledger.log")
 FINISH = os.environ.get("QWEN_SESSION_FINISH", f"{HOME}/.local/state/session-finish/session-finish.log")
+HANDLED = os.environ.get("QWEN_HANDLED", f"{HOME}/.local/state/session-finish/handled.tsv")
 SWEEP = os.environ.get("QWEN_DECLUTTER_SWEEP", f"{HOME}/.local/state/declutter-sweep/sweep.log")
 
 
@@ -148,48 +149,75 @@ def match_ledger(ts, calls):
 
 def own_claim(line):
     """What the run's own line says, numbers only. idle_agt=K is the field itself (routine-library#275), counted before the 24h back-off. Older lines: a clean
-    line says no AGT_ session was eligible (0 picked), an apply line "N session(s)" picked N. The "(B busy, H handled <24h)" counts are the back-off list,
-    not idle sessions, so they are not read as a claim. Returns (sessions the job says it saw to work, which field)."""
+    line says no AGT_ session was eligible (0 picked), an apply line "N session(s)" picked N. A clean line's "(B busy, H handled <24h)" is the job's own account of
+    why it was quiet: H sessions were in the 24h back-off. Returns (sessions the job says it worked or saw to work, which field, H or None)."""
+    h = re.search(r"\((\d+) busy, (\d+) handled <24h\)", line)
+    h = int(h[2]) if h else None
     m = re.search(r"idle_agt=(\d+)", line)
-    if m: return int(m[1]), "idle_agt"
-    if "status=clean" in line: return 0, "clean"
+    if m: return int(m[1]), "idle_agt", h
+    if "status=clean" in line: return 0, "clean", h
     m = re.search(r"(\d+) session\(s\)", line)
-    if m: return int(m[1]), "planned"
-    return None, "none"
+    if m: return int(m[1]), "planned", h
+    return None, "none", h
 
 
-def decide(ts, job, sessions, led):
+def handled_rows():
+    """[(time, short session id)] from session-finish's handled.tsv: the 24h back-off list the job itself keeps (plan.py handled_recently)."""
+    out = []
+    try:
+        for line in open(HANDLED):
+            p = line.rstrip("\n").split("\t")
+            if len(p) >= 2: out.append((p[0], p[1][:8]))
+    except OSError: pass
+    return out
+
+
+def backed_off(ts, handled):
+    """Short ids handled in the 24h before ts: skipped by the job on purpose (plan.py: now - handled < 24h)."""
+    t = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    return {sid for hts, sid in handled if 0 < (t - datetime.fromisoformat(hts.replace("Z", "+00:00"))).total_seconds() < 86400}
+
+
+def decide(ts, job, sessions, led, handled=()):
     """One row for a run. Ground truth by the job's own definition (idle = named AGT_, not live, tempo idle), in this order:
-      ledger: the agt-ledger call the run made counted no non-live AGT_ session (sessions - live == 0), so nothing could be idle: work_existed 0.
-              A deleted session is invisible in a transcript, so the ledger count is the only proof of absence; it is the job's own tool reading the jobs directory.
-      transcript: a background session proven named AGT_ at ts and idle at ts (a turn ended, no later user or assistant record yet): work_existed 1 for
-              session-finish. The sweep also needs the session mechanically clean, which a transcript cannot show, so it is never 1 from here.
+      ledger: the agt-ledger call the run made counted no non-live AGT_ session (sessions - live == 0): nothing could be idle, work_existed 0.
+      transcript: a background session proven named AGT_ at ts and idle at ts (a turn ended, no later user or assistant record yet): 1 for session-finish. The
+              sweep also needs the session mechanically clean, which a transcript cannot show, so the sweep is never 1 from here.
       otherwise unknown: non-live sessions existed but idle against blocked, or a name, is unprovable.
-    n_idle = sessions proven idle by transcript (a lower bound); n_nonlive = the ledger's sessions - live, or None when no ledger call matches."""
+    The 24h back-off is a switch, both answers kept: work_existed (the job's own rule: a session handled in the last 24h is skipped on purpose, so it is not work)
+    and work_existed_b (back-off sessions count as work). Under the job's rule a run whose every proven idle session is backed off is 0 only when every non-live
+    session in the ledger is one of those proven idle ones; otherwise unknown. n_idle = proven idle by transcript (a lower bound); n_eligible = those not backed off;
+    n_nonlive = the ledger's sessions - live, or None when no ledger call matches."""
     work, n_idle, _, ids = reconstruct(ts, sessions)
     nonlive = None if led is None else led[2] - led[3]
-    if nonlive == 0: return {"work_existed": 0, "n_idle": 0, "n_nonlive": 0, "method": "ledger", "ids": []}
-    if work == 1 and job == "session-finish": return {"work_existed": 1, "n_idle": n_idle, "n_nonlive": nonlive, "method": "transcript", "ids": ids}
-    return {"work_existed": None, "n_idle": n_idle, "n_nonlive": nonlive, "method": "unproven", "ids": ids}
+    base = {"n_idle": n_idle, "n_eligible": n_idle, "n_nonlive": nonlive, "ids": ids}
+    if nonlive == 0: return {**base, "n_idle": 0, "n_eligible": 0, "work_existed": 0, "work_existed_b": 0, "method": "ledger", "ids": []}
+    if work == 1 and job == "session-finish":
+        elig = [i for i in ids if i not in backed_off(ts, handled)]
+        base["n_eligible"] = len(elig)
+        if elig: return {**base, "work_existed": 1, "work_existed_b": 1, "method": "transcript"}
+        a = 0 if nonlive is not None and nonlive <= len(ids) else None
+        return {**base, "work_existed": a, "work_existed_b": 1, "method": "transcript+backoff" if a == 0 else "unproven"}
+    return {**base, "work_existed": None, "work_existed_b": None, "method": "unproven"}
 
 
-def rows_for(paths_job, sessions, calls):
+def rows_for(paths_job, sessions, calls, handled):
     for job, path in paths_job:
         for ts, line in log_runs(path, False):
-            led = match_ledger(ts, calls)
-            yield {"ts": ts, "job": job, **decide(ts, job, sessions, led), "own": own_claim(line)[0], "own_from": own_claim(line)[1]}
+            led = match_ledger(ts, calls); own, src, h = own_claim(line)
+            yield {"ts": ts, "job": job, **decide(ts, job, sessions, led, handled), "own": own, "own_from": src, "own_backoff": h}
 
 
 def cmd_runs(a):
     sessions, calls = load_sessions(), ledger_calls()
-    rows = sorted(rows_for([("session-finish", FINISH), ("declutter-sweep", SWEEP)], sessions, calls), key=lambda r: (r["ts"], r["job"]))
+    rows = sorted(rows_for([("session-finish", FINISH), ("declutter-sweep", SWEEP)], sessions, calls, handled_rows()), key=lambda r: (r["ts"], r["job"]))
     if a.only: rows = [r for r in rows if r["ts"] == a.only]
     elif a.stride: rows = rows[::a.stride]
     rows = rows[: a.limit] if a.limit else rows
     if a.write:
         os.makedirs(os.path.dirname(OUT), exist_ok=True)
         with open(OUT, "w") as f:
-            for r in rows: f.write(json.dumps({k: r[k] for k in ("ts", "job", "work_existed", "n_idle", "n_nonlive", "method")}) + "\n")
+            for r in rows: f.write(json.dumps({k: r[k] for k in ("ts", "job", "work_existed", "work_existed_b", "n_idle", "n_eligible", "n_nonlive", "method")}) + "\n")
     for r in rows: print(json.dumps(r))
 
 
