@@ -1,0 +1,205 @@
+#!/usr/bin/env python3
+"""truth-history.py — rebuild "was there work" for past session-finish and declutter-sweep runs from the Claude transcripts (site#119).
+
+Two steps, each its own subcommand, each bounded:
+  index --limit N   read N not-yet-indexed transcripts (default 100) and append one compact record each to the session index (JSONL, outside the repo).
+                    The record holds only: a short session id, the session kind, first/last event time, name CLASSES over proven time brackets (AGT / not AGT),
+                    and the idle intervals. No name, no message text, no cwd is stored: a transcript line is parsed, three fields are read, the rest is dropped.
+  runs              for every non-dry run in the session-finish and sweep logs, reconstruct work_existed by the job's own definition and write one row per run
+                    to the truth-history file (ts, job, work_existed 1/0/unknown, n_idle, method), counts and short ids only.
+
+The job's own definition (session-finish/plan.py, agt-ledger.py): idle = a session named AGT_ at that time, not live (state not working, tempo idle). The
+daemon's tempo is not in a transcript, so it is approximated by the turn boundary: a session is idle from a turn_duration record until the next user,
+assistant or scheduled_task_fire record. Paths: QWEN_TRUTH_SESSIONS (index), QWEN_TRUTH_HISTORY (output), QWEN_TRANSCRIPTS (default ~/.claude/projects).
+Usage: bin/truth-history.py index --limit 1 | runs [--limit N]
+"""
+import argparse, glob, json, os, re, sys
+from datetime import datetime, timezone
+
+HOME = os.path.expanduser("~")
+ROOT = os.environ.get("QWEN_TRANSCRIPTS", f"{HOME}/.claude/projects")
+INDEX = os.environ.get("QWEN_TRUTH_SESSIONS", f"{HOME}/.local/state/qwen/truth-sessions.jsonl")
+OUT = os.environ.get("QWEN_TRUTH_HISTORY", f"{HOME}/.local/state/qwen/truth-history.jsonl")
+NEUTRAL = {"turn_duration", "stop_hook_summary", "away_summary", "informational", "local_command", "compact_boundary"}
+
+
+def ts_of(s):
+    return datetime.fromisoformat(str(s).replace("Z", "+00:00")).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+
+def index_file(path):
+    """One transcript -> one compact record. Reads type, timestamp, subtype, sessionKind and customTitle's class; keeps nothing else."""
+    first = last = kind = None
+    prev_ts = None; pend = []         # title classes seen since the last timestamped record, each waiting for its upper bound
+    titles = []                      # [class, lo, hi]: the title was set between two timestamped records
+    idle_from, idle = None, []
+    for line in open(path, errors="replace"):
+        try: d = json.loads(line)
+        except ValueError: continue
+        t = d.get("type")
+        if t == "custom-title":
+            pend.append(["A" if str(d.get("customTitle") or "").startswith("AGT_") else "N", prev_ts]); continue
+        if not d.get("timestamp"): continue
+        try: ts = ts_of(d["timestamp"])
+        except ValueError: continue
+        for cls, lo in pend: titles.append([cls, lo, ts])
+        pend = []; prev_ts = ts
+        first = first or ts; last = max(last or ts, ts); kind = kind or d.get("sessionKind")
+        sub = d.get("subtype")
+        if t == "system" and sub == "turn_duration":
+            idle_from = idle_from or ts
+        elif t in ("user", "assistant") or (t == "system" and sub == "scheduled_task_fire"):
+            if idle_from: idle.append([idle_from, ts]); idle_from = None
+    for cls, lo in pend: titles.append([cls, lo, None])
+    if idle_from: idle.append([idle_from, None])   # idle to the end of the transcript
+    return {"sid": os.path.basename(path)[:8], "kind": kind, "first": first, "last": last, "titles": titles, "idle": idle,
+            "file": os.path.basename(os.path.dirname(path)) + "/" + os.path.basename(path), "size": os.path.getsize(path)}
+
+
+def indexed():
+    done = set()
+    try:
+        for l in open(INDEX): done.add(json.loads(l)["file"])
+    except OSError: pass
+    return done
+
+
+def cmd_index(a):
+    done = indexed()
+    todo = [p for p in sorted(glob.glob(f"{ROOT}/*/*.jsonl")) if os.path.basename(os.path.dirname(p)) + "/" + os.path.basename(p) not in done][:a.limit]
+    os.makedirs(os.path.dirname(INDEX), exist_ok=True)
+    with open(INDEX, "a") as f:
+        for p in todo: f.write(json.dumps(index_file(p)) + "\n")
+    print(f"indexed {len(todo)} transcripts, {len(done) + len(todo)} in the index, {len(glob.glob(f'{ROOT}/*/*.jsonl')) - len(done) - len(todo)} left")
+
+
+# ---- reconstruction ---------------------------------------------------------------------------------------------------------------------------------
+LEDGER = os.environ.get("QWEN_AGT_LEDGER_LOG", f"{HOME}/.local/state/finish-sessions/agt-ledger.log")
+FINISH = os.environ.get("QWEN_SESSION_FINISH", f"{HOME}/.local/state/session-finish/session-finish.log")
+SWEEP = os.environ.get("QWEN_DECLUTTER_SWEEP", f"{HOME}/.local/state/declutter-sweep/sweep.log")
+
+
+def name_class(titles, t):
+    """The class of the session's name at time t: "A" (AGT_), "N" (any other name), None (not named yet), or "?" when it cannot be proven.
+    A title record has no timestamp; it was written between the timestamped records either side of it, so it was in force by `hi` and not before `lo`.
+    The latest title with hi <= t is in force unless a later title may already have been written (lo <= t < hi); then the class is proven only if they agree."""
+    done = [x for x in titles if x[2] is not None and x[2] <= t]
+    later = [x for x in titles[len(done):] if x[1] is None or x[1] <= t]
+    if not done and not later: return None
+    classes = {x[0] for x in ([done[-1]] if done else []) + later}
+    return classes.pop() if len(classes) == 1 else "?"
+
+
+def state_at(rec, t):
+    """For one session at time t: (class, where) where where is "idle" or "busy" inside the transcript, "post" after its last record (still present
+    or deleted, unprovable), or "pre" before its first record."""
+    if not rec["first"] or rec["first"] > t: return None, "pre"
+    cls = name_class(rec["titles"], t)
+    if rec["last"] and t > rec["last"]: return cls, "post"
+    for a, b in rec["idle"]:
+        if a <= t and (b is None or t < b): return cls, "idle"
+    return cls, "busy"
+
+
+def reconstruct(t, sessions):
+    """work_existed by the job's own definition (plan.py: name AGT_, not live, idle), from the transcripts. A background session (sessionKind bg) is a candidate.
+    n_idle = sessions proven AGT_ and idle at t. n_unproven = sessions that might have been AGT_ and idle (name unprovable, or present after their last record,
+    where a deletion cannot be seen). work_existed = 1 if n_idle > 0; 0 if nothing could have been idle; otherwise unknown. Returns (work, n_idle, n_unproven, idle_ids)."""
+    idle, unproven = [], 0
+    for r in sessions:
+        if r["kind"] != "bg": continue
+        cls, where = state_at(r, t)
+        if where == "pre" or cls in (None, "N"): continue
+        if where == "idle" and cls == "A": idle.append(r["sid"])
+        elif where == "busy" and cls in ("A", "?"): continue          # working: not idle by the job's definition
+        else: unproven += 1                                           # name "?" or present after its last record
+    work = 1 if idle else 0 if not unproven else None
+    return work, len(idle), unproven, sorted(idle)
+
+
+def load_sessions():
+    return [json.loads(l) for l in open(INDEX)]
+
+
+def log_runs(path, dry):
+    for line in open(path):
+        m = re.match(r"\[(\d{4}-\d{2}-\d{2}T[\d:]+Z)\]", line)
+        if m and not re.search(r"status=(dry|dry-run)\b|--dry-run", line): yield m[1], line
+
+
+def ledger_calls():
+    out = []
+    for line in open(LEDGER):
+        m = re.match(r"\[(\S+Z)\] argv=(.*) exit=\d+ sessions=(\d+) live=(\d+)", line)
+        if m: out.append((m[1], "--json" in m[2], int(m[3]), int(m[4])))
+    return out
+
+
+def match_ledger(ts, calls):
+    """The ledger call session-finish made for this run: the latest `--json` call in the 180 seconds before the run's log line (the wrapper reads the ledger,
+    plans, then logs). None if there is none: an ad-hoc call (`--md`, `--status all`, `--id`) is not matched."""
+    t = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    best = None
+    for cts, js, n, live in calls:
+        d = (t - datetime.fromisoformat(cts.replace("Z", "+00:00"))).total_seconds()
+        if js and 0 <= d <= 180 and (best is None or d < best[0]): best = (d, cts, n, live)
+    return best
+
+
+def own_claim(line):
+    """What the run's own line says, numbers only. idle_agt=K is the field itself (routine-library#275), counted before the 24h back-off. Older lines: a clean
+    line says no AGT_ session was eligible (0 picked), an apply line "N session(s)" picked N. The "(B busy, H handled <24h)" counts are the back-off list,
+    not idle sessions, so they are not read as a claim. Returns (sessions the job says it saw to work, which field)."""
+    m = re.search(r"idle_agt=(\d+)", line)
+    if m: return int(m[1]), "idle_agt"
+    if "status=clean" in line: return 0, "clean"
+    m = re.search(r"(\d+) session\(s\)", line)
+    if m: return int(m[1]), "planned"
+    return None, "none"
+
+
+def decide(ts, job, sessions, led):
+    """One row for a run. Ground truth by the job's own definition (idle = named AGT_, not live, tempo idle), in this order:
+      ledger: the agt-ledger call the run made counted no non-live AGT_ session (sessions - live == 0), so nothing could be idle: work_existed 0.
+              A deleted session is invisible in a transcript, so the ledger count is the only proof of absence; it is the job's own tool reading the jobs directory.
+      transcript: a background session proven named AGT_ at ts and idle at ts (a turn ended, no later user or assistant record yet): work_existed 1 for
+              session-finish. The sweep also needs the session mechanically clean, which a transcript cannot show, so it is never 1 from here.
+      otherwise unknown: non-live sessions existed but idle against blocked, or a name, is unprovable.
+    n_idle = sessions proven idle by transcript (a lower bound); n_nonlive = the ledger's sessions - live, or None when no ledger call matches."""
+    work, n_idle, _, ids = reconstruct(ts, sessions)
+    nonlive = None if led is None else led[2] - led[3]
+    if nonlive == 0: return {"work_existed": 0, "n_idle": 0, "n_nonlive": 0, "method": "ledger", "ids": []}
+    if work == 1 and job == "session-finish": return {"work_existed": 1, "n_idle": n_idle, "n_nonlive": nonlive, "method": "transcript", "ids": ids}
+    return {"work_existed": None, "n_idle": n_idle, "n_nonlive": nonlive, "method": "unproven", "ids": ids}
+
+
+def rows_for(paths_job, sessions, calls):
+    for job, path in paths_job:
+        for ts, line in log_runs(path, False):
+            led = match_ledger(ts, calls)
+            yield {"ts": ts, "job": job, **decide(ts, job, sessions, led), "own": own_claim(line)[0], "own_from": own_claim(line)[1]}
+
+
+def cmd_runs(a):
+    sessions, calls = load_sessions(), ledger_calls()
+    rows = sorted(rows_for([("session-finish", FINISH), ("declutter-sweep", SWEEP)], sessions, calls), key=lambda r: (r["ts"], r["job"]))
+    if a.only: rows = [r for r in rows if r["ts"] == a.only]
+    elif a.stride: rows = rows[::a.stride]
+    rows = rows[: a.limit] if a.limit else rows
+    if a.write:
+        os.makedirs(os.path.dirname(OUT), exist_ok=True)
+        with open(OUT, "w") as f:
+            for r in rows: f.write(json.dumps({k: r[k] for k in ("ts", "job", "work_existed", "n_idle", "n_nonlive", "method")}) + "\n")
+    for r in rows: print(json.dumps(r))
+
+
+def main():
+    ap = argparse.ArgumentParser(); sp = ap.add_subparsers(dest="cmd", required=True)
+    i = sp.add_parser("index"); i.add_argument("--limit", type=int, default=100)
+    r = sp.add_parser("runs"); r.add_argument("--only"); r.add_argument("--limit", type=int); r.add_argument("--stride", type=int); r.add_argument("--write", action="store_true")
+    a = ap.parse_args()
+    {"index": cmd_index, "runs": cmd_runs}[a.cmd](a)
+
+
+if __name__ == "__main__":
+    main()

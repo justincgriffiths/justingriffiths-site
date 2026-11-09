@@ -42,6 +42,8 @@ SWEEP_LOGS = os.environ.get("QWEN_DECLUTTER_SWEEP", f"{STATE}/declutter-sweep/sw
 CLEANUP_LOGS = FINISH_LOGS + SWEEP_LOGS
 # Truth matrix (site#119): ~/.claude/jobs/<short>/{state.json,timeline.jsonl} only rebuild which AGT_ sessions sat idle for runs before the logs carried it.
 JOBS_DIR = os.environ.get("QWEN_JOBS_DIR", f"{HOME}/.claude/jobs")
+# Rebuilt past ground truth (bin/truth-history.py): one row per run {ts, job, work_existed 1/0/null, n_idle, n_nonlive, method}; counts only, kept outside the repo.
+TRUTH_HISTORY = os.environ.get("QWEN_TRUTH_HISTORY", f"{HOME}/.local/state/qwen/truth-history.jsonl")
 # Escalation reasons that are a design rule, not a Qwen failure (skill-library#583): reported apart from fallbacks.
 POLICY = ("needs-name", "needs-del")
 
@@ -599,12 +601,17 @@ def _int(v):
     return int(v) if v is not None and re.fullmatch(r"\d+", str(v)) else None
 
 
+def history_truth(job):
+    """{run ts: work_existed} for the rows of truth-history that are 1 or 0; a null row stays out, so that run is unknown."""
+    return {r["ts"]: r["work_existed"] for r in rows(TRUTH_HISTORY) if r.get("job") == job and r.get("work_existed") in (0, 1)}
+
+
 def finish_rows(sessions=None):
     """session-finish.log: every non-dry line is a run, an idle check included. identified = the run planned a session (planned > 0; older lines: status apply).
     work_existed = idle_agt > 0 from the line's own field (routine-library#275); "unknown" stays unknown; a line without the field is reconstructed (jobs_idle_at)
     or unknown. correct: no recorded action of Justin's on a finish run, so unknown."""
     sessions = load_agt_sessions() if sessions is None else sessions
-    out = []
+    hist, out = history_truth("session-finish"), []
     for ts, line in log_lines(FINISH_LOGS):
         f = kv(line)
         if is_dry(f, line): continue
@@ -613,6 +620,7 @@ def finish_rows(sessions=None):
         n, src = _int(f.get("idle_agt")), "log"
         if n is not None: work = 1 if n > 0 else 0
         elif "idle_agt" in f: work = None
+        elif ts in hist: work, src = hist[ts], "history"
         else:
             work, src = (1, "reconstructed") if jobs_idle_at(ts, sessions) else (None, "none")
         out.append({"day": ts[:10], "work": work, "ident": ident, "correct": None, "src": src})
@@ -623,7 +631,7 @@ def sweep_rows():
     """sweep.log: every non-dry line is a run. From the first line with should_handle (routine-library#274): work_existed = should_handle > 0, identified =
     the run handled one (tombstoned + gate_refused > 0; a gate refusal is the gate saying no with a reason, not a miss). Older lines have no ground truth:
     identified = the run did any action (tombstoned, removed, laned, drafted, refused), work_existed unknown. correct: unknown."""
-    out = []
+    hist, out = history_truth("declutter-sweep"), []
     for ts, line in log_lines(SWEEP_LOGS):
         f = kv(line)
         if is_dry(f, line): continue
@@ -632,7 +640,7 @@ def sweep_rows():
             out.append({"day": ts[:10], "work": 1 if sh > 0 else 0, "ident": 1 if (_int(f.get("tombstoned")) or 0) + (_int(f.get("gate_refused")) or 0) > 0 else 0, "correct": None, "src": "log"})
         else:
             acted = any((_int(f.get(k)) or 0) > 0 for k in ("tombstoned", "removed", "laned", "drafted", "refused"))
-            out.append({"day": ts[:10], "work": None, "ident": 1 if acted else 0, "correct": None, "src": "none"})
+            out.append({"day": ts[:10], "work": hist.get(ts), "ident": 1 if acted else 0, "correct": None, "src": "history" if ts in hist else "none"})
     return out
 
 
@@ -661,7 +669,7 @@ def matrix(rs):
             "work_unknown_quiet": c(lambda r: r["work"] is None and r["ident"] == 0), "identified_unknown": c(lambda r: r["ident"] is None),
             "found_wrong": c(lambda r: r["ident"] == 1 and r["correct"] == 0), "found_right": c(lambda r: r["ident"] == 1 and r["correct"] == 1),
             "correct_unknown": c(lambda r: r["ident"] == 1 and r["correct"] is None),
-            "from_log": c(lambda r: r["src"] == "log"), "reconstructed": c(lambda r: r["src"] == "reconstructed"),
+            "from_log": c(lambda r: r["src"] == "log"), "from_history": c(lambda r: r["src"] == "history"), "reconstructed": c(lambda r: r["src"] == "reconstructed"),
             "ground_truth_from": min(known) if known else None}
 
 
