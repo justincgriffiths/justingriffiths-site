@@ -182,9 +182,16 @@ function callsCharts(rows) {
 // data's last day gets a slot (an empty day is a hairline, never skipped). Bars stack by model. Dollars are not a second axis:
 // the savings line carries the 7-day spend and the busiest-spend day is labeled on the chart. One day of data is one number.
 const HM = { opus: ["Opus", C.fell_back], sonnet: ["Sonnet", C.sonnet], haiku: ["Haiku", C.haiku], "qwen3-coder:30b": ["Qwen", C.qwen], script: ["Script (no model)", C.capped], other: ["Other model", C.capped], "not logged": ["Model not logged", C.capped] };
-const HNAMES = { wrap: "Wrap", "pr-sweep": "PR sweeps", "session-cleanup": "Session cleanup" };
+const HNAMES = { wrap: "Wrap", "pr-sweep": "PR sweeps", "session-cleanup": "Session cleanup", "cron-triage": "Cron triage" };
 const runsOf = (n) => `${n} ${n === 1 ? "run" : "runs"}`;
 const usd = (v) => `$${v >= 100 ? Math.round(v) : v.toFixed(2)}`;
+
+// Estimated cost (site#119): where a command's own log records no dollars, the telemetry spend for its skill tag, spread over the day's runs. Method once, in the section note.
+function estimateLine(e) {
+  if (!e) return "";
+  if (!e.runs_covered) return `<p class="interactive"><strong>Cost est.:</strong> no estimate, the telemetry has no tagged request on any of this command's run days (telemetry begins ${esc(e.since)}).</p>`;
+  return `<p class="interactive"><strong>Cost est.:</strong> ${usd(e.usd)} (est.) across ${runsOf(e.runs_covered)} on days with telemetry; ${e.runs_uncovered} ${e.runs_uncovered === 1 ? "run is" : "runs are"} on days with none, so no estimate.</p>`;
+}
 
 function savingsLine(sv) {
   if (!sv.cost_logged) return `<p class="savings"><strong>Last 7 days:</strong> ${runsOf(sv.last7_runs)} against ${sv.prior7_runs} the 7 days before. Cost not logged, so no savings figure.</p>`;
@@ -206,7 +213,7 @@ function historyOne(c, last) {
   const by = Object.fromEntries(c.days.map((r) => [r.day, r])), first = c.days[0].day;
   const used = [...new Set(c.days.flatMap((r) => Object.keys(r.models)))], keys = Object.keys(HM).filter((k) => used.includes(k)).concat(used.filter((k) => !HM[k]));
   const lab = (k) => (HM[k] || [k, C.capped])[0], col = (k) => (HM[k] || [k, C.capped])[1];
-  const head = `<h3>${esc(name)}</h3>${savingsLine(c.savings)}${interactiveLine(c.interactive)}${(c.stale_sources || []).map((x) => `<p class="note stale-source">${x.covered ? `Source ${esc(x.source)} stopped on ${esc(x.last_day)}; runs since then come from the command's other source.` : `Source ${esc(x.source)} has no record since ${esc(x.last_day)}.`}</p>`).join("")}`;
+  const head = `<h3>${esc(name)}</h3>${savingsLine(c.savings)}${estimateLine(c.estimate)}${interactiveLine(c.interactive)}${(c.stale_sources || []).map((x) => `<p class="note stale-source">${x.covered ? `Source ${esc(x.source)} stopped on ${esc(x.last_day)}; runs since then come from the command's other source.` : `Source ${esc(x.source)} has no record since ${esc(x.last_day)}.`}</p>`).join("")}`;
   const note = (extra) => `<p class="note">first logged ${esc(first)} · ${c.runs} ${c.runs === 1 ? "run" : "runs"}${c.usd == null ? " · cost not logged" : ` · ${usd(c.usd)} spent`}${extra}.</p>`;
   const mk = c.marker && c.marker.day ? ` · ${esc(c.marker.label)} since ${esc(c.marker.day)}` : "";
   if (c.days.length === 1) {
@@ -241,8 +248,33 @@ export function coverageLine(sc) {
 
 function historyCharts(h, sc) {
   if (!h || !h.commands || !h.commands.some((c) => c.days.length || c.interactive)) return empty("No history logged yet.");
-  return `${coverageLine(sc)}<div class="cols grid">${h.commands.map((c) => historyOne(c, h.through)).join("")}</div>
-    <p class="note">Runs per day, from each command's first record; a day with no runs is an empty slot. Savings compares the last 7 days with the 7 before, from dollars the command's own log records. Where no cost is logged the page says so and does not estimate. Wrap is counted from its run log (one line per wrap, from 2026-10-12); the per-session records stop on 2026-10-29, so they count only the days before the log begins. Where the day is a file's modified day, that is the day the record was written. Interactive cost is the dollars and requests Claude Code logged for the command's skill tag in the telemetry table, shown beside the scripted runs and not added to them. Bars show runs, except PR sweeps, where bar height is dollars per day and the runs are in the text.</p>`;
+  const noTel = sc ? "" : `<p class="note coverage">Cost est.: not available in this snapshot, the telemetry was not read. No estimate is shown rather than a guess.</p>`;
+  return `${coverageLine(sc)}${noTel}<div class="cols grid">${h.commands.map((c) => historyOne(c, h.through)).join("")}</div>
+    <p class="note">Runs per day, from each command's first record; a day with no runs is an empty slot. Savings compares the last 7 days with the 7 before, from dollars the command's own log records. Cost est.: where a command's own log records no dollars, the estimate is the telemetry spend tagged with that command's skill on a run day, spread over that day's runs; a day with no telemetry has no estimate, never zero. Session cleanup runs are scripts, so no model ran and model spend is $0; model calls the sweep makes are counted under Declutter. Cron triage records no model, so a run that flagged no job is shown as a script, one where Qwen answered an item as Qwen, and one where every item went to Claude as Haiku. Wrap is counted from its run log (one line per wrap, from 2026-10-12); the per-session records stop on 2026-10-29, so they count only the days before the log begins. Where the day is a file's modified day, that is the day the record was written. Interactive cost is the dollars and requests Claude Code logged for the command's skill tag in the telemetry table, shown beside the scripted runs and not added to them. Bars show runs, except PR sweeps, where bar height is dollars per day and the runs are in the text.</p>`;
+}
+
+
+// Truth matrix (site#119): per job, one row per run with three fields, each 1, 0 or unknown. Counts only; misses (work existed, not found) are listed first.
+const TRUTH_NAMES = { "session-finish": "Session finish", "declutter-sweep": "Declutter sweep", "pr-sweep": "PR sweeps", "cron-triage": "Cron triage" };
+function truthOne(j) {
+  const row = (label, n) => `<tr><th>${esc(label)}</th><td data-label="Runs">${n}</td></tr>`;
+  const known = j.missed + j.found_work + j.false_alarm + j.quiet;
+  const gt = j.ground_truth_from ? `ground truth from ${esc(j.ground_truth_from)}` : "no ground truth yet";
+  return `<div class="callsjob"><h3>${esc(TRUTH_NAMES[j.job] || j.job)}</h3>
+    <p class="note">${runsOf(j.n)} · ${gt} · ${j.work_unknown} with work unknown · ${known} with work known.</p>
+    <table class="stack"><thead><tr><th>Run</th><th>Runs</th></tr></thead><tbody>
+      ${row("Work existed, not found (miss)", j.missed)}${row("Work existed, found", j.found_work)}${row("No work, found", j.false_alarm)}${row("No work, quiet", j.quiet)}
+      ${row("Work unknown, found", j.work_unknown_found)}${row("Work unknown, quiet", j.work_unknown_quiet)}${j.identified_unknown ? row("Found unknown", j.identified_unknown) : ""}
+    </tbody></table>
+    <table class="stack"><thead><tr><th>Runs that found work</th><th>Runs</th></tr></thead><tbody>
+      ${row("Found, right", j.found_right)}${row("Found, wrong", j.found_wrong)}${row("Found, right or wrong unknown", j.correct_unknown)}
+    </tbody></table></div>`;
+}
+
+function truthCharts(t) {
+  if (!t || !t.jobs || !t.jobs.length) return empty("No truth matrix logged yet.");
+  return `<div class="cols grid">${t.jobs.map(truthOne).join("")}</div>
+    <p class="note">One row per run, idle checks included. Work existed: there was work the run should have handled. Found: the run said it found work. Right: what it did was right, asked only of runs that found work. Each is 1, 0 or unknown, and unknown is never guessed. Where the job's own log records ground truth, that is the source: the idle count in the session-finish log, should-handle against tombstoned and gate-refused in the declutter sweep log (a refusal is handled with a reason). Runs before those fields existed are rebuilt only for work existed = 1: a session still on this machine, named AGT_, was done at the run time in its own timeline. A run with no such session is unknown, because a deleted session cannot be seen. Right needs a recorded action of Justin's on the run's output; none is recorded for these jobs, so it is unknown.</p>`;
 }
 
 const section = (id, title, why, body) => `<section id="${id}"><h2>${esc(title)}</h2><p class="why">${esc(why)}</p>${body}</section>`;
@@ -255,7 +287,8 @@ export function renderData(d) {
 ${section("workflows", "Every job that uses Qwen", "Each job's own counts by day, with when its log starts. A job with no runs logged shows that, not a rate.",
   `<div class="cols grid">${Object.keys(WORKFLOW_NAMES).map((k) => workflowBlock(k, (data.workflows || {})[k])).join("")}</div>`)}
 ${section("calls", "Calls by day", "How many calls each job made per day since it started, and which model took them.", callsCharts(data.calls_by_day))}
-${section("history", "History and savings", "Runs per day for wrap, PR sweeps and session cleanup, by model, with the last 7 days of spend against the 7 before.", historyCharts(data.history, data.skill_cost))}
+${section("history", "History and savings", "Runs per day for wrap, PR sweeps, session cleanup and cron triage, every run counted whether it found work or not, by model, with the last 7 days of spend against the 7 before.", historyCharts(data.history, data.skill_cost))}
+${section("truth", "Was there work, and did the run find it", "Per job, one row per run: did work exist, did the run find it, was what it did right. Misses first.", truthCharts(data.truth))}
 ${section("fallbacks", "Fallback reasons", "Why Qwen's answer was thrown out and Claude did the item instead.", horizontal(data.fallback_reasons, "Fallbacks by reason", C.fell_back))}
 ${section("cost", "Cost per run", "Calls per day by job, and dollars per triage run, against the average before Qwen.", costChart())}
 ${section("latency", "Latency", "How long Qwen takes per item, next to Haiku.", latency())}
