@@ -13,6 +13,9 @@ QWEN_SESSION_FINISH / QWEN_DECLUTTER_SWEEP (the session-cleanup logs). Counts, d
 Skill cost (site#115): QWEN_SKILL_COST_FIXTURE (a JSON array of aggregate rows) stands in for the telemetry query; with no fixture the
 block is read from Supabase telemetry.events through the read-only fleet_reader role, only when PGPASSWORD is in the env
 (bin/skill-cost.sh injects it with `op run`). Aggregated in SQL: per UTC day x skill.name x model bucket x main-thread flag.
+Truth matrix (site#119): per job, one row per run with work_existed / identified / correct, each 1, 0 or unknown (None); only counts of the four cells are
+exported. Ground truth comes from the job's own log fields (session-finish idle_agt / planned, the declutter sweep should_handle / tombstoned / gate_refused);
+before those existed it is rebuilt from QWEN_JOBS_DIR (see jobs_idle_at) or left unknown. `correct` needs a recorded action of Justin's; none is read, so it is unknown.
 Usage: bin/qwen-state.py [--now ISO]
 """
 import glob, json, os, re, sqlite3, subprocess, sys
@@ -34,8 +37,11 @@ REAP = os.environ.get("QWEN_REAP", f"{STATE}/session-reap/qwen.jsonl").split(":"
 WRAP_DIR = os.environ.get("QWEN_WRAP_DIR", f"{STATE}/wrap")
 WRAP_ROW_LOG = os.environ.get("QWEN_WRAP_ROW_LOG", f"{WRAP_DIR}/wrap_row.log")
 PR_SWEEP = os.environ.get("QWEN_PR_SWEEP", f"{STATE}/pr-sweep/runs.jsonl").split(":")
-CLEANUP_LOGS = (os.environ.get("QWEN_SESSION_FINISH", f"{STATE}/session-finish/session-finish.log").split(":")
-                + os.environ.get("QWEN_DECLUTTER_SWEEP", f"{STATE}/declutter-sweep/sweep.log").split(":"))
+FINISH_LOGS = os.environ.get("QWEN_SESSION_FINISH", f"{STATE}/session-finish/session-finish.log").split(":")
+SWEEP_LOGS = os.environ.get("QWEN_DECLUTTER_SWEEP", f"{STATE}/declutter-sweep/sweep.log").split(":")
+CLEANUP_LOGS = FINISH_LOGS + SWEEP_LOGS
+# Truth matrix (site#119): ~/.claude/jobs/<short>/{state.json,timeline.jsonl} only rebuild which AGT_ sessions sat idle for runs before the logs carried it.
+JOBS_DIR = os.environ.get("QWEN_JOBS_DIR", f"{HOME}/.claude/jobs")
 # Escalation reasons that are a design rule, not a Qwen failure (skill-library#583): reported apart from fallbacks.
 POLICY = ("needs-name", "needs-del")
 
@@ -387,18 +393,50 @@ def hist_pr_sweep():
     return out
 
 
-def hist_cleanup():
-    """Session cleanup: every live (not dry-run) line of the finish and declutter-sweep logs is one run. Both are scripts;
-    neither logs a model call or a cost. The line's body text is never read."""
-    out = defaultdict(lambda: {"runs": 0, "models": {"script": 0}, "usd": None})
-    for p in CLEANUP_LOGS:
+def log_lines(paths):
+    """Yield (timestamp, line) for every dated line of the logs. The line text is parsed for key=value fields only; its body="..." is never read."""
+    for p in paths:
         try: lines = open(p).read().splitlines()
         except OSError: continue
         for line in lines:
-            m = re.match(r"\[(\d{4}-\d{2}-\d{2})T", line); st = re.search(r"\bstatus=([\w-]+)", line)
-            if not m or (st and st[1] in ("dry", "dry-run")) or "--dry-run" in line: continue
-            out[m[1]]["runs"] += 1; out[m[1]]["models"]["script"] += 1
-            seen("session-cleanup", os.path.splitext(os.path.basename(p))[0] + " log", m[1])
+            m = re.match(r"\[(\d{4}-\d{2}-\d{2}T[\d:]+Z?)\]", line)
+            if m: yield m[1], line
+
+
+def kv(line):
+    """key=value fields outside body="...": the sweep logs them before it, session-finish after it (so an older parser of the line still matches)."""
+    head, _, rest = line.partition(' body="')
+    tail = rest.rsplit('"', 1)[1] if '"' in rest else ""
+    return dict(re.findall(r"\b([a-z_]+)=(\S+)", head + " " + tail))
+
+
+def is_dry(f, line):
+    return f.get("status") in ("dry", "dry-run") or "--dry-run" in line
+
+
+def hist_cleanup():
+    """Session cleanup: every live (not dry-run) line of the finish and declutter-sweep logs is one run, idle checks included (site#119).
+    Both are scripts: no model ran, so a run costs $0 in model spend (a model call the sweep makes is a row in the declutter qwen.jsonl). The line's body text is never read."""
+    out = defaultdict(lambda: {"runs": 0, "models": {"script": 0}, "usd": 0.0})
+    for p in CLEANUP_LOGS:
+        for ts, line in log_lines([p]):
+            if is_dry(kv(line), line): continue
+            out[ts[:10]]["runs"] += 1; out[ts[:10]]["models"]["script"] += 1
+            seen("session-cleanup", os.path.splitext(os.path.basename(p))[0] + " log", ts[:10])
+    return out
+
+
+def hist_cron():
+    """Cron triage: one row of runs.jsonl is one run, a run that flagged nothing included. No model is logged: a run that flagged no job made no model call
+    (script); otherwise Qwen if it answered any item, else Haiku (every flagged item was escalated). Cost is the row's own usd."""
+    out = defaultdict(lambda: {"runs": 0, "models": defaultdict(int), "usd": 0.0, "usd_models": defaultdict(float)})
+    for r in rows(CRON_RUNS):
+        dy = day(r.get("started"))
+        if not dy: continue
+        seen("cron-triage", "cron-triage runs", dy)
+        esc = r.get("escalated") if isinstance(r.get("escalated"), dict) else {}
+        mb = "script" if _num(r.get("jobs_flagged")) == 0 else "qwen3-coder:30b" if _num(r.get("qwen_ok")) > 0 else "haiku" if esc else "other"
+        out[dy]["runs"] += 1; out[dy]["models"][mb] += 1; out[dy]["usd"] += _num(r.get("usd")); out[dy]["usd_models"][mb] += _num(r.get("usd"))
     return out
 
 
@@ -486,12 +524,29 @@ def addd(d, n):
     return (datetime.strptime(d, "%Y-%m-%d") + timedelta(days=n)).strftime("%Y-%m-%d")
 
 
+def estimate(cmd, days, sc):
+    """Estimated cost for a command whose own log records none (site#119). Method, stated once on the page: the telemetry dollars for the command's skill tag on
+    that day, spread over the day's runs. A day before telemetry began, or with no tagged request, has no estimate (est_usd null), never zero. None when the
+    command has no mapped skill or no telemetry block could be read. Returns the command-level summary plus the days with est_usd / est_models added."""
+    if not sc or cmd not in CMD_SKILLS: return None
+    tel = defaultdict(lambda: [0.0, defaultdict(float)])
+    for r in sc["by_day_skill_model"]:
+        if r["skill"] in CMD_SKILLS[cmd]: tel[r["day"]][0] += r["usd"]; tel[r["day"]][1][r["model"]] += r["usd"]
+    out = []
+    for r in days:
+        t = tel.get(r["day"])
+        out.append({**r, "est_usd": round(t[0], 4) if t else None, "est_models": {m: round(x, 4) for m, x in sorted(t[1].items())} if t else None})
+    have = [r for r in out if r["est_usd"] is not None]
+    return {"usd": round(sum(r["est_usd"] for r in have), 4), "runs_covered": sum(r["runs"] for r in have), "runs_uncovered": sum(r["runs"] for r in out) - sum(r["runs"] for r in have),
+            "since": sc["since"], "days": out}
+
+
 def history(now_day, qwen_first, sc=None):
     """History per command (site#90). days = only the days with a record: a day with none is absent, never a zero.
     usd is null where the source logs no cost. marker = the day the command's Qwen path went live (null if none yet).
     savings = actual spend, last 7 days (now-6..now) against the 7 before; cost_logged false means say "cost not logged"."""
     cmds = [("wrap", hist_wrap(), None), ("pr-sweep", hist_pr_sweep(), None),
-            ("session-cleanup", hist_cleanup(), qwen_first.get("session-cleanup"))]
+            ("session-cleanup", hist_cleanup(), qwen_first.get("session-cleanup")), ("cron-triage", hist_cron(), None)]
     out = []
     for key, by, marker in cmds:
         days = [{"day": d, "runs": v["runs"], "models": {k: n for k, n in v["models"].items() if n},
@@ -503,11 +558,115 @@ def history(now_day, qwen_first, sc=None):
         sv = {"cost_logged": logged, "last7_runs": sum(r["runs"] for r in last), "prior7_runs": sum(r["runs"] for r in prior),
               "last7_usd": round(sum(r["usd"] or 0 for r in last), 4) if logged else None,
               "prior7_usd": round(sum(r["usd"] or 0 for r in prior), 4) if logged else None}
+        est = estimate(key, days, sc) if not logged else None
         out.append({"command": key, "first_logged": days[0]["day"] if days else None, "runs": sum(r["runs"] for r in days),
                     "usd": round(sum(r["usd"] or 0 for r in days), 4) if logged else None,
                     "marker": {"day": marker, "label": "Qwen live"} if marker else None, "savings": sv,
-                    "stale_sources": stale_sources(key, now_day), "interactive": interactive(key, sc, now_day), "days": days})
+                    "estimate": est and {k: v for k, v in est.items() if k != "days"},
+                    "stale_sources": stale_sources(key, now_day), "interactive": interactive(key, sc, now_day), "days": est["days"] if est else days})
     return {"through": now_day, "commands": out}
+
+
+# ---- Truth matrix (site#119) -------------------------------------------------------------------------------------------------------------------
+# One row per run: work_existed (was there work this run should handle), identified (the run said it found work), correct (what it did was right,
+# only when identified). Each is 1, 0 or None (unknown); None is never guessed. Only counts of the cells leave this file.
+def jobs_idle_at(ts, sessions):
+    """Reconstruction for runs before a log carried its own ground truth. sessions = [(created, [(at, state), ...])] for the AGT_ sessions still in
+    QWEN_JOBS_DIR. A session sat idle at ts when it existed and its latest timeline state at or before ts was "done" (not working, not blocked on a
+    limit). True when at least one did. Never False: a session since deleted or renamed is invisible, so no match means unknown, not "no work"."""
+    for created, tl in sessions:
+        if not created or created > ts: continue
+        last = None
+        for at, st in tl:
+            if at <= ts: last = st
+        if last == "done": return True
+    return False
+
+
+def load_agt_sessions():
+    out = []
+    for p in glob.glob(f"{JOBS_DIR}/*/state.json"):
+        d = _load(p)
+        if not str(d.get("name") or "").startswith("AGT_"): continue
+        tl = []
+        for r in rows(p[:-len("state.json")] + "timeline.jsonl"):
+            if r.get("at") and r.get("state"): tl.append((str(r["at"]), str(r["state"])))
+        out.append((str(d.get("createdAt") or ""), sorted(tl)))  # only the times and states are kept: no session name, detail or id
+    return out
+
+
+def _int(v):
+    return int(v) if v is not None and re.fullmatch(r"\d+", str(v)) else None
+
+
+def finish_rows(sessions=None):
+    """session-finish.log: every non-dry line is a run, an idle check included. identified = the run planned a session (planned > 0; older lines: status apply).
+    work_existed = idle_agt > 0 from the line's own field (routine-library#275); "unknown" stays unknown; a line without the field is reconstructed (jobs_idle_at)
+    or unknown. correct: no recorded action of Justin's on a finish run, so unknown."""
+    sessions = load_agt_sessions() if sessions is None else sessions
+    out = []
+    for ts, line in log_lines(FINISH_LOGS):
+        f = kv(line)
+        if is_dry(f, line): continue
+        planned = _int(f.get("planned"))
+        ident = (1 if planned > 0 else 0) if planned is not None else 1 if f.get("status") == "apply" else 0 if f.get("status") == "clean" else None
+        n, src = _int(f.get("idle_agt")), "log"
+        if n is not None: work = 1 if n > 0 else 0
+        elif "idle_agt" in f: work = None
+        else:
+            work, src = (1, "reconstructed") if jobs_idle_at(ts, sessions) else (None, "none")
+        out.append({"day": ts[:10], "work": work, "ident": ident, "correct": None, "src": src})
+    return out
+
+
+def sweep_rows():
+    """sweep.log: every non-dry line is a run. From the first line with should_handle (routine-library#274): work_existed = should_handle > 0, identified =
+    the run handled one (tombstoned + gate_refused > 0; a gate refusal is the gate saying no with a reason, not a miss). Older lines have no ground truth:
+    identified = the run did any action (tombstoned, removed, laned, drafted, refused), work_existed unknown. correct: unknown."""
+    out = []
+    for ts, line in log_lines(SWEEP_LOGS):
+        f = kv(line)
+        if is_dry(f, line): continue
+        sh = _int(f.get("should_handle"))
+        if sh is not None:
+            out.append({"day": ts[:10], "work": 1 if sh > 0 else 0, "ident": 1 if (_int(f.get("tombstoned")) or 0) + (_int(f.get("gate_refused")) or 0) > 0 else 0, "correct": None, "src": "log"})
+        else:
+            acted = any((_int(f.get(k)) or 0) > 0 for k in ("tombstoned", "removed", "laned", "drafted", "refused"))
+            out.append({"day": ts[:10], "work": None, "ident": 1 if acted else 0, "correct": None, "src": "none"})
+    return out
+
+
+def pr_rows():
+    """pr-sweep/runs.jsonl: identified = the sweep enumerated a PR to work (enumerated > 0; a row without it: worked > 0). No snapshot of the stuck PRs at
+    run time exists, so work_existed is unknown; correct needs a recorded action of Justin's on a PR, so unknown."""
+    return [{"day": day(r.get("ts")), "work": None, "ident": 1 if _num(r.get("enumerated", r.get("worked"))) > 0 else 0, "correct": None, "src": "none"}
+            for r in rows(PR_SWEEP) if day(r.get("ts"))]
+
+
+def cron_rows():
+    """cron-triage/runs.jsonl: identified = the run flagged a job (jobs_flagged > 0). work_existed and correct: unknown (no independent snapshot, no recorded action)."""
+    return [{"day": day(r.get("started")), "work": None, "ident": 1 if _num(r.get("jobs_flagged")) > 0 else 0, "correct": None, "src": "none"}
+            for r in rows(CRON_RUNS) if day(r.get("started"))]
+
+
+def matrix(rs):
+    """Counts only. The four cells need work_existed known; a run whose work is unknown is split by what the run said. found_wrong / found_right need
+    identified = 1 and correct known; identified = 1 with correct unknown is correct_unknown. ground_truth_from = the first day any run has a known work_existed."""
+    c = lambda f: sum(1 for r in rs if f(r))
+    known = [r["day"] for r in rs if r["work"] is not None]
+    return {"n": len(rs),
+            "missed": c(lambda r: r["work"] == 1 and r["ident"] == 0), "found_work": c(lambda r: r["work"] == 1 and r["ident"] == 1),
+            "false_alarm": c(lambda r: r["work"] == 0 and r["ident"] == 1), "quiet": c(lambda r: r["work"] == 0 and r["ident"] == 0),
+            "work_unknown": c(lambda r: r["work"] is None), "work_unknown_found": c(lambda r: r["work"] is None and r["ident"] == 1),
+            "work_unknown_quiet": c(lambda r: r["work"] is None and r["ident"] == 0), "identified_unknown": c(lambda r: r["ident"] is None),
+            "found_wrong": c(lambda r: r["ident"] == 1 and r["correct"] == 0), "found_right": c(lambda r: r["ident"] == 1 and r["correct"] == 1),
+            "correct_unknown": c(lambda r: r["ident"] == 1 and r["correct"] is None),
+            "from_log": c(lambda r: r["src"] == "log"), "reconstructed": c(lambda r: r["src"] == "reconstructed"),
+            "ground_truth_from": min(known) if known else None}
+
+
+def truth():
+    return {"jobs": [{"job": k, **matrix(fn())} for k, fn in (("session-finish", finish_rows), ("declutter-sweep", sweep_rows), ("pr-sweep", pr_rows), ("cron-triage", cron_rows))]}
 
 
 def build():
@@ -535,6 +694,7 @@ def build():
         "as_of": as_of,
         "history": history(as_of[:10], {"session-cleanup": min(qdays_cleanup) if qdays_cleanup else None}, sc),
         "skill_cost": sc,
+        "truth": truth(),
         "share_by_day": {"triage": series(t_share), "issue-tag": series(i_share)},
         "workflows": wf,
         "calls_by_day": calls_by_day(t_share, i_share, wf, triage_shadow(), haiku_only_triage()),
