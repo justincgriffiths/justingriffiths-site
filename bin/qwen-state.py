@@ -42,6 +42,9 @@ SWEEP_LOGS = os.environ.get("QWEN_DECLUTTER_SWEEP", f"{STATE}/declutter-sweep/sw
 CLEANUP_LOGS = FINISH_LOGS + SWEEP_LOGS
 # Truth matrix (site#119): ~/.claude/jobs/<short>/{state.json,timeline.jsonl} only rebuild which AGT_ sessions sat idle for runs before the logs carried it.
 JOBS_DIR = os.environ.get("QWEN_JOBS_DIR", f"{HOME}/.claude/jobs")
+HANDLED = os.environ.get("QWEN_HANDLED", f"{STATE}/session-finish/handled.tsv")  # the job's own 24h back-off list: rows "<iso time>\t<session id>"
+# Rebuilt past ground truth (bin/truth-history.py): one row per run {ts, job, work_existed 1/0/null, n_idle, n_nonlive, method}; counts only, kept outside the repo.
+TRUTH_HISTORY = os.environ.get("QWEN_TRUTH_HISTORY", f"{HOME}/.local/state/qwen/truth-history.jsonl")
 # Escalation reasons that are a design rule, not a Qwen failure (skill-library#583): reported apart from fallbacks.
 POLICY = ("needs-name", "needs-del")
 
@@ -599,20 +602,44 @@ def _int(v):
     return int(v) if v is not None and re.fullmatch(r"\d+", str(v)) else None
 
 
+def history_truth(job):
+    """{run ts: work_existed} for the rows of truth-history that are 1 or 0; a null row stays out, so that run is unknown. QWEN_BACKOFF picks how the 24h
+    back-off counts: "a" (default, the job's own rule: a session handled in the last 24h is skipped on purpose, so it is not work) or "b" (it counts as work)."""
+    k = "work_existed_b" if os.environ.get("QWEN_BACKOFF", "a") == "b" else "work_existed"
+    return {r["ts"]: r[k] for r in rows(TRUTH_HISTORY) if r.get("job") == job and r.get(k) in (0, 1)}
+
+
+def backed_off(ts, ids):
+    """Of the short ids on a log line, those handled in the 24h before ts (HANDLED): skipped by the job on purpose, so not work under its own rule."""
+    t = datetime.fromisoformat(ts.replace("Z", "+00:00")); out = set()
+    try:
+        for line in open(HANDLED):
+            p = line.rstrip("\n").split("\t")
+            if len(p) >= 2 and p[1][:8] in ids and 0 < (t - datetime.fromisoformat(p[0].replace("Z", "+00:00"))).total_seconds() < 86400: out.add(p[1][:8])
+    except OSError: pass
+    return out
+
+
 def finish_rows(sessions=None):
     """session-finish.log: every non-dry line is a run, an idle check included. identified = the run planned a session (planned > 0; older lines: status apply).
-    work_existed = idle_agt > 0 from the line's own field (routine-library#275); "unknown" stays unknown; a line without the field is reconstructed (jobs_idle_at)
+    work_existed = idle_agt > 0 from the line's own field (the finish log's ground-truth fields); "unknown" stays unknown; a line without the field is reconstructed (jobs_idle_at)
     or unknown. correct: no recorded action of Justin's on a finish run, so unknown."""
     sessions = load_agt_sessions() if sessions is None else sessions
-    out = []
+    hist, out = history_truth("session-finish"), []
     for ts, line in log_lines(FINISH_LOGS):
         f = kv(line)
         if is_dry(f, line): continue
         planned = _int(f.get("planned"))
         ident = (1 if planned > 0 else 0) if planned is not None else 1 if f.get("status") == "apply" else 0 if f.get("status") == "clean" else None
         n, src = _int(f.get("idle_agt")), "log"
-        if n is not None: work = 1 if n > 0 else 0
+        if n is not None:
+            work = 1 if n > 0 else 0
+            ids = [i for i in str(f.get("idle_ids", "")).split(",") if re.fullmatch(r"[0-9a-f]{8}", i)]
+            if work and os.environ.get("QWEN_BACKOFF", "a") != "b":   # the job's own rule: idle_agt counts before the 24h back-off, which is not work
+                if len(ids) == n: work = 1 if set(ids) - backed_off(ts, set(ids)) else 0
+                else: work = None                                      # ids past 12 are a hash: the back-off cannot be applied
         elif "idle_agt" in f: work = None
+        elif ts in hist: work, src = hist[ts], "history"
         else:
             work, src = (1, "reconstructed") if jobs_idle_at(ts, sessions) else (None, "none")
         out.append({"day": ts[:10], "work": work, "ident": ident, "correct": None, "src": src})
@@ -620,10 +647,10 @@ def finish_rows(sessions=None):
 
 
 def sweep_rows():
-    """sweep.log: every non-dry line is a run. From the first line with should_handle (routine-library#274): work_existed = should_handle > 0, identified =
+    """sweep.log: every non-dry line is a run. From the first line with should_handle (the sweep log's should_handle field): work_existed = should_handle > 0, identified =
     the run handled one (tombstoned + gate_refused > 0; a gate refusal is the gate saying no with a reason, not a miss). Older lines have no ground truth:
     identified = the run did any action (tombstoned, removed, laned, drafted, refused), work_existed unknown. correct: unknown."""
-    out = []
+    hist, out = history_truth("declutter-sweep"), []
     for ts, line in log_lines(SWEEP_LOGS):
         f = kv(line)
         if is_dry(f, line): continue
@@ -632,7 +659,7 @@ def sweep_rows():
             out.append({"day": ts[:10], "work": 1 if sh > 0 else 0, "ident": 1 if (_int(f.get("tombstoned")) or 0) + (_int(f.get("gate_refused")) or 0) > 0 else 0, "correct": None, "src": "log"})
         else:
             acted = any((_int(f.get(k)) or 0) > 0 for k in ("tombstoned", "removed", "laned", "drafted", "refused"))
-            out.append({"day": ts[:10], "work": None, "ident": 1 if acted else 0, "correct": None, "src": "none"})
+            out.append({"day": ts[:10], "work": hist.get(ts), "ident": 1 if acted else 0, "correct": None, "src": "history" if ts in hist else "none"})
     return out
 
 
@@ -655,13 +682,15 @@ def matrix(rs):
     c = lambda f: sum(1 for r in rs if f(r))
     known = [r["day"] for r in rs if r["work"] is not None]
     return {"n": len(rs),
-            "missed": c(lambda r: r["work"] == 1 and r["ident"] == 0), "found_work": c(lambda r: r["work"] == 1 and r["ident"] == 1),
+            # missed needs ground truth from the job's own log fields; a transcript or jobs-dir proxy that says idle while the job was quiet is "unexplained".
+            "missed": c(lambda r: r["work"] == 1 and r["ident"] == 0 and r["src"] == "log"),
+            "unexplained": c(lambda r: r["work"] == 1 and r["ident"] == 0 and r["src"] != "log"), "found_work": c(lambda r: r["work"] == 1 and r["ident"] == 1),
             "false_alarm": c(lambda r: r["work"] == 0 and r["ident"] == 1), "quiet": c(lambda r: r["work"] == 0 and r["ident"] == 0),
             "work_unknown": c(lambda r: r["work"] is None), "work_unknown_found": c(lambda r: r["work"] is None and r["ident"] == 1),
             "work_unknown_quiet": c(lambda r: r["work"] is None and r["ident"] == 0), "identified_unknown": c(lambda r: r["ident"] is None),
             "found_wrong": c(lambda r: r["ident"] == 1 and r["correct"] == 0), "found_right": c(lambda r: r["ident"] == 1 and r["correct"] == 1),
             "correct_unknown": c(lambda r: r["ident"] == 1 and r["correct"] is None),
-            "from_log": c(lambda r: r["src"] == "log"), "reconstructed": c(lambda r: r["src"] == "reconstructed"),
+            "from_log": c(lambda r: r["src"] == "log"), "from_history": c(lambda r: r["src"] == "history"), "reconstructed": c(lambda r: r["src"] == "reconstructed"),
             "ground_truth_from": min(known) if known else None}
 
 

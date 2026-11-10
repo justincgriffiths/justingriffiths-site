@@ -70,3 +70,5 @@
 .truth-scroll table { margin-top: 0; }
 .truth-scroll thead th { position: sticky; top: 0; background: var(--site-bg); }
 .truth-scroll th, .truth-scroll td { white-space: nowrap; }
+.truth-rows summary::before { content: "\25B8"; margin-right: var(--space-2); }
+.truth-rows[open] summary::before { content: "\25BE"; }

@@ -22,7 +22,7 @@ writeFileSync(finish, lines([
   `[2026-11-02T12:00:00Z] argv=[] exit=0 status=apply body="x"`,                                                                      // old line, a session sat done: rebuilt as work
   `[2026-11-05T12:00:00Z] argv=[] exit=0 status=clean body="x"`,                                                                      // old line, no session done then: unknown
 ]));
-// declutter sweep: should_handle against tombstoned (routine-library#274), plus an old line without it.
+// declutter sweep: should_handle against tombstoned (the sweep log's should_handle field), plus an old line without it.
 const sweep = join(dir, "sweep.log");
 writeFileSync(sweep, lines([
   `[2026-11-10T01:00:00Z] argv=[--max 10] exit=1 status=miss should_handle=2 tombstoned=0 gate_refused=0 missed=2 refused=0 removed=0 laned=0 drafted=0 body="SENTINEL_SWEEP_BODY"`,
@@ -55,7 +55,10 @@ job("aaaa1111", "AGT_SENTINEL_NAME", "2026-11-01T00:00:00.000Z", [["2026-11-01T0
 job("bbbb2222", "AGT_SENTINEL_BLOCKED", "2026-11-01T00:00:00.000Z", [["2026-11-01T01:00:00.000Z", "working"], ["2026-11-02T00:00:00.000Z", "blocked"]]);
 job("cccc3333", "SENTINEL_YOU_SESSION", "2026-11-01T00:00:00.000Z", [["2026-11-02T00:00:00.000Z", "done"]]);
 
-const env = { ...process.env, PGPASSWORD: "", QWEN_AS_OF: "2026-11-10T12:00:00Z", QWEN_RUNS: none, QWEN_COST_DB: none, QWEN_TAG_LOG: none, QWEN_TAG_JSONL: none, QWEN_DECLUTTER: none, QWEN_REAP: none,
+// Rebuilt history (bin/truth-history.py output): the old 11-05 clean line has a transcript proxy that says work existed.
+const hist = join(dir, "truth-history.jsonl");
+writeFileSync(hist, lines([{ ts: "2026-11-05T12:00:00Z", job: "session-finish", work_existed: 1, work_existed_b: 1, n_idle: 1, n_eligible: 1, n_nonlive: 1, method: "transcript;backoff=job-rule" }].map((r) => JSON.stringify(r))));
+const env = { ...process.env, QWEN_HANDLED: none, QWEN_TRUTH_HISTORY: hist, PGPASSWORD: "", QWEN_AS_OF: "2026-11-10T12:00:00Z", QWEN_RUNS: none, QWEN_COST_DB: none, QWEN_TAG_LOG: none, QWEN_TAG_JSONL: none, QWEN_DECLUTTER: none, QWEN_REAP: none,
   QWEN_LEARN: none, QWEN_WRAP_DIR: join(dir, "nowrap"), QWEN_SESSION_FINISH: finish, QWEN_DECLUTTER_SWEEP: sweep, QWEN_PR_SWEEP: pr, QWEN_CRON_RUNS: cron, QWEN_JOBS_DIR: jobs };
 const run = (extra = {}) => execFileSync("python3", ["bin/qwen-state.py"], { encoding: "utf8", env: { ...env, ...extra } });
 const out = run(), data = JSON.parse(out);
@@ -66,9 +69,10 @@ test("session finish: a fixture for every cell, dry runs dropped, unknown never 
   assert.equal(j.n, 7);                                                   // 8 lines, one dry
   assert.equal(j.missed, 1); assert.equal(j.found_work, 2);               // the log's own found work, plus the rebuilt old apply line
   assert.equal(j.false_alarm, 1); assert.equal(j.quiet, 1);
-  assert.equal(j.work_unknown, 2); assert.equal(j.work_unknown_quiet, 2); assert.equal(j.work_unknown_found, 0);   // idle_agt=unknown, and the old line nothing rebuilt
-  assert.equal(j.missed + j.found_work + j.false_alarm + j.quiet + j.work_unknown, j.n);
-  assert.equal(j.from_log, 5); assert.equal(j.reconstructed, 1);
+  assert.equal(j.work_unknown, 1); assert.equal(j.work_unknown_quiet, 1); assert.equal(j.work_unknown_found, 0);   // idle_agt=unknown only: the old 11-05 line is rebuilt from the history file
+  assert.equal(j.missed, 1); assert.equal(j.unexplained, 1);               // missed is the job's own log field only; a transcript proxy with a quiet job is unexplained
+  assert.equal(j.missed + j.unexplained + j.found_work + j.false_alarm + j.quiet + j.work_unknown, j.n);
+  assert.equal(j.from_log, 5); assert.equal(j.from_history, 1); assert.equal(j.reconstructed, 1);
   assert.equal(j.ground_truth_from, "2026-11-02");                        // first run with a known work_existed: the rebuilt one
 });
 
@@ -150,17 +154,17 @@ test("leakcheck: counts and dates only; no session name, job detail, body or run
 test("segments: every mapping cell lands in exactly one segment and the segments sum to n", async () => {
   const { renderData } = await import("../src/qwen-render.mjs");
   // One run in each cell the exporter counts: miss, found with work, found with no work, found with work unknown, quiet, work unknown and quiet, found unknown.
-  const cells = { n: 7, missed: 1, found_work: 1, false_alarm: 1, quiet: 1, work_unknown: 2, work_unknown_found: 1, work_unknown_quiet: 1, identified_unknown: 1, found_right: 0, found_wrong: 0, correct_unknown: 4, ground_truth_from: "2026-11-01" };
+  const cells = { n: 8, missed: 1, unexplained: 1, found_work: 1, false_alarm: 1, quiet: 1, work_unknown: 2, work_unknown_found: 1, work_unknown_quiet: 1, identified_unknown: 1, found_right: 0, found_wrong: 0, correct_unknown: 4, ground_truth_from: "2026-11-01" };
   const page = renderData({ ...data, truth: { jobs: [{ job: "session-finish", ...cells }] } });
-  const segs = Object.fromEntries([...page.matchAll(/Session finish (Missed|Found|Quiet|Unknown): (\d+) of 7/g)].map((m) => [m[1], +m[2]]));
+  const segs = Object.fromEntries([...page.matchAll(/Session finish (Missed|Transcript says idle, job quiet, unexplained \(under review\)|Found|Quiet|Unknown): (\d+) of 8/g)].map((m) => [m[1], +m[2]]));
   // work_unknown_quiet (1) and identified_unknown (1) are the only runs that are neither missed, found nor quiet.
-  assert.deepEqual(segs, { Missed: 1, Found: 3, Quiet: 1, Unknown: 2 });
-  assert.equal(Object.values(segs).reduce((a, b) => a + b, 0), 7);
-  assert.match(page, /Session finish: 7 runs, 5 with ground truth, 1 missed, 3 found, 1 quiet, 2 unknown\./);
+  assert.deepEqual(segs, { Missed: 1, "Transcript says idle, job quiet, unexplained (under review)": 1, Found: 3, Quiet: 1, Unknown: 2 });
+  assert.equal(Object.values(segs).reduce((a, b) => a + b, 0), 8);
+  assert.match(page, /Session finish: 8 runs, 6 with ground truth, 1 missed, 1 unexplained, 3 found, 1 quiet, 2 unknown\./);
   // The exporter's own fixtures: every job's four segments sum to n.
   const page2 = renderData(data);
   for (const j of data.truth.jobs) {
-    const got = [...page2.matchAll(new RegExp(`${{ "session-finish": "Session finish", "declutter-sweep": "Declutter sweep", "pr-sweep": "PR sweeps", "cron-triage": "Cron triage" }[j.job]} (?:Missed|Found|Quiet|Unknown): (\\d+) of ${j.n}`, "g"))].reduce((a, m) => a + +m[1], 0);
+    const got = [...page2.matchAll(new RegExp(`${{ "session-finish": "Session finish", "declutter-sweep": "Declutter sweep", "pr-sweep": "PR sweeps", "cron-triage": "Cron triage" }[j.job]} (?:Missed|Transcript says idle, job quiet, unexplained \\(under review\\)|Found|Quiet|Unknown): (\\d+) of ${j.n}`, "g"))].reduce((a, m) => a + +m[1], 0);
     assert.equal(got, j.n, j.job);
   }
 });
@@ -170,15 +174,17 @@ test("page: one bar per job, one counts-only line per job, the raw cells in a cl
   const page = renderData(data), sec = page.slice(page.indexOf('id="truth"'), page.indexOf('id="fallbacks"'));
   assert.equal((sec.match(/<svg/g) || []).length, 1);
   assert.equal((sec.match(/class="note truth-line"/g) || []).length, 4);
-  assert.match(sec, /Session finish: 7 runs, 5 with ground truth, 1 missed, 3 found, 1 quiet, 2 unknown\./);
-  assert.match(sec, /PR sweeps: 2 runs, 0 with ground truth, 0 missed, 1 found, 0 quiet, 1 unknown\./);
-  assert.match(sec, /Session finish: 1 missed/);                                   // the aria label carries the counts
-  const rects = [...sec.matchAll(/Session finish (Missed|Found|Quiet|Unknown): (\d+) of 7/g)].map((m) => [m[1], +m[2]]);
-  assert.deepEqual(rects, [["Missed", 1], ["Found", 3], ["Quiet", 1], ["Unknown", 2]]);   // misses left-most, in order
+  assert.match(sec, /Session finish: 7 runs, 6 with ground truth, 1 missed, 1 unexplained, 3 found, 1 quiet, 1 unknown\./);
+  assert.match(sec, /PR sweeps: 2 runs, 0 with ground truth, 0 missed, 0 unexplained, 1 found, 0 quiet, 1 unknown\./);
+  assert.match(sec, /Session finish: 1 missed, 1 transcript says idle, job quiet, unexplained/);   // the aria label carries the counts
+  const rects = [...sec.matchAll(/Session finish (Missed|Transcript says idle, job quiet, unexplained \(under review\)|Found|Quiet|Unknown): (\d+) of 7/g)].map((m) => [m[1], +m[2]]);
+  assert.deepEqual(rects, [["Missed", 1], ["Transcript says idle, job quiet, unexplained (under review)", 1], ["Found", 3], ["Quiet", 1], ["Unknown", 1]]);   // misses left-most, in order
   assert.match(sec, /<details class="truth-rows"><summary>Show all runs<\/summary>/);
   assert.doesNotMatch(sec, /<details[^>]*\bopen\b/);                                // closed by default
   assert.match(sec, /class="truth-scroll" tabindex="0" role="region"/);
   assert.match(sec, /Ground truth from<\/th><td>2026-11-02<\/td>/); assert.match(sec, /none yet/);
+  assert.match(sec, /<span><i style="background:var\(--site-series-5\)"><\/i>Transcript says idle, job quiet, unexplained \(under review\)<\/span>/);   // plain text legend entry
+  assert.doesNotMatch(sec, /<a |href=|routine-library|#276/);                       // no link and no private repo name anywhere in the section
   assert.doesNotMatch(sec, /NaN|undefined|null/);
   assert.match(page, /Cost est\.: not available in this snapshot/);
   assert.doesNotThrow(() => renderData({ ...data, truth: undefined }));            // an older snapshot without the block still renders
