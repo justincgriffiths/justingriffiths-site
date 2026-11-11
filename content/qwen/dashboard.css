@@ -1,0 +1,16 @@
+/* Chart styling for /qwen/dashboard/. Tabler supplies the layout, cards and tables; this file only colors the inline SVG.
+   Colors are Tabler variables, never hex. */
+.chart { display: block; width: 100%; height: auto; }
+.chart-share { display: block; width: 100%; max-width: 220px; height: 14px; }
+.c-label, .c-value, .c-axis { font-size: 11px; fill: var(--tblr-body-color); }
+.c-axis { fill: var(--tblr-secondary); }
+.c-main { fill: var(--tblr-primary); background: var(--tblr-primary); }
+.c-main-soft { fill: var(--tblr-primary); background: var(--tblr-primary); opacity: .5; }
+.c-alt { fill: var(--tblr-secondary); background: var(--tblr-secondary); }
+.c-alt-soft { fill: var(--tblr-secondary); background: var(--tblr-secondary); opacity: .45; }
+.c-bad { fill: var(--tblr-orange); background: var(--tblr-orange); }
+.c-ref { stroke: var(--tblr-secondary); stroke-dasharray: 4 3; stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin-top: .5rem; font-size: .8125rem; color: var(--tblr-secondary); }
+.legend i { display: inline-block; width: .625rem; height: .625rem; margin-right: .375rem; border-radius: 2px; }
+.markdown h2 { margin-top: 1.5rem; }
+.markdown table { margin-bottom: 1rem; }
