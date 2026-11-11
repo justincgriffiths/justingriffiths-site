@@ -3,6 +3,7 @@
 // content/qwen/tests.json (bin/qwen-tests.py). Writeups: content/qwen/writeups/*.md, numbers filled from the data.
 // Tabler is vendored (vendor/tabler, see vendor/tabler/VENDOR.md); nothing loads from a CDN.
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync } from "node:fs";
+import { chromeHead, siteHeader, NAV_SCRIPT } from "./src/chrome.mjs";
 import { renderDashboard, renderWriteup, parseWriteup, fill, mdToHtml } from "./src/qwen-dashboard-render.mjs";
 
 const rel = (p) => new URL(p, import.meta.url);
@@ -17,9 +18,15 @@ const page = (title, desc, body) => `<!doctype html>
 <meta name="description" content="${desc}">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+${chromeHead()}
 <link rel="stylesheet" href="${BASE}vendor/tabler.min.css">
 <style>${css}</style></head><body>
+<a class="skip" href="#main">Skip to content</a>
+${siteHeader("qwen")}
+<main id="main">
 ${body}
+</main>
+${NAV_SCRIPT}
 <script src="${BASE}vendor/tabler.min.js" defer></script>
 </body></html>
 `;
