@@ -33,6 +33,7 @@ export function contextFor(d, landscape = false) {
 export const PAGES = [
   { id: "home", path: "/", framed: true },
   { id: "qwen", path: "/qwen/", framed: true },
+  { id: "qwen-dashboard", path: "/qwen/dashboard/" },
   { id: "resume", path: "/resume/" },
   { id: "marketing-101", path: "/marketing-101/" },
   { id: "archive", path: "/archive/" },

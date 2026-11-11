@@ -154,6 +154,15 @@ export default {
     if (url.pathname === "/qwen/" || url.pathname === "/qwen/index.html") {
       return env.ASSETS.fetch(request);
     }
+    // /qwen/dashboard/ is the Tabler version of the page (aggregates only, noindex): the dashboard, its writeups and the
+    // vendored Tabler files, all static, served from dist/qwen/dashboard/.
+    if (url.pathname === "/qwen/dashboard") {
+      url.pathname = "/qwen/dashboard/";
+      return Response.redirect(url.toString(), 301);
+    }
+    if (url.pathname.startsWith("/qwen/dashboard/")) {
+      return env.ASSETS.fetch(request);
+    }
 
     if (url.pathname === ARCHIVE_PREFIX || url.pathname.startsWith(`${ARCHIVE_PREFIX}/`)) {
       const res = await env.ASSETS.fetch(request);

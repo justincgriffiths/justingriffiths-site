@@ -157,6 +157,18 @@ test("worker: /fleet/, /media/ and /qwen/ are not replaced on .com", async () =>
   assert.equal((await on("justingriffiths.com", "/fleet/")).status, 404);
   assert.doesNotMatch(await (await on("justingriffiths.com", "/media/a.png")).text(), /^<html><head><\/head>construction/);
 });
+test("worker: /qwen/dashboard/ and its writeups are served on .com, not sent to the archive or construction page", async () => {
+  for (const p of ["/qwen/dashboard/", "/qwen/dashboard/writeups/fill-a-table/", "/qwen/dashboard/vendor/tabler.min.css"]) {
+    const r = await on("justingriffiths.com", p);
+    assert.equal(r.status, 200, p);
+    const t = await r.text();
+    assert.match(t, /hub/, p);
+    assert.doesNotMatch(t, /construction/, p);
+  }
+  const bare = await on("justingriffiths.com", "/qwen/dashboard");
+  assert.equal(bare.status, 301);
+  assert.equal(bare.headers.get("location"), "https://justingriffiths.com/qwen/dashboard/");
+});
 test("worker: workers.dev serves the full site, noindex", async () => {
   const r = await on(STAGING, "/");
   assert.equal(r.headers.get("x-robots-tag"), "noindex, nofollow");

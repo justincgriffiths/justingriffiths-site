@@ -287,5 +287,8 @@ await import("./build-marketing.mjs");
 // The Qwen rollout page at /qwen/ (see build-qwen.mjs; data from bin/qwen-state.sh).
 await import("./build-qwen.mjs");
 
+// The Tabler version of the Qwen page at /qwen/dashboard/ (see build-qwen-dashboard.mjs; built beside /qwen/, which it leaves alone).
+await import("./build-qwen-dashboard.mjs");
+
 // The full-titles resume at /resume/ (see build-resume.mjs; data is bio.json's resume block).
 await import("./build-resume.mjs");
