@@ -7,8 +7,8 @@ import { chromeHead, siteHeader, bookLink, NAV_SCRIPT } from "./src/chrome.mjs";
 import { renderData, renderFresh } from "./src/qwen-render.mjs";
 
 // Live refresh (site#78): the page inlines the renderer, then pulls /qwen/data.json (the Worker serves it from KV)
-// every 5 minutes and re-renders in place. The built HTML above stays the no-JS fallback. A failed or malformed
-// pull leaves the page as it is.
+// once on load and then every 5 minutes, and re-renders in place. The built HTML above stays the no-JS fallback.
+// A failed or malformed pull leaves the page as it is.
 const RENDER_SRC = readFileSync(new URL("./src/qwen-render.mjs", import.meta.url), "utf8").replace(/^export /gm, "");
 const LIVE_SCRIPT = `<script>(()=>{${RENDER_SRC}
 const body=document.getElementById("qwen-data"),extra=document.querySelector("#data .disclosure-extra");let cur=document.querySelector(".asof")?.dataset.asof||"";
@@ -18,7 +18,7 @@ const s=h<1?Math.max(1,Math.round(h*60))+" min ago":h<48?Math.round(h)+(Math.rou
 a.textContent=" · "+s+(h>STALE_H?" · stale":"");p.classList.toggle("stale",h>STALE_H);}
 async function pull(){if(document.hidden)return;try{const r=await fetch("/qwen/data.json",{cache:"no-store"});if(!r.ok)return;const d=await r.json();
 if(!d||typeof d!=="object"||!d.share_by_day||(d.as_of&&d.as_of===cur))return;const html=renderData(d),fresh=renderFresh(d);body.innerHTML=html;extra.innerHTML=fresh;cur=d.as_of||"";age();}catch(e){}}
-age();setInterval(age,60000);setInterval(pull,300000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pull();});})()</script>`;
+age();pull();setInterval(age,60000);setInterval(pull,300000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pull();});})()</script>`;
 const data = JSON.parse(readFileSync(new URL("./content/qwen/data.json", import.meta.url), "utf8"));
 const fresh = renderFresh(data), dataBody = renderData(data);
 
