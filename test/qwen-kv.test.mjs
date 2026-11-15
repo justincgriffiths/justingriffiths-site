@@ -188,3 +188,15 @@ test("a failed fetch refuses the export: exit 1, no put, even with data supplied
     assert.equal(r.status, 1); assert.match(r.stdout, /fetch failed/); assert.equal(r.called, false);
   }
 });
+
+test("site#126: a fleet-reader password file that is not mode 0600 stops the run before the exporter, and is never printed", () => {
+  const cfg = join(dir, "pwcfg");
+  mkdirSync(cfg, { recursive: true });
+  writeFileSync(join(cfg, "fleet-reader.password"), "reader-pw-value", { mode: 0o644 });
+  chmodSync(join(cfg, "fleet-reader.password"), 0o644);
+  const r = kv({ FLEET_KV_DIR: cfg });
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /fleet-reader\.password must be mode 0600 \(is 644\)/);
+  assert.equal(r.called, false);
+  assert.doesNotMatch(r.stdout + r.stderr, /reader-pw-value/);
+});
