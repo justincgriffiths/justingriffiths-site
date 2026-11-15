@@ -36,7 +36,7 @@ else
   # No file: the run goes on without it and skill_cost stays null, as before.
   PW=""
   if [ -z "${PGPASSWORD:-}" ] && [ -f "$CFG/fleet-reader.password" ]; then
-    PMODE=$(stat -f %Lp "$CFG/fleet-reader.password" 2>/dev/null || stat -c %a "$CFG/fleet-reader.password")
+    PMODE=$(stat -c %a "$CFG/fleet-reader.password" 2>/dev/null || stat -f %Lp "$CFG/fleet-reader.password")  # GNU first: on Linux `stat -f` succeeds and prints the filesystem
     [ "$PMODE" = 600 ] || fin 1 "$CFG/fleet-reader.password must be mode 0600 (is $PMODE)"
     PW=$(tr -d '\n' < "$CFG/fleet-reader.password")
   fi
@@ -60,7 +60,7 @@ if [ "$DRY" = 1 ]; then
 fi
 
 if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] && [ -f "$CFG/fleet-kv.token" ]; then
-  MODE=$(stat -f %Lp "$CFG/fleet-kv.token" 2>/dev/null || stat -c %a "$CFG/fleet-kv.token")
+  MODE=$(stat -c %a "$CFG/fleet-kv.token" 2>/dev/null || stat -f %Lp "$CFG/fleet-kv.token")
   [ "$MODE" = 600 ] || fin 1 "$CFG/fleet-kv.token must be mode 0600 (is $MODE)"
   CLOUDFLARE_API_TOKEN=$(tr -d '[:space:]' < "$CFG/fleet-kv.token")
 fi
