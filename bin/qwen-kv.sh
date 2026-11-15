@@ -30,7 +30,20 @@ git fetch -q "${QWEN_KV_REMOTE:-origin}" "${QWEN_KV_REF:-main}" 2> "$ERR" || fin
 git archive FETCH_HEAD | tar -x -C "$SNAP" || fin 1 "cannot snapshot ${QWEN_KV_REF:-main}"
 [ -f "$SNAP/src/qwen-render.mjs" ] && [ -f "$SNAP/bin/qwen-state.py" ] && [ -f "$SNAP/bin/qwen-leakcheck.py" ] || fin 1 "snapshot lacks the exporter, leakcheck or renderer"
 if [ -n "${QWEN_KV_DATA:-}" ]; then cp "$QWEN_KV_DATA" "$TMP" || fin 1 "cannot read QWEN_KV_DATA"
-else python3 "$SNAP/bin/qwen-state.py" > "$TMP" 2> "$ERR" || fin 1 "qwen-state.py failed: $(tr '\n' ' ' < "$ERR" | cut -c1-160)"; fi
+else
+  # site#126 (Justin, 2026-11-14, "Store password file"): the read-only fleet_reader password, from $CFG/fleet-reader.password
+  # (mode 0600, written by bin/fleet-reader-key.sh), reaches qwen-state.py's env only, so skill_cost is filled unattended.
+  # No file: the run goes on without it and skill_cost stays null, as before.
+  PW=""
+  if [ -z "${PGPASSWORD:-}" ] && [ -f "$CFG/fleet-reader.password" ]; then
+    PMODE=$(stat -f %Lp "$CFG/fleet-reader.password" 2>/dev/null || stat -c %a "$CFG/fleet-reader.password")
+    [ "$PMODE" = 600 ] || fin 1 "$CFG/fleet-reader.password must be mode 0600 (is $PMODE)"
+    PW=$(tr -d '\n' < "$CFG/fleet-reader.password")
+  fi
+  if [ -n "$PW" ]; then PGPASSWORD="$PW" python3 "$SNAP/bin/qwen-state.py" > "$TMP" 2> "$ERR"; else python3 "$SNAP/bin/qwen-state.py" > "$TMP" 2> "$ERR"; fi \
+    || fin 1 "qwen-state.py failed: $(tr '\n' ' ' < "$ERR" | cut -c1-160)"
+  PW=""
+fi
 jq -e 'type=="object"' "$TMP" >/dev/null 2>&1 || fin 1 "document is not a JSON object"
 # Required keys come from the renderer itself: every data.<key> it reads, plus as_of (renderFresh). "json" is a filename in a comment.
 KEYS=$({ grep -o '\bdata\.[a-z_]*' "$SNAP/src/qwen-render.mjs" | sed 's/^data\.//'; echo as_of; } | grep -vx json | sort -u)
