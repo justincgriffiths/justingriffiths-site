@@ -20,7 +20,8 @@ const GATED_PREFIX = "/fleet";
 const META_PREFIX = `${GATED_PREFIX}/meta`, META_STATE_PATH = `${META_PREFIX}/state.json`, META_KEY = "meta.json";
 const STATE_PATH = `${GATED_PREFIX}/state.json`, STATE_KEY = "state.json";
 const GAME_STATE_PATH = `${GATED_PREFIX}/game/state.json`, GAME_KEY = "game/state.json";
-const QWEN_DATA_PATH = "/qwen/data.json", QWEN_KEY = "qwen/data.json";
+const COOKBOOK_PREFIX = "/cookbook", COOKBOOK_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const QWEN_DATA_PATH ="/qwen/data.json", QWEN_KEY = "qwen/data.json";
 const GATED_HEADERS = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY", "Referrer-Policy": "no-referrer" };
 
 // The token was already verified; this reads its email claim and checks the allowlist. Fails closed.
@@ -106,6 +107,23 @@ export default {
       const out = new Response(res.body, res);
       for (const [k, v] of Object.entries(GATED_HEADERS)) out.headers.set(k, v);
       return out;
+    }
+
+    // /cookbook/ is the family cookbook. Its own Access app (email code, family allowlist) so the family never
+    // gets /fleet; the Worker checks that app's token itself (COOKBOOK_AUD) and fails closed. The pages live in
+    // KV, not in this public repo: bin/cookbook-kv.sh renders the private recipes repo and writes key
+    // "cookbook/index.html" and "cookbook/<slug>/index.html". No key means 404.
+    if (url.pathname === COOKBOOK_PREFIX || url.pathname.startsWith(`${COOKBOOK_PREFIX}/`)) {
+      if (!(await verifyAccessJwt(request, { ACCESS_TEAM_DOMAIN: env.ACCESS_TEAM_DOMAIN, ACCESS_AUD: env.COOKBOOK_AUD }))) return new Response("Not found", { status: 404 });
+      const rest = url.pathname.slice(COOKBOOK_PREFIX.length + 1).replace(/index\.html$/, "");
+      if (url.pathname === COOKBOOK_PREFIX || (rest && !rest.endsWith("/") && COOKBOOK_SLUG.test(rest))) {
+        url.pathname = `${url.pathname}/`;
+        return Response.redirect(url.toString(), 301);
+      }
+      if (rest !== "" && !(rest.endsWith("/") && COOKBOOK_SLUG.test(rest.slice(0, -1)))) return new Response("Not found", { status: 404, headers: { "Cache-Control": "private, no-store" } });
+      const html = env.FLEET_KV ? await env.FLEET_KV.get(`cookbook/${rest}index.html`) : null;
+      if (html === null) return new Response("Not found", { status: 404, headers: { "Cache-Control": "private, no-store" } });
+      return new Response(html, { headers: { ...GATED_HEADERS, "Content-Type": "text/html; charset=utf-8" } });
     }
 
     // /marketing-101/ is the Marketing 101 lesson, served from dist/marketing-101/.

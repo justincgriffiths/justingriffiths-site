@@ -21,6 +21,9 @@ DRY=0; [ "${1:-}" = "--dry-run" ] && { DRY=1; shift; }
 [ $# -ge 1 ] || { echo "usage: access-login.sh [--dry-run] email [email ...]" >&2; log 2 "no emails"; }
 # name|domain-with-path. Add a path here to gate it.
 APPS=("Marketing 101|justingriffiths.com/marketing-101" "Fleet visualizations|justingriffiths.com/fleet")
+# The family cookbook has its own app and allowlist (family must never get /fleet), so it is only ever set up
+# alone: ACCESS_ONLY=cookbook ACCESS_LOGIN=otp bin/access-login.sh <emails>. Its AUD goes in COOKBOOK_AUD.
+[ "${ACCESS_ONLY:-}" = cookbook ] && APPS=("Family cookbook|justingriffiths.com/cookbook")
 # ACCESS_ONLY=fleet locks one app and leaves the rest as they are (2026-11-07: /marketing-101 stays public).
 if [ -n "${ACCESS_ONLY:-}" ]; then
   KEEP=(); for a in "${APPS[@]}"; do case "${a#*|}" in *"/${ACCESS_ONLY}") KEEP+=("$a");; esac; done; APPS=("${KEEP[@]}")
