@@ -40,7 +40,21 @@ if [ "$DRY" = 1 ]; then
   fin 0 "dry rev=$REV keys=$N"
 fi
 
-: "${CLOUDFLARE_API_TOKEN:?}" "${FLEET_KV_NAMESPACE_ID:?}"
+FLEET_KV_NAMESPACE_ID="${FLEET_KV_NAMESPACE_ID:-7683fca9f60d446cb3799db66178df15}"   # public; also in wrangler.jsonc
+# No API token: write through the wrangler login on this machine instead (it carries KV write).
+if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+  W="npx -y wrangler@4"
+  $W kv bulk put "$WORK/bulk.json" --namespace-id "$FLEET_KV_NAMESPACE_ID" --remote > "$WORK/w.log" 2>&1 || fin 1 "wrangler kv bulk put failed: $(tail -c 200 "$WORK/w.log")"
+  echo "wrote $N cookbook pages from $REPO@$REV (wrangler)"
+  OLD=$($W kv key list --namespace-id "$FLEET_KV_NAMESPACE_ID" --prefix cookbook/ --remote 2>/dev/null | jq -r '.[].name' | sort)
+  STALE=$(comm -23 <(echo "$OLD" | sed '/^$/d') "$WORK/keys.txt")
+  if [ -n "$STALE" ]; then
+    echo "$STALE" | jq -R . | jq -s . > "$WORK/stale.json"
+    $W kv bulk delete "$WORK/stale.json" --namespace-id "$FLEET_KV_NAMESPACE_ID" --remote --force > /dev/null 2>&1 \
+      && echo "removed $(echo "$STALE" | wc -l | tr -d ' ') stale page(s)" || echo "stale page delete failed (pages still served)" >&2
+  fi
+  fin 0 "wrote rev=$REV keys=$N via=wrangler"
+fi
 NS="https://api.cloudflare.com/client/v4/accounts/$ACCT/storage/kv/namespaces/$FLEET_KV_NAMESPACE_ID"
 cf() { curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "$@"; }
 OUT=$(cf -X PUT --data-binary @"$WORK/bulk.json" "$NS/bulk")

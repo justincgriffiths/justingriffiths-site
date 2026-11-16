@@ -24,8 +24,8 @@
   // means /fleet/ answers 404 to everyone. Team = the JG Personal Zero Trust org (tempoadv);
   // AUD = Access app "Fleet" (justingriffiths.com/fleet, id 8d4de6fd…), created 2026-11-07.
   "vars": { "ACCESS_TEAM_DOMAIN": "tempoadv.cloudflareaccess.com", "ACCESS_AUD": "e6bb94773c8ffcc302b96784de10095657451b7f3dbcf344217e8baa8ec7869b",
-    // COOKBOOK_AUD = Access app "Family cookbook" (justingriffiths.com/cookbook). Empty means /cookbook/ answers 404 to everyone.
-    "COOKBOOK_AUD": "" },
+    // COOKBOOK_AUD = Access app "Family cookbook" (justingriffiths.com/cookbook, id 28b2abf8…, policies justin-only + Allow Amelia), created 2026-11-16. Empty means /cookbook/ answers 404 to everyone.
+    "COOKBOOK_AUD": "21a41af13304b7347f11aa92f56d253a87399f69f52c95a88770c88ff4142931" },
   // Live fleet state: /fleet/state.json reads key "state.json" from this KV binding (the mini writes it,
   // bin/fleet-kv.sh). Namespace "fleet-state" in JG Personal, created 2026-11-07 (site#43). Takes effect on deploy;
   // until the pusher writes a key, /fleet/state.json answers 404.
