@@ -32,6 +32,19 @@
 .original { border-top: var(--border-width) solid var(--site-line); padding-block: var(--space-6); }
 .original summary { cursor: pointer; font-weight: var(--weight-bold); }
 .original pre { white-space: pre-wrap; font-family: var(--font-serif); font-size: var(--text-body); line-height: var(--leading-relaxed); margin-top: var(--space-3); }
+/* Cooking: screen-on and clear-ticks under the title, lines that tick off on tap, timers on the times. */
+.cookbar { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+.cookbar button, .timer { font: inherit; font-size: var(--text-body-sm); color: inherit; background: transparent; border: var(--border-width) solid var(--site-line); border-radius: var(--site-radius-control); padding: var(--space-2) var(--space-3); min-height: 2.75rem; cursor: pointer; }
+.cookbar [aria-pressed="true"] { background: var(--site-accent); border-color: var(--site-accent); color: var(--site-accent-ink); }
+.timer { display: inline; min-height: 0; padding: 0 var(--space-2); font-weight: var(--weight-bold); white-space: nowrap; border-color: var(--site-accent); }
+.timer.running { background: var(--site-accent); color: var(--site-accent-ink); font-variant-numeric: tabular-nums; }
+.timer.rung { background: var(--site-pending); border-color: var(--site-pending); }
+.check li { cursor: pointer; padding-block: var(--space-1); -webkit-tap-highlight-color: transparent; }
+.check li.done { text-decoration: line-through; color: var(--site-text-soft); }
+@media (max-width: 40rem) {
+  .cookbook p, .cookbook li { font-size: var(--text-body-lg); }
+  .check li { padding-block: var(--space-2); }
+}
 .back { margin-top: var(--space-8); }
 .back button { font: inherit; color: var(--site-accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
 

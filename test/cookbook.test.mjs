@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import worker from "../src/worker.js";
 import { resetKeyCache } from "../src/access.js";
-import { frontMatter, renderCookbook } from "../build-cookbook.mjs";
+import { frontMatter, renderCookbook, timers } from "../build-cookbook.mjs";
 
 const FIX = fileURLToPath(new URL("./fixtures/cookbook/", import.meta.url));
 
@@ -28,6 +28,17 @@ test("render: index plus one page per recipe, escaped, with the original folded 
   assert.match(page, /noindex, nofollow/);
   assert.match(out["index.html"], /href="\/cookbook\/test-toast\/"/);
   assert.match(out["index.html"], /1 family recipes, from Grandpa Test/);
+});
+
+test("cooking: step times become timers (longer end of a range), lists tick off, the bar and script ship", () => {
+  assert.equal(timers("<li>Brown, 5–7 minutes. Add, 1 minute. Simmer 1 hour.</li>"),
+    '<li>Brown, <button type="button" class="timer" data-s="420">5–7 minutes</button>. Add, <button type="button" class="timer" data-s="60">1 minute</button>. Simmer <button type="button" class="timer" data-s="3600">1 hour</button>.</li>');
+  assert.equal(timers("<li>Bake 350 degrees until done.</li>"), "<li>Bake 350 degrees until done.</li>");
+  const page = renderCookbook(FIX)["test-toast/index.html"];
+  assert.match(page, /class="cookbar no-print"/);
+  assert.match(page, /id="awake"[^>]*hidden/);
+  assert.match(page, /wakeLock/);
+  assert.doesNotMatch(page, /class="part part-notes check"/);
 });
 
 // Worker gate. Same token helpers as worker.test.mjs, with the Cookbook app's audience.
