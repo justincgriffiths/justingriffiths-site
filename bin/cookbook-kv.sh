@@ -2,7 +2,7 @@
 # cookbook-kv.sh — renders the family cookbook from the private recipes repo and writes the pages to the
 # Cloudflare KV keys the Worker serves at /cookbook/ (binding FLEET_KV, keys "cookbook/index.html" and
 # "cookbook/<slug>/index.html"). Long name: cookbook-to-kv. Recipe text never touches this public repo.
-#   op run --env-file=bin/fleet-kv.env -- bin/cookbook-kv.sh             renders origin/main of justincgriffiths/recipes, writes KV
+#   op run --env-file=bin/cookbook-access.env -- bin/cookbook-kv.sh             renders origin/main of justincgriffiths/recipes, writes KV
 #   bin/cookbook-kv.sh --dry-run                                          renders and lists the keys; touches nothing
 # RECIPES_DIR=<checkout> renders that folder instead of a fresh clone (to preview an unmerged branch).
 # Keys under cookbook/ that the new render does not produce (a removed recipe) are deleted after the write.
