@@ -11,6 +11,9 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 LOG="bin/access-allow.log"; ACCT="6d4a918dd966be7c05f23b2e154b3d1d"; API="https://api.cloudflare.com/client/v4/accounts/$ACCT/access"
 DOMAINS=("justingriffiths.com/marketing-101" "justingriffiths.com/fleet")
+# ACCESS_ONLY=cookbook manages the family cookbook's own list instead, and never touches the two above:
+#   ACCESS_ONLY=cookbook op run --env-file=bin/access.env -- bin/access-allow.sh add aunt@example.com
+case "${ACCESS_ONLY:-}" in "") ;; cookbook) DOMAINS=("justingriffiths.com/cookbook") ;; *) echo "ACCESS_ONLY must be cookbook or unset" >&2; exit 2 ;; esac
 POLICY="Allow-listed people"
 ARGS="$*"
 log() { rc=$1; printf '[%s] argv=[%s] exit=%s msg="%s"\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ARGS" "$rc" "$2" >> "$LOG"; exit "$rc"; }

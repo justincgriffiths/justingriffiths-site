@@ -1,0 +1,43 @@
+/* /cookbook/ (build-cookbook.mjs): the family cookbook, behind the Cookbook Access app. Loaded after /site.css;
+   tokens only. A reading column like /resume/, sized for a phone propped on the counter, and it prints clean. */
+.cookbook { --center-max: 46rem; --stack-gap: 0; padding-block: var(--space-10) var(--space-16); }
+.cookbook h1 { font-size: clamp(var(--text-h2), 6vw, var(--text-display)); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); font-weight: var(--weight-bold); margin-bottom: var(--space-3); }
+.cookbook .lede { font-size: var(--text-body-lg); max-width: var(--measure); margin-bottom: var(--space-6); }
+.cookbook h2 { font-size: var(--text-overline); font-weight: var(--weight-bold); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--site-text-soft); margin-bottom: var(--space-3); }
+.cookbook h3 { font-size: var(--text-body); font-weight: var(--weight-bold); margin: var(--space-4) 0 var(--space-1); }
+.cookbook p, .cookbook li { line-height: var(--leading-relaxed); max-width: var(--measure); }
+.cookbook ul, .cookbook ol { padding-left: var(--space-6); margin: 0 0 var(--space-2); }
+.cookbook li { margin-block: var(--space-1); }
+
+/* Index */
+.find { margin-bottom: var(--space-6); }
+.find label { display: block; font-size: var(--text-body-sm); color: var(--site-text-soft); margin-bottom: var(--space-1); }
+.find input { width: 100%; max-width: 24rem; font: inherit; padding: var(--space-2) var(--space-3); border: var(--border-width) solid var(--site-line); border-radius: var(--radius-sm); background: transparent; color: inherit; }
+.course { border-top: var(--border-width) solid var(--site-line); padding-block: var(--space-6); }
+.recipes { list-style: none; padding: 0; }
+.recipes li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-1) var(--space-4); padding-block: var(--space-2); border-bottom: 1px solid var(--site-hairline); margin: 0; max-width: none; }
+.recipes li:last-child { border-bottom: 0; }
+.recipes a { font-weight: var(--weight-bold); }
+.recipes .who { color: var(--site-text-soft); font-size: var(--text-body-sm); }
+
+/* Recipe */
+.crumb { font-size: var(--text-body-sm); color: var(--site-text-soft); margin-bottom: var(--space-4); }
+.from { color: var(--site-text-soft); font-style: italic; margin-bottom: var(--space-4); }
+.facts { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-8); margin: 0 0 var(--space-6); }
+.facts dt { font-size: var(--text-overline); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--site-text-soft); }
+.facts dd { margin: 0; font-weight: var(--weight-bold); }
+.flag { border-left: var(--border-width-thick) solid var(--site-accent); padding-left: var(--space-3); }
+.part { border-top: var(--border-width) solid var(--site-line); padding-block: var(--space-6); }
+.part-steps ol > li { margin-block: var(--space-3); }
+.original { border-top: var(--border-width) solid var(--site-line); padding-block: var(--space-6); }
+.original summary { cursor: pointer; font-weight: var(--weight-bold); }
+.original pre { white-space: pre-wrap; font-family: var(--font-serif); font-size: var(--text-body); line-height: var(--leading-relaxed); margin-top: var(--space-3); }
+.back { margin-top: var(--space-8); }
+.back button { font: inherit; color: var(--site-accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+
+@media print {
+  .site-header, .skip, .no-print, .crumb { display: none !important; }
+  .cookbook { padding: 0; }
+  .original:not([open]) { display: none; }
+  .part { break-inside: avoid-page; }
+}

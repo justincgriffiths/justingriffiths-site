@@ -120,6 +120,16 @@ Per-client built / verified / live / first-hour delivery / issues, from `~/.loca
 - **Gate**: the Fleet Access token is checked first, then `src/worker.js` requires the token's email to be in the `META_ALLOWLIST` secret (comma-separated). Unset means nobody (404). Set it: `printf 'justin@...' | npx wrangler secret put META_ALLOWLIST` (◆MYCROFT_COS). A separate Access app for `/fleet/meta` would not work as-is: its token carries another AUD, which `src/access.js` rejects.
 - **Not public**: no link from the hub, sitemap or nav; `noindex`.
 
+## Family cookbook (`/cookbook/`)
+
+The family's recipes from the private repo `justincgriffiths/recipes`, behind their own sign-in. This repo is public, so no recipe text lives here or in `dist/`.
+
+- **Render**: `build-cookbook.mjs <recipes-dir> <out-dir>` writes an index (by course, with a search box) and one page per recipe: what to set out, the steps, and the original text folded at the bottom. Styles: `content/cookbook/page.css`. Tests run on a made-up fixture (`test/fixtures/cookbook/`).
+- **Publish**: `op run --account my.1password.com --env-file=bin/cookbook-access.env -- bin/cookbook-kv.sh` clones the recipes repo's `main`, renders it and bulk-writes KV keys `cookbook/…` (binding `FLEET_KV`, no TTL), then deletes keys for removed recipes. Run it after each recipe PR merges; no site deploy needed. `--dry-run` lists the keys and writes nothing.
+- **Gate**: its own Access app, "Family cookbook" (`justingriffiths.com/cookbook`, email one-time code), so family never gets `/fleet`. The Worker checks that app's token itself (`COOKBOOK_AUD` in `wrangler.jsonc` vars) and fails closed: unset AUD, no token, a Fleet token or a missing KV key are all 404.
+- **Set up once**: `ACCESS_ONLY=cookbook ACCESS_LOGIN=otp op run --account my.1password.com --env-file=bin/cookbook-access.env -- bin/access-login.sh <emails>`; copy the printed AUD into `COOKBOOK_AUD`; deploy. The token needs Access: Apps and Policies edit and Access: Organizations, Identity Providers, and Groups edit.
+- **Who gets in**: `ACCESS_ONLY=cookbook op run --account my.1password.com --env-file=bin/cookbook-access.env -- bin/access-allow.sh list | add | remove <email>`. Without `ACCESS_ONLY` the script manages the Fleet and Marketing 101 lists instead.
+
 ## Qwen live data (`/qwen/`)
 
 `/qwen/data.json` is live (site#78): `bin/qwen-kv.sh` puts the aggregates in KV key `qwen/data.json` (binding `FLEET_KV`, 1-hour TTL) and the Worker serves that key publicly, falling back to the built asset when the key is missing, expired or KV errors. The page inlines `src/qwen-render.mjs`, pulls `/qwen/data.json` on a 5-minute timer and re-renders the charts and "Data as of" without a deploy; the built HTML stays the no-JS fallback. The page reads stale after 1 hour.
