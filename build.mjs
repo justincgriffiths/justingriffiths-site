@@ -168,7 +168,36 @@ function renderPage(skin) {
   const { cover = {} } = dossier;
   const labId = dossier.sections.find((s) => s.id === "lab") ? "lab" : null;
 
-  const coverSheet = `
+  const indexNav = `
+        <nav class="index${F(" rule-top")}" aria-label="Contents">
+          <h2 class="kicker${F(" sr-only")}">Index</h2>
+          <ol${skin === "classic" ? "" : ' class="cluster"'}>${dossier.sections
+            .map((s, i) => `
+            <li><a href="#${esc(s.id)}"><span class="num">${pad(i + 1)}</span><span class="title">${esc(s.title)}</span></a></li>`)
+            .join("")}
+          </ol>
+        </nav>`;
+
+  // The hub (Swiss, 2026-11-16): the name between two rules, the headline under it, then a masthead of two
+  // ruled columns, facts and links on the left, the section index on the right. /pedal-design/ keeps the old cover.
+  const swissCover = `
+      <section class="cover" aria-labelledby="subject">
+        <div class="cover-body band switcher">
+          ${cover.portrait ? exhibit(cover.portrait, "portrait") : ""}
+          <div class="cover-id">
+            <h1 id="subject" class="name">${esc(bio.name)}</h1>
+            ${cover.lede ? `<p class="lede fit">${ledeLines(get(cover.lede))}</p>` : ""}
+          </div>${cover.portrait ? "" : coverVisual(cover.visual)}
+        </div>
+        <div class="masthead band switcher">
+          <div class="masthead-facts rule-top">
+            ${cover.facts ? facts(cover.facts) : ""}
+            <p class="cover-actions">${labId ? `<a class="cover-more" href="#${labId}">See what I'm building${ICON.arrow}</a>` : ""}${bio.resume ? `<a class="cover-more" href="/resume/">Full resume${ICON.arrow}</a>` : ""}</p>
+          </div>${indexNav}
+        </div>
+      </section>`;
+
+  const coverSheet = skin === "classic" ? swissCover : `
       <section class="cover" aria-labelledby="subject">
         <div class="cover-body${F(" band switcher")}">
           ${cover.portrait ? exhibit(cover.portrait, "portrait") : ""}
@@ -195,9 +224,9 @@ function renderPage(skin) {
   const sections = dossier.sections
     .map(
       (s, i) => `
-      <section class="section${F(" band sidebar sidebar-sticky")}" id="${esc(s.id)}" aria-labelledby="${esc(s.id)}-title">
+      <section class="section${F(" band")}" id="${esc(s.id)}" aria-labelledby="${esc(s.id)}-title">
         <h2 class="section-title" id="${esc(s.id)}-title"><span class="num">${pad(i + 1)}</span>${esc(s.title)}</h2>
-        <div class="section-body">${s.blocks.map(renderBlock).join("")}
+        <div class="section-body${F(" cq")}">${s.blocks.map(renderBlock).join("")}
         </div>
       </section>`
     )
@@ -215,6 +244,9 @@ function renderPage(skin) {
     <meta property="og:description" content="${esc(bio.headline)}">
     <meta property="og:url" content="https://justingriffiths.com${SKINS[skin].path}">
     <meta property="og:type" content="profile">
+    <meta property="og:image" content="https://justingriffiths.com/og.jpg">
+    <meta property="og:image:alt" content="${esc(bio.name)}, smiling, in a white shirt against a pink wall">
+    <meta name="twitter:card" content="summary">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     ${chromeHead(SKINS[skin].site)}
     <script type="application/ld+json">${JSON.stringify({
@@ -268,7 +300,7 @@ writeFileSync(
 mkdirSync(new URL("./design/shallan/", import.meta.url), { recursive: true });
 writeFileSync(new URL("./design/shallan/shallan.css", import.meta.url), shallanCss);
 copyFileSync(new URL("./src/style.css", import.meta.url), new URL("./dist/style.css", import.meta.url));
-for (const f of ["favicon.svg", "robots.txt", "construction.html"]) {
+for (const f of ["favicon.svg", "robots.txt", "construction.html", "portrait.webp", "og.jpg"]) {
   const src = new URL(`./public/${f}`, import.meta.url);
   if (existsSync(src)) copyFileSync(src, new URL(`./dist/${f}`, import.meta.url));
 }

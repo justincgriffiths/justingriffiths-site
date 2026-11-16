@@ -82,6 +82,12 @@
   "dossier": {
     "cover": {
       "lede": "headline",
+      "portrait": {
+        "type": "image",
+        "src": "/portrait.webp",
+        "alt": "Justin Griffiths in a black cap and hoodie, pulling a face, with snowy hills behind him",
+        "aspect": "4 / 5"
+      },
       "facts": [
         {
           "label": "Positions",
