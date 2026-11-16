@@ -1,28 +1,66 @@
-/* The hub at / (site#51). Pedal Design System, night lane only (Justin, 2026-11-08).
-   Loaded after /site.css (src/shallan.css + src/chrome.css), which carries the base, header and the quiet CTA.
-   Reads only --site-* aliases and DS scale tokens; no hex, no font names.
-   Layout follows pedal-performance.com: mobile-first, full-bleed bands with a 2px rule between them,
-   a 1200px content column, 20px gutters on phones and 40px from 768px, steps at 768px and 1024px.
-   One box style: the paper card (hero visual, facts at 1024+). No buttons: actions are quiet text links (site#67). */
+/* The hub at / (site#51). Shallan, night lane only (Justin, 2026-11-08).
+   Loaded after /site.css (src/shallan.css + src/chrome.css + src/frame.css): the base, header and the quiet CTA.
+   Reads only --site-* aliases and Shallan scale tokens; no hex, no font names, no breakpoints (test/frame-lint).
 
-/* Overlines: the only all-caps, tiny and tracked */
+   Swiss (Justin, 2026-11-16, after the Wix "Researcher CV (Minimal)" template): one night ground with its
+   lattice, flush-left type on thin paper rules, the name set huge in capitals between two of them. No boxes,
+   no pills, no offset shadows on this page: a rule and the space around it carry the structure.
+   Mobile-first; wide layouts come from the frame's Switcher and from container queries, never @media. */
+
+html { scrollbar-color: var(--site-hairline) var(--site-bg); }
+
+/* The one rule: 1px paper across the column, the label or content hanging just under it */
+.rule-top, .section-title { border-top: 1px solid var(--site-line); padding-top: var(--space-3); }
+
+/* Labels: the only all-caps besides the name, tiny and tracked */
 dt, .meta, .group, .tag, .placeholder span:first-child {
-  font-size: var(--text-overline); font-weight: var(--weight-bold); letter-spacing: var(--tracking-wide); text-transform: uppercase; line-height: var(--leading-normal);
+  font-family: var(--site-font); font-size: var(--text-overline); font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide); text-transform: uppercase; line-height: var(--leading-normal);
 }
 dt, .meta, .group { color: var(--site-text-soft); }
 
-/* ---- Hero ---- */
-.cover { border-bottom: var(--border-width) solid var(--site-line); }
-.cover-body { --switcher-at: 58rem; --switcher-gap: var(--space-12); --switcher-g1: 7; --switcher-g2: 5; --switcher-align: center; padding-block: var(--space-10) var(--space-12); }
-.cover-id { display: grid; gap: var(--space-6); align-content: start; }
+/* ---- Cover: the name between two rules ---- */
+.cover-body { --switcher-at: 58rem; --switcher-gap: var(--space-8); --switcher-g1: 1; padding-block: var(--space-8) var(--space-10); }
+.cover-id { display: grid; align-content: start; }
 .cover-id .kicker { display: none; }
-h1 {
-  font-family: var(--site-heading-font); font-weight: var(--weight-bold);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight); text-wrap: balance;
+h1.name {
+  font-family: var(--site-heading-font); font-weight: var(--weight-bold); text-transform: uppercase;
+  font-size: clamp(var(--text-display), 13vw, calc(var(--text-display) * 2));
+  line-height: 0.92; letter-spacing: -0.035em;
+  border-block: 1px solid var(--site-line); padding-block: var(--space-3) var(--space-2);
+  overflow-wrap: normal; hyphens: none;
 }
-.lede { --fit: 30ch; font-size: var(--text-h3); line-height: var(--leading-snug); letter-spacing: var(--tracking-snug); text-wrap: pretty; }
-.cover-actions { --cluster-gap: var(--space-4) var(--space-6); }
+.lede {
+  --fit: 34ch; margin-top: var(--space-4);
+  font-family: var(--site-font); font-size: clamp(var(--text-body-lg), 1vw + 0.9rem, var(--text-h3));
+  font-weight: var(--weight-regular); line-height: var(--leading-snug); letter-spacing: var(--tracking-snug);
+  color: var(--site-text); text-wrap: pretty;
+}
+
+/* site#49: a portrait takes a narrow side column only when one exists. Black and white, as the template. */
+.cover-body:has(.portrait) { --switcher-g1: 1; --switcher-g2: 3; }
+.portrait { --fit: 18rem; order: 2; } /* the name leads; the photo follows it on a phone and sits right of it when wide */
+.portrait .frame { aspect-ratio: 4 / 5; overflow: hidden; background: var(--site-bg-alt); }
+.portrait img:not(.color) { filter: grayscale(1) contrast(1.05); }
+.portrait img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.portrait figcaption { display: none; } /* the alt text names the photo; an "Exhibit A" label under a face reads as evidence */
+
+/* The hero visual, when bio.json sets one: the picture on the ground, no card */
+.cover-visual { --fit: 32rem; display: grid; gap: var(--space-2); align-content: start; }
+.visual-art { aspect-ratio: 4 / 3; background: var(--site-art); overflow: hidden; }
+.visual-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.visual-note { font-size: var(--text-body-sm); line-height: var(--leading-normal); color: var(--site-text-soft); }
+
+/* ---- Masthead: two ruled columns under the name. Facts and links | the section index ---- */
+.masthead { --switcher-at: 40rem; --switcher-gap: var(--space-8) var(--space-6); --switcher-g1: 2; --switcher-g2: 1; padding-bottom: var(--space-16); }
+.masthead-facts { display: grid; gap: var(--space-4); align-content: start; }
+.facts { max-width: var(--measure); }
+.fact { padding-block: var(--space-2); }
+.fact + .fact { border-top: 1px solid var(--site-hairline); }
+.fact dd { overflow-wrap: break-word; }
+.fact .line { display: block; }
+.fact dd a { display: inline-flex; align-items: center; min-height: var(--tap); min-width: 0; overflow-wrap: anywhere; margin-block: calc((var(--tap) - 1lh) / -2); }
+.cover-actions { display: flex; flex-wrap: wrap; gap: 0 var(--space-6); }
 .cover-more {
   font-family: var(--site-font); display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap);
   font-weight: var(--weight-bold); color: var(--site-text); text-decoration: none;
@@ -31,61 +69,46 @@ h1 {
 .cover-more .icon { transition: transform var(--dur-fast) var(--ease-standard); }
 .cover-more:hover .icon { transform: translateX(3px); }
 
-/* The facts: plain rows on the ground (positions, location, contact) */
-.facts { max-width: var(--measure); border-top: 1px solid var(--site-hairline); }
-.fact { padding-block: var(--space-3); border-bottom: 1px solid var(--site-hairline); }
-.fact dd { overflow-wrap: break-word; }
-.fact .line { display: block; }
-.fact dd a { display: inline-flex; align-items: center; min-height: var(--tap); min-width: 0; overflow-wrap: anywhere; margin-block: calc((var(--tap) - 1lh) / -2); }
-
-/* The hero visual: the one featured box. Paper card, ink rule, hard offset into the void (the
-   DS "box stays light on night"); the art sits on a teal wash inside it. */
-.cover-visual { --fit: 32rem; display: grid; gap: var(--space-3); align-content: start; }
-.visual-card {
-  background: var(--site-box); border: var(--site-card-border); border-radius: var(--site-radius-box);
-  box-shadow: var(--site-shadow-lg); padding: var(--space-3);
-}
-.visual-art { aspect-ratio: 4 / 3; color: var(--site-box-text); background: var(--site-art); border-radius: var(--site-radius-inner); overflow: hidden; display: grid; place-items: center; }
-.visual-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.visual-note { font-size: var(--text-body-sm); line-height: var(--leading-normal); color: var(--site-text-soft); }
-.visual-note code { font-family: var(--font-mono); font-size: 0.95em; color: var(--site-text); }
-
-/* site#49: a portrait takes a narrow side column only when one exists */
-.cover-body:has(.portrait) { --switcher-g1: 1; --switcher-g2: 4; }
-.portrait { --fit: 14rem; }
-
-/* Index: in-page anchors, as the /marketing-101/ outline chips: paper rule on the ground, offset into the
-   void, pressing onto the shadow; teal on hover, as a chip that is "on" (site#60) */
-.index { padding-block: 0 var(--space-12); }
+/* The index: a plain list of section names, the current reading order, flush left */
 .index ol { list-style: none; }
 .index a {
-  display: inline-flex; align-items: center; min-height: var(--tap); padding-inline: var(--space-5);
-  font-family: var(--site-font); color: var(--site-text); text-decoration: none; font-weight: var(--weight-bold);
-  background: transparent; border: var(--border-width) solid var(--site-line); border-radius: var(--site-radius-control); box-shadow: var(--site-shadow);
-  transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+  display: flex; align-items: center; min-height: var(--tap);
+  font-family: var(--site-font); font-weight: var(--weight-medium); color: var(--site-text); text-decoration: none;
+  border-bottom: 1px solid var(--site-hairline);
+  transition: color var(--dur-fast) var(--ease-standard);
 }
-.index a:hover { background: var(--site-accent); border-color: var(--site-accent); color: var(--site-accent-ink); }
-.index a:active { transform: translate(2px, 2px); box-shadow: none; }
+.index li:last-child a { border-bottom: 0; }
+.index a:hover { color: var(--site-link); }
+.index .title { display: inline-block; transition: transform var(--dur-fast) var(--ease-standard); }
+.index a:hover .title { transform: translateX(var(--space-2)); }
 .index .num, .section-title .num { display: none; } /* the order carries no information the titles do not */
 
-/* ---- Sections: the ground and the darker canvas alternate, a 2px paper rule between ---- */
-.section { padding-block: var(--band-pad); border-bottom: var(--border-width) solid var(--site-line); }
-.section:nth-of-type(odd) { background-color: var(--site-bg-alt); }
-.section-title { font-family: var(--site-heading-font); font-size: var(--text-h3); font-weight: var(--weight-bold); line-height: var(--leading-snug); letter-spacing: var(--tracking-snug); margin-bottom: var(--space-6); text-wrap: balance; }
-.section { --sidebar-w: 18rem; --sidebar-gap: var(--space-8) var(--space-16); --sidebar-min: 60%; align-items: start; }
+/* ---- Sections: a rule, a large quiet title, the body hung from a third of the column when it is wide ---- */
+.section { padding-bottom: var(--band-pad); }
+.section-title {
+  font-family: var(--site-heading-font); font-weight: var(--weight-regular);
+  font-size: clamp(var(--text-h2), 5vw + 1rem, var(--text-display-xl));
+  line-height: var(--leading-tight); letter-spacing: -0.03em; color: var(--site-text-soft);
+  margin-bottom: var(--space-8); text-wrap: balance;
+}
 .section-body { min-width: 0; }
 .section-body > * + * { margin-top: var(--space-8); }
-.prose { max-width: var(--measure); text-wrap: pretty; }
+@container (min-width: 52rem) {
+  .section-body > * { margin-inline-start: calc(100% / 3); }
+}
+.prose { max-width: var(--measure); font-size: var(--text-body-lg); text-wrap: pretty; }
 .prose + .prose { margin-top: var(--space-4); }
 
-.entries { list-style: none; max-width: var(--measure); border-top: 1px solid var(--site-hairline); }
+/* Entries (work, lab, people): ruled rows. Name and role over the note; side by side once the body is wide */
+.entries { list-style: none; max-width: var(--measure); border-top: 1px solid var(--site-line); }
 .entry { padding-block: var(--space-4); border-bottom: 1px solid var(--site-hairline); }
-.entry-head { --cluster-align: baseline; --cluster-gap: var(--space-1) var(--space-3); }
-.entry .name { font-weight: var(--weight-bold); }
-.entry a.name { display: inline-flex; align-items: center; min-height: var(--tap); min-width: var(--tap); margin-block: calc((var(--tap) - 1lh) / -2); }
+.entry-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); }
+.entry .name { font-family: var(--site-font); font-size: var(--text-h4); font-weight: var(--weight-bold); letter-spacing: var(--tracking-snug); color: var(--site-text); }
+.entry a.name { display: inline-flex; align-items: center; min-height: var(--tap); min-width: var(--tap); margin-block: calc((var(--tap) - 1lh) / -2); text-decoration: none; }
+.entry a.name:hover { color: var(--site-link); }
 .entry cite { font-style: italic; color: var(--site-text-soft); }
 .entry .note { margin-top: var(--space-1); color: var(--site-text-soft); max-width: var(--measure); }
-.group { margin: var(--space-8) 0 var(--space-3); }
+.group { margin: var(--space-10) 0 var(--space-3); }
 .group:first-child { margin-top: 0; }
 .section-body > .group + .entries { margin-top: 0; }
 
@@ -95,7 +118,7 @@ h1 {
 .logos img { display: block; height: var(--space-10); width: auto; }
 .exhibits { --grid-fit: auto-fill; --grid-min: 10rem; --grid-gap: var(--space-4); }
 .exhibits:has(.exhibit-video, .exhibit-embed, .exhibit-audio) { --grid-min: 100%; }
-.exhibit .frame { aspect-ratio: var(--aspect, 4 / 5); background: var(--site-box-alt); border: var(--site-box-border); border-radius: var(--site-radius-box); overflow: hidden; }
+.exhibit .frame { aspect-ratio: var(--aspect, 4 / 5); background: var(--site-bg-alt); border-top: 1px solid var(--site-line); overflow: hidden; }
 .exhibit-audio .frame { aspect-ratio: auto; padding: var(--space-3); }
 .exhibit-video, .exhibit-embed { --aspect: 16 / 9; }
 .exhibit img, .exhibit video, .exhibit iframe { display: block; width: 100%; height: 100%; object-fit: cover; border: 0; }
@@ -103,18 +126,19 @@ h1 {
 .exhibit figcaption { margin-top: var(--space-2); color: var(--site-text-soft); }
 .exhibit .tag { color: var(--site-text); margin-right: var(--space-2); }
 .exhibit .credit { display: block; }
-.placeholder { height: 100%; min-height: 6rem; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: var(--space-1); text-align: center; padding: var(--space-4); color: var(--site-box-soft); }
+.placeholder { height: 100%; min-height: 6rem; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: var(--space-1); text-align: center; padding: var(--space-4); color: var(--site-text-soft); }
 
-/* Contact facts inside a section: the same plain rows as the hero */
-.section .facts { margin-top: 0; }
+/* Contact facts inside a section: the same ruled rows as the masthead */
+.section .facts { margin-top: 0; border-top: 1px solid var(--site-line); }
 
-/* ---- Footer: the canvas band, with the action repeated ---- */
+/* ---- Footer: one rule, the date and the booking link ---- */
 .footer {
   --cluster-justify: space-between; --cluster-gap: var(--space-4) var(--space-8);
-  background-color: var(--site-bg-alt); color: var(--site-text-soft); padding-block: var(--space-10) var(--space-12);
+  color: var(--site-text-soft); padding-block: var(--space-6) var(--space-12);
 }
+.footer::before { content: ""; flex-basis: 100%; border-top: 1px solid var(--site-line); }
 .footer p { max-width: var(--measure); }
 
 @media (prefers-reduced-motion: reduce) {
-  .index a, .cover-more .icon { transition: none; }
+  .index a, .index .title, .cover-more .icon { transition: none; }
 }

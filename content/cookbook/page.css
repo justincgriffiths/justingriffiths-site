@@ -1,56 +1,120 @@
 /* /cookbook/ (build-cookbook.mjs): the family cookbook, behind the Cookbook Access app. Loaded after /site.css;
-   tokens only. A reading column like /resume/, sized for a phone propped on the counter, and it prints clean. */
-.cookbook { --center-max: 46rem; --stack-gap: 0; padding-block: var(--space-10) var(--space-16); }
-.cookbook h1 { font-size: clamp(var(--text-h2), 6vw, var(--text-display)); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); font-weight: var(--weight-bold); margin-bottom: var(--space-3); }
-.cookbook .lede { font-size: var(--text-body-lg); max-width: var(--measure); margin-bottom: var(--space-6); }
+   tokens only. A reading column sized for a phone propped on the counter, and it prints clean.
+   Swiss, as the hub (2026-11-16): flush-left on thin paper rules, no boxes. On a wide column each part of a
+   recipe hangs its label in a left column, the way a printed cookbook sets Ingredients beside the list. */
+html { scrollbar-color: var(--site-hairline) var(--site-bg); }
+.cookbook { --center-max: 46rem; --stack-gap: 0; padding-block: var(--space-8) var(--space-16); }
+.cookbook h1 {
+  font-size: clamp(var(--text-h1), 9vw, var(--text-display-xl)); line-height: 0.95; letter-spacing: -0.03em;
+  font-weight: var(--weight-bold); text-wrap: balance;
+  border-block: 1px solid var(--site-line); padding-block: var(--space-3) var(--space-2); margin-bottom: var(--space-4);
+}
+.cookbook .lede { font-size: var(--text-body-lg); max-width: var(--measure); margin-bottom: var(--space-8); text-wrap: pretty; }
 .cookbook h2 { font-size: var(--text-overline); font-weight: var(--weight-bold); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--site-text-soft); margin-bottom: var(--space-3); }
 .cookbook h3 { font-size: var(--text-body); font-weight: var(--weight-bold); margin: var(--space-4) 0 var(--space-1); }
 .cookbook p, .cookbook li { line-height: var(--leading-relaxed); max-width: var(--measure); }
 .cookbook ul, .cookbook ol { padding-left: var(--space-6); margin: 0 0 var(--space-2); }
 .cookbook li { margin-block: var(--space-1); }
 
-/* Index */
-.find { margin-bottom: var(--space-6); }
-.find label { display: block; font-size: var(--text-body-sm); color: var(--site-text-soft); margin-bottom: var(--space-1); }
-.find input { width: 100%; max-width: 24rem; font: inherit; padding: var(--space-2) var(--space-3); border: var(--border-width) solid var(--site-line); border-radius: var(--radius-sm); background: transparent; color: inherit; }
-.course { border-top: var(--border-width) solid var(--site-line); padding-block: var(--space-6); }
-.recipes { list-style: none; padding: 0; }
-.recipes li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-1) var(--space-4); padding-block: var(--space-2); border-bottom: 1px solid var(--site-hairline); margin: 0; max-width: none; }
+/* ---- Index: the title in capitals, a find field, then each course as a large quiet heading over ruled rows ---- */
+.cookbook:has(.course) h1 { text-transform: uppercase; }
+.find { margin-bottom: var(--space-10); }
+.find label { display: block; font-family: var(--site-font); font-size: var(--text-overline); font-weight: var(--weight-bold); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--site-text-soft); margin-bottom: var(--space-2); }
+.find input {
+  width: 100%; min-height: var(--tap); font: inherit; font-family: var(--site-font); font-size: var(--text-body-lg);
+  padding: var(--space-2) 0; border: 0; border-bottom: 1px solid var(--site-line); border-radius: 0;
+  background: transparent; color: inherit; caret-color: var(--site-accent);
+}
+.find input::placeholder { color: var(--site-text-soft); opacity: 1; }
+.find input:focus-visible { outline: 0; border-bottom: var(--border-width) solid var(--site-accent); }
+.course { padding-bottom: var(--space-10); }
+.course h2 {
+  font-size: clamp(var(--text-h3), 5vw, var(--text-h1)); font-weight: var(--weight-regular); letter-spacing: -0.02em;
+  text-transform: none; line-height: var(--leading-tight); color: var(--site-text-soft);
+  border-top: 1px solid var(--site-line); padding-top: var(--space-3); margin-bottom: var(--space-2);
+}
+.cookbook .recipes { list-style: none; padding: 0; margin: 0; }
+.cookbook .recipes li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-4); padding-block: var(--space-3); border-bottom: 1px solid var(--site-hairline); margin: 0; max-width: none; }
 .recipes li:last-child { border-bottom: 0; }
-.recipes a { font-weight: var(--weight-bold); }
-.recipes .who { color: var(--site-text-soft); font-size: var(--text-body-sm); }
+.recipes .who { margin-left: auto; }
+.recipes a {
+  display: block; flex: 0 1 auto; line-height: var(--leading-snug); padding-block: var(--space-1);
+  font-family: var(--site-font); font-size: var(--text-h4); font-weight: var(--weight-bold); letter-spacing: var(--tracking-snug);
+  color: var(--site-text); text-decoration: none; transition: color var(--dur-fast) var(--ease-standard);
+}
+.recipes a:hover { color: var(--site-link); }
+.recipes .who { font-family: var(--site-font); color: var(--site-text-soft); font-size: var(--text-body-sm); }
+.none { color: var(--site-text-soft); }
 
-/* Recipe */
-.crumb { font-size: var(--text-body-sm); color: var(--site-text-soft); margin-bottom: var(--space-4); }
-.from { color: var(--site-text-soft); font-style: italic; margin-bottom: var(--space-4); }
-.facts { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-8); margin: 0 0 var(--space-6); }
-.facts dt { font-size: var(--text-overline); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--site-text-soft); }
-.facts dd { margin: 0; font-weight: var(--weight-bold); }
-.flag { border-left: var(--border-width-thick) solid var(--site-accent); padding-left: var(--space-3); }
-.part { border-top: var(--border-width) solid var(--site-line); padding-block: var(--space-6); }
-.part-steps ol > li { margin-block: var(--space-3); }
-.original { border-top: var(--border-width) solid var(--site-line); padding-block: var(--space-6); }
-.original summary { cursor: pointer; font-weight: var(--weight-bold); }
-.original pre { white-space: pre-wrap; font-family: var(--font-serif); font-size: var(--text-body); line-height: var(--leading-relaxed); margin-top: var(--space-3); }
+/* ---- Recipe ---- */
+.crumb { font-family: var(--site-font); font-size: var(--text-body-sm); color: var(--site-text-soft); margin-bottom: var(--space-3); }
+.crumb a { color: var(--site-text-soft); }
+.crumb a:hover { color: var(--site-link-hover); }
+.from { color: var(--site-text-soft); font-style: italic; margin-bottom: var(--space-6); }
+.facts { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-10); margin: 0 0 var(--space-6); }
+.facts dt { font-size: var(--text-overline); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--site-text-soft); }
+.facts dd { margin: 0; font-family: var(--site-font); font-weight: var(--weight-bold); }
+.flag { border-top: 1px solid var(--site-accent); padding-top: var(--space-2); color: var(--site-text); }
+
+/* Each part: a rule, its label, its content. Label beside the content once the column is wide */
+.cookbook { container-type: inline-size; }
+.part, .original { border-top: 1px solid var(--site-line); padding-block: var(--space-3) var(--space-8); }
+@container (min-width: 40rem) {
+  .part { display: grid; grid-template-columns: 10rem 1fr; column-gap: var(--space-6); align-items: start; }
+  .part > h2 { grid-column: 1; grid-row: 1 / span 20; margin-top: var(--space-1); }
+  .part > :not(h2) { grid-column: 2; }
+}
+
+/* Ingredients and prep: ruled rows, no bullets. Steps: the number hangs in the margin, large and tabular */
+.part-ingredients ul, .part-mise-en-place ul, .part-serving ul, .part-notes ul { list-style: none; padding-left: 0; }
+.part-ingredients li, .part-mise-en-place li { margin: 0; padding-block: var(--space-2); border-bottom: 1px solid var(--site-hairline); }
+.part-ingredients li:last-child, .part-mise-en-place li:last-child { border-bottom: 0; }
+.part-serving li, .part-notes li { padding-left: var(--space-4); text-indent: calc(-1 * var(--space-4)); }
+.part-serving li::before, .part-notes li::before { content: "–"; display: inline-block; width: var(--space-4); text-indent: 0; color: var(--site-text-soft); }
+.part-steps ol { list-style: none; padding-left: 0; counter-reset: step; }
+.part-steps ol > li { counter-increment: step; position: relative; padding-left: var(--space-10); margin: 0; padding-block: var(--space-3); border-bottom: 1px solid var(--site-hairline); }
+.part-steps ol > li:last-child { border-bottom: 0; }
+.part-steps ol > li::before {
+  content: counter(step); position: absolute; left: 0; top: var(--space-3);
+  font-family: var(--site-font); font-size: var(--text-h3); font-weight: var(--weight-bold); line-height: 1.1;
+  font-variant-numeric: tabular-nums; color: var(--site-text-soft);
+}
+.part-steps strong { font-family: var(--site-font); }
+
+.original summary { cursor: pointer; font-family: var(--site-font); font-weight: var(--weight-bold); min-height: var(--tap); display: flex; align-items: center; }
+.original summary:hover { color: var(--site-link); }
+.original pre { white-space: pre-wrap; font-family: var(--font-serif); font-size: var(--text-body); line-height: var(--leading-relaxed); margin-top: var(--space-3); color: var(--site-text-soft); }
+
 /* Cooking: screen-on and clear-ticks under the title, lines that tick off on tap, timers on the times. */
-.cookbar { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
-.cookbar button, .timer { font: inherit; font-size: var(--text-body-sm); color: inherit; background: transparent; border: var(--border-width) solid var(--site-line); border-radius: var(--site-radius-control); padding: var(--space-2) var(--space-3); min-height: 2.75rem; cursor: pointer; }
+.cookbar { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-6); }
+.cookbar button, .timer {
+  font: inherit; font-family: var(--site-font); font-size: var(--text-body-sm); font-weight: var(--weight-medium);
+  color: inherit; background: transparent; border: 1px solid var(--site-line); border-radius: var(--site-radius-tick);
+  padding: var(--space-2) var(--space-3); min-height: var(--tap); cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+.cookbar button:hover { background: var(--site-hover); }
 .cookbar [aria-pressed="true"] { background: var(--site-accent); border-color: var(--site-accent); color: var(--site-accent-ink); }
-.timer { display: inline; min-height: 0; padding: 0 var(--space-2); font-weight: var(--weight-bold); white-space: nowrap; border-color: var(--site-accent); }
+.timer { display: inline; min-height: 0; padding: 0 var(--space-1); font-weight: var(--weight-bold); white-space: nowrap; border-color: var(--site-accent); color: var(--site-link); }
+.timer:hover { background: var(--site-hover); }
 .timer.running { background: var(--site-accent); color: var(--site-accent-ink); font-variant-numeric: tabular-nums; }
-.timer.rung { background: var(--site-pending); border-color: var(--site-pending); }
-.check li { cursor: pointer; padding-block: var(--space-1); -webkit-tap-highlight-color: transparent; }
-.check li.done { text-decoration: line-through; color: var(--site-text-soft); }
+.timer.rung { background: var(--site-pending); border-color: var(--site-pending); color: var(--site-accent-ink); }
+.check li { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: color var(--dur-fast) var(--ease-standard); }
+.check li.done { text-decoration: line-through; text-decoration-color: var(--site-text-soft); color: var(--site-text-soft); }
 @media (max-width: 40rem) {
   .cookbook p, .cookbook li { font-size: var(--text-body-lg); }
-  .check li { padding-block: var(--space-2); }
+  .part-ingredients li, .part-mise-en-place li { padding-block: var(--space-3); }
 }
-.back { margin-top: var(--space-8); }
-.back button { font: inherit; color: var(--site-accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+.back { margin-top: var(--space-8); border-top: 1px solid var(--site-line); padding-top: var(--space-3); font-family: var(--site-font); }
+.back button { font: inherit; color: var(--site-link); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; min-height: var(--tap); }
 
+@media (prefers-reduced-motion: reduce) {
+  .recipes a, .cookbar button, .timer, .check li { transition: none; }
+}
 @media print {
   .site-header, .skip, .no-print, .crumb { display: none !important; }
-  .cookbook { padding: 0; }
+  .cookbook { padding: 0; container-type: normal; }
   .original:not([open]) { display: none; }
   .part { break-inside: avoid-page; }
+  .part-steps ol > li::before { color: inherit; }
 }
