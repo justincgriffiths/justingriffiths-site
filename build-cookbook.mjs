@@ -107,11 +107,36 @@ ${NAV_SCRIPT}
 </body></html>
 `;
 
+// Cooking at the stove: in Steps, every "5–7 minutes" / "1 hour" becomes a tap-to-start countdown (the longer
+// end of a range). Ingredients, Mise en place and Steps lines tick off on tap and stay ticked on reload.
+const CHECKED = ["ingredients", "mise-en-place", "steps"];
+const UNIT = { min: 60, minute: 60, minutes: 60, mins: 60, hour: 3600, hours: 3600, hr: 3600, hrs: 3600 };
+export const timers = (html) => html.replace(/\b(\d+)(?:\s*[–-]\s*(\d+))?\s+(minutes?|mins?|hours?|hrs?)\b/g,
+  (all, a, b, u) => `<button type="button" class="timer" data-s="${Number(b || a) * UNIT[u]}">${all}</button>`);
+const COOK_BAR = `<div class="cookbar no-print"><button type="button" id="awake" aria-pressed="false" hidden>Keep screen on</button><button type="button" id="uncheck">Clear ticks</button></div>`;
+const COOK_SCRIPT = `<script>(function(){
+var key="cook:"+location.pathname,saved={},items=[].slice.call(document.querySelectorAll(".check li"));
+try{saved=JSON.parse(localStorage.getItem(key))||{};}catch(e){}
+function save(){try{localStorage.setItem(key,JSON.stringify(saved));}catch(e){}}
+items.forEach(function(li,i){if(saved[i])li.classList.add("done");li.addEventListener("click",function(e){if(e.target.closest("button,a"))return;saved[i]=li.classList.toggle("done");if(!saved[i])delete saved[i];save();});});
+document.getElementById("uncheck").addEventListener("click",function(){items.forEach(function(li){li.classList.remove("done");});saved={};save();});
+var awake=document.getElementById("awake"),lock=null,want=false;
+function on(v){awake.setAttribute("aria-pressed",String(v));awake.textContent=v?"Screen stays on":"Keep screen on";}
+function grab(){navigator.wakeLock.request("screen").then(function(l){lock=l;on(true);l.addEventListener("release",function(){lock=null;if(!want)on(false);});}).catch(function(){want=false;on(false);});}
+if("wakeLock" in navigator){awake.hidden=false;awake.addEventListener("click",function(){want=!want;if(want)grab();else{on(false);if(lock)lock.release();}});document.addEventListener("visibilitychange",function(){if(want&&!lock&&document.visibilityState==="visible")grab();});}
+var audio=null;function beep(){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();[0,0.6,1.2].forEach(function(d){var o=audio.createOscillator(),g=audio.createGain();o.frequency.value=880;g.gain.value=0.2;o.connect(g);g.connect(audio.destination);o.start(audio.currentTime+d);o.stop(audio.currentTime+d+0.3);});}catch(e){}}
+document.querySelectorAll("button.timer").forEach(function(b){var label=b.textContent,t=null,end=0;
+function stop(text){clearInterval(t);t=null;b.classList.remove("running");b.textContent=text;}
+function tick(){var left=Math.max(0,Math.round((end-Date.now())/1000));b.textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0")+" left";if(!left){stop(label+": done");b.classList.add("rung");if(navigator.vibrate)navigator.vibrate([400,200,400]);beep();}}
+b.addEventListener("click",function(){if(t){stop(label);return;}if(b.classList.contains("rung")){b.classList.remove("rung");b.textContent=label;return;}if(window.AudioContext||window.webkitAudioContext){audio=audio||new (window.AudioContext||window.webkitAudioContext)();}end=Date.now()+b.dataset.s*1000;b.classList.add("running");tick();t=setInterval(tick,1000);});});
+})();</script>`;
+
 export function renderRecipe(r) {
   const m = r.meta, from = fromLine(m), f = facts(m);
   const body = r.sections.map((s) => {
     const id = s.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    return `<section class="part part-${id}" aria-labelledby="${id}"><h2 id="${id}">${esc(s.name)}</h2>${blocks(s.lines)}</section>`;
+    const html = id === "steps" ? timers(blocks(s.lines)) : blocks(s.lines);
+    return `<section class="part part-${id}${CHECKED.includes(id) ? " check" : ""}" aria-labelledby="${id}"><h2 id="${id}">${esc(s.name)}</h2>${html}</section>`;
   }).join("\n");
   return page({
     title: `${m.title} · Family Cookbook`,
@@ -121,9 +146,11 @@ export function renderRecipe(r) {
 <p class="from">${esc(from)}</p>` : ""}${f.length ? `
 <dl class="facts">${f.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}${m.status === "incomplete" ? `
 <p class="flag">This recipe is missing steps. See the notes.</p>` : ""}
+${COOK_BAR}
 ${body}${r.original ? `
 <details class="original"><summary>The original, as written</summary><pre>${esc(r.original)}</pre></details>` : ""}
-<p class="back no-print"><a href="/cookbook/">All recipes</a> · <button type="button" onclick="print()">Print</button></p>`,
+<p class="back no-print"><a href="/cookbook/">All recipes</a> · <button type="button" onclick="print()">Print</button></p>
+${COOK_SCRIPT}`,
   });
 }
 
