@@ -28,7 +28,7 @@ h1.name {
   font-size: clamp(var(--text-display), 13vw, calc(var(--text-display) * 2));
   line-height: 0.92; letter-spacing: -0.035em;
   border-block: 1px solid var(--site-line); padding-block: var(--space-3) var(--space-2);
-  overflow-wrap: normal; hyphens: none;
+  overflow-wrap: anywhere; hyphens: none; /* breaks mid-word only when text is zoomed past the column (qa 200% text, #142) */
 }
 .lede {
   --fit: 34ch; margin-top: var(--space-4);
