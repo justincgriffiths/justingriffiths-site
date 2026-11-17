@@ -324,3 +324,6 @@ await import("./build-qwen-dashboard.mjs");
 
 // The full-titles resume at /resume/ (see build-resume.mjs; data is bio.json's resume block).
 await import("./build-resume.mjs");
+
+// The design-system directory at /design-systems/ (see build-design-systems.mjs; synced by bin/ds-sync.sh).
+await import("./build-design-systems.mjs");

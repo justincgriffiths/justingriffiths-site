@@ -1,0 +1,40 @@
+/* ============================================================
+   Pedal — Typography tokens
+   One typeface: Google Sans (brand-supplied). 400 / 500 / 700.
+   NOTE: the source inspiration used Cabin + Bagoss Condensed;
+   Pedal standardizes on Google Sans per the supplied font files.
+   ============================================================ */
+:root {
+  --font-sans: "Google Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+
+  /* Font sizes (px) */
+  --text-display-xl: 64px;
+  --text-display:    48px;
+  --text-h1:         40px;
+  --text-h2:         32px;
+  --text-h3:         24px;
+  --text-h4:         20px;
+  --text-body-lg:    18px;
+  --text-body:       16px;
+  --text-body-sm:    14px;
+  --text-caption:    13px;
+  --text-overline:   12px;
+
+  /* Line heights */
+  --leading-tight:   1.05;   /* display headlines */
+  --leading-snug:    1.18;   /* headings */
+  --leading-normal:  1.5;    /* body small / ui */
+  --leading-relaxed: 1.6;    /* long-form body */
+
+  /* Letter spacing */
+  --tracking-tight:   -0.02em;  /* large display */
+  --tracking-snug:    -0.01em;  /* headings */
+  --tracking-normal:  0;
+  --tracking-wide:    0.08em;   /* overline / labels */
+}

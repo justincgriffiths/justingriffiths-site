@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en" class="radix-themes light" data-accent-color="indigo" data-gray-color="gray" data-radius="medium" data-scaling="100%">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radix Themes · design system directory</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@radix-ui/themes@3.3.0/tokens.css">
+<style>
+/* Radix Themes: every value is a @radix-ui/themes variable (loaded from the pinned CDN file in meta.yaml);
+   accent, gray, radius and scaling come from the attributes in html_attrs. */
+:root {
+  --g-bg: var(--gray-2);
+  --g-surface: var(--color-panel-solid);
+  --g-surface-sunken: var(--gray-3);
+  --g-text: var(--gray-12);
+  --g-text-muted: var(--gray-11);
+  --g-border: var(--gray-a6);
+  --g-border-width: 1px;
+  --g-primary: var(--accent-9);
+  --g-primary-hover: var(--accent-10);
+  --g-on-primary: var(--accent-contrast);
+  --g-accent-surface: var(--accent-3);
+  --g-link: var(--accent-11);
+  --g-success: var(--green-11);
+  --g-success-surface: var(--green-3);
+  --g-warning: var(--amber-11);
+  --g-warning-surface: var(--amber-3);
+  --g-danger: var(--red-11);
+  --g-danger-surface: var(--red-3);
+  --g-dark-bg: var(--gray-12);
+  --g-dark-text: var(--gray-1);
+  --g-font-body: var(--default-font-family);
+  --g-font-display: var(--heading-font-family, var(--default-font-family));
+  --g-font-mono: var(--code-font-family);
+  --g-weight-heading: var(--font-weight-bold);
+  --g-tracking-heading: var(--heading-letter-spacing);
+  --g-text-base: var(--font-size-2);
+  --g-radius-sm: var(--radius-3);
+  --g-radius-md: var(--radius-4);
+  --g-radius-lg: var(--radius-5);
+  --g-shadow-card: none;
+  --g-space: var(--space-1);
+}
+
+</style>
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--g-bg); color: var(--g-text);
+  font: 400 var(--g-text-base)/1.5 var(--g-font-body);
+}
+h1, h2, h3 {
+  font-family: var(--g-font-display); font-weight: var(--g-weight-heading);
+  letter-spacing: var(--g-tracking-heading); line-height: 1.2; margin: 0;
+}
+h1 { font-size: 2em; } h2 { font-size: 1.25em; } h3 { font-size: 1em; }
+a { color: var(--g-link); }
+.muted { color: var(--g-text-muted); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: calc(var(--g-space) * 6); }
+.stack > * + * { margin-top: calc(var(--g-space) * 6); }
+.row { display: flex; gap: calc(var(--g-space) * 3); align-items: center; flex-wrap: wrap; }
+.grid { display: grid; gap: calc(var(--g-space) * 4); }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g2 { grid-template-columns: 3fr 2fr; align-items: start; }
+
+.nav {
+  display: flex; align-items: center; gap: calc(var(--g-space) * 6);
+  padding: calc(var(--g-space) * 3) calc(var(--g-space) * 6);
+  background: var(--g-surface); border-bottom: var(--g-border-width) solid var(--g-border);
+}
+.nav .brand { font-family: var(--g-font-display); font-weight: var(--g-weight-heading); }
+.nav a { color: var(--g-text-muted); text-decoration: none; }
+.nav a.on { color: var(--g-text); font-weight: 600; }
+.nav .sp { flex: 1; }
+.avatar {
+  width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center;
+  background: var(--g-accent-surface); color: var(--g-text); font-size: .8em; font-weight: 600;
+}
+
+.card {
+  background: var(--g-surface); border: var(--g-border-width) solid var(--g-border);
+  border-radius: var(--g-radius-md); box-shadow: var(--g-shadow-card);
+  padding: calc(var(--g-space) * 5);
+}
+.stat .v { font-family: var(--g-font-display); font-size: 1.9em; font-weight: var(--g-weight-heading); }
+.delta { font-size: .85em; font-weight: 600; }
+.up { color: var(--g-success); } .down { color: var(--g-danger); }
+
+.btn {
+  font: 600 .95em/1 var(--g-font-body); padding: calc(var(--g-space) * 2.5) calc(var(--g-space) * 4);
+  border-radius: var(--g-radius-sm); border: var(--g-border-width) solid transparent; cursor: pointer;
+}
+.btn.primary { background: var(--g-primary); color: var(--g-on-primary); border-color: var(--g-primary); }
+.btn.primary:hover { background: var(--g-primary-hover); }
+.btn.secondary { background: var(--g-surface); color: var(--g-text); border-color: var(--g-border); }
+.btn.ghost { background: transparent; color: var(--g-link); }
+.btn.danger { background: var(--g-danger); color: #fff; border-color: var(--g-danger); }
+
+table { width: 100%; border-collapse: collapse; font-size: .92em; }
+th, td { text-align: left; padding: calc(var(--g-space) * 3); border-bottom: 1px solid var(--g-border); }
+th { background: var(--g-surface-sunken); color: var(--g-text-muted); font-weight: 600; font-size: .85em; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.tablecard { padding: 0; overflow: hidden; }
+.tablecard header { padding: calc(var(--g-space) * 4) calc(var(--g-space) * 5); }
+
+.badge {
+  display: inline-block; padding: 2px calc(var(--g-space) * 2); border-radius: var(--g-radius-sm);
+  font-size: .8em; font-weight: 600;
+}
+.b-ok { background: var(--g-success-surface); color: var(--g-success); }
+.b-warn { background: var(--g-warning-surface); color: var(--g-warning); }
+.b-bad { background: var(--g-danger-surface); color: var(--g-danger); }
+
+label { display: block; font-size: .85em; font-weight: 600; margin-bottom: var(--g-space); }
+input[type=text], select {
+  width: 100%; font: inherit; color: var(--g-text); background: var(--g-surface);
+  border: var(--g-border-width) solid var(--g-border); border-radius: var(--g-radius-sm);
+  padding: calc(var(--g-space) * 2.5) calc(var(--g-space) * 3);
+}
+input:focus, select:focus { outline: 3px solid var(--g-primary); outline-offset: 1px; }
+.check { display: flex; gap: calc(var(--g-space) * 2); align-items: center; font-size: .92em; }
+.check input { accent-color: var(--g-primary); width: 18px; height: 18px; }
+.toggle {
+  width: 40px; height: 22px; border-radius: 999px; background: var(--g-primary); position: relative;
+}
+.toggle::after {
+  content: ""; position: absolute; top: 3px; right: 3px; width: 16px; height: 16px;
+  border-radius: 999px; background: var(--g-on-primary);
+}
+.form > * + * { margin-top: calc(var(--g-space) * 4); }
+
+.alert {
+  border-radius: var(--g-radius-sm); padding: calc(var(--g-space) * 3) calc(var(--g-space) * 4);
+  font-size: .92em; border-left: 4px solid currentColor;
+}
+.a-ok { background: var(--g-success-surface); color: var(--g-success); }
+.a-warn { background: var(--g-warning-surface); color: var(--g-warning); }
+.a-bad { background: var(--g-danger-surface); color: var(--g-danger); }
+.alert b { color: var(--g-text); }
+
+.band {
+  background: var(--g-dark-bg); color: var(--g-dark-text); border-radius: var(--g-radius-lg);
+  padding: calc(var(--g-space) * 8);
+}
+.band .btn.primary { margin-top: calc(var(--g-space) * 4); }
+
+.type .t1 { font-family: var(--g-font-display); font-size: 2.6em; font-weight: var(--g-weight-heading); letter-spacing: var(--g-tracking-heading); line-height: 1.1; }
+.type code { font-family: var(--g-font-mono); font-size: .9em; }
+.swatches { display: flex; gap: var(--g-space); flex-wrap: wrap; }
+.sw { width: 44px; height: 44px; border-radius: var(--g-radius-sm); border: 1px solid var(--g-border); }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <span class="brand">Northwind</span>
+  <a class="on" href="#">Overview</a><a href="#">Campaigns</a><a href="#">Reports</a><a href="#">Settings</a>
+  <span class="sp"></span>
+  <button class="btn ghost">Help</button>
+  <span class="avatar">JG</span>
+</nav>
+
+<main class="wrap stack">
+  <header class="row">
+    <div style="flex:1">
+      <p class="muted" style="margin:0 0 4px">Q4 · Paid media</p>
+      <h1>Campaign overview</h1>
+    </div>
+    <button class="btn secondary">Export</button>
+    <button class="btn primary">New campaign</button>
+  </header>
+
+  <section class="grid g3">
+    <div class="card stat"><div class="muted">Spend</div><div class="v">$48,210</div><span class="delta up">+12.4% vs last week</span></div>
+    <div class="card stat"><div class="muted">Conversions</div><div class="v">1,284</div><span class="delta up">+8.1% vs last week</span></div>
+    <div class="card stat"><div class="muted">Cost per acquisition</div><div class="v">$37.55</div><span class="delta down">+3.9% vs last week</span></div>
+  </section>
+
+  <section class="grid g2">
+    <div class="card tablecard">
+      <header class="row"><h2 style="flex:1">Campaigns</h2><a href="#">View all</a></header>
+      <table>
+        <thead><tr><th>Name</th><th>Channel</th><th>Status</th><th class="num">Spend</th><th class="num">CPA</th></tr></thead>
+        <tbody>
+          <tr><td>Holiday prospecting</td><td>Meta</td><td><span class="badge b-ok">Active</span></td><td class="num">$18,400</td><td class="num">$31.20</td></tr>
+          <tr><td>Brand search</td><td>Google</td><td><span class="badge b-ok">Active</span></td><td class="num">$9,870</td><td class="num">$12.05</td></tr>
+          <tr><td>Retargeting 30d</td><td>Meta</td><td><span class="badge b-warn">Learning</span></td><td class="num">$6,215</td><td class="num">$44.80</td></tr>
+          <tr><td>YouTube awareness</td><td>Google</td><td><span class="badge b-bad">Paused</span></td><td class="num">$4,020</td><td class="num">n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card form">
+      <h2>Quick budget change</h2>
+      <div><label for="c">Campaign</label><select id="c"><option>Holiday prospecting</option></select></div>
+      <div><label for="b">Daily budget</label><input id="b" type="text" value="$650"></div>
+      <label class="check"><input type="checkbox" checked> Apply from tomorrow</label>
+      <div class="row"><span class="toggle"></span><span>Notify the team</span></div>
+      <div class="row"><button class="btn primary">Save</button><button class="btn secondary">Cancel</button><button class="btn danger">Pause</button></div>
+    </div>
+  </section>
+
+  <section class="grid" style="gap:calc(var(--g-space)*2)">
+    <div class="alert a-ok"><b>Synced.</b> Spend data updated 4 minutes ago.</div>
+    <div class="alert a-warn"><b>Learning.</b> Retargeting 30d needs 50 conversions to exit learning.</div>
+    <div class="alert a-bad"><b>Paused.</b> YouTube awareness hit its lifetime cap.</div>
+  </section>
+
+  <section class="band">
+    <h2>Weekly report is ready</h2>
+    <p style="opacity:.85;max-width:52ch">Spend, conversions and pacing for every channel, with the notes your team left this week.</p>
+    <button class="btn primary">Open report</button>
+  </section>
+
+  <section class="card type">
+    <div class="t1">The quick brown fox</div>
+    <p>Body text sits at the base size. <a href="#">Links</a> use the link colour, and <code>code_sample()</code> uses the mono stack.</p>
+    <div class="swatches">
+      <div class="sw" style="background:var(--g-primary)"></div><div class="sw" style="background:var(--g-accent-surface)"></div>
+      <div class="sw" style="background:var(--g-text)"></div><div class="sw" style="background:var(--g-surface-sunken)"></div>
+      <div class="sw" style="background:var(--g-success)"></div><div class="sw" style="background:var(--g-warning)"></div>
+      <div class="sw" style="background:var(--g-danger)"></div><div class="sw" style="background:var(--g-dark-bg)"></div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

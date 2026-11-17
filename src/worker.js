@@ -2,6 +2,7 @@
 // Worker (justincgriffiths/blossom-tutoring-lessons) reached over the BLOSSOM service binding.
 // /marketing-101/ is the Marketing 101 lesson page (build-marketing.mjs).
 // /pedal-design/ is the same hub in the Pedal Design System (build.mjs), public like /.
+// /design-systems/ is the design-system directory (build-design-systems.mjs), public.
 // /qwen/data.json comes from KV (bin/qwen-kv.sh), falling back to the built asset.
 // /fleet/... holds the visualization pages (live fleet state). Cloudflare Access gates them
 // (bin/access-login.sh); the Worker also checks the Access token itself and fails closed.
@@ -152,6 +153,16 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     if (url.pathname === "/pedal-design/" || url.pathname === "/pedal-design/index.html" || url.pathname === "/pedal-design/style.css" || url.pathname === "/pedal-design/site.css") {
+      return env.ASSETS.fetch(request);
+    }
+
+    // /design-systems/ is the design-system directory, served from dist/design-systems/: the index, one page per
+    // system, their thumbnails and the canon token files the Pedal entry links.
+    if (url.pathname === "/design-systems") {
+      url.pathname = "/design-systems/";
+      return Response.redirect(url.toString(), 301);
+    }
+    if (url.pathname.startsWith("/design-systems/")) {
       return env.ASSETS.fetch(request);
     }
 
