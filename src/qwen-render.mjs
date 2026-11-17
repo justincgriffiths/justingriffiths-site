@@ -94,13 +94,13 @@ function costChart() {
   let path = "", prev = false;
   days.forEach((d, i) => { const r = usd[d]; if (!r) { prev = false; return; } path += `${prev ? "L" : "M"}${cx(i)},${yu(r.usd_per_run)}`; prev = true; });
   const dots = days.map((d, i) => usd[d] ? `<circle cx="${cx(i)}" cy="${yu(usd[d].usd_per_run)}" r="4" class="dollar-dot"><title>${esc(d)} $${usd[d].usd_per_run} per run (${usd[d].runs} runs)</title></circle>` : "").join("");
-  const base = b == null ? "" : `<line x1="${Pc.l}" x2="${W - Pc.r}" y1="${yu(b)}" y2="${yu(b)}" class="baseline" stroke-dasharray="4 3"><title>Pre-Qwen average $${b} per run</title></line>`;
+  const base = b == null ? "" : `<line x1="${Pc.l}" x2="${W - Pc.r}" y1="${yu(b)}" y2="${yu(b)}" class="baseline" stroke-dasharray="4 3"><title>Haiku cap average $${b} per run</title></line>`;
   const li = days.indexOf((rows.find((r) => r.qwen_era) || {}).day);
   const live = li < 0 ? "" : `<line x1="${cx(li)}" x2="${cx(li)}" y1="${Pc.t - 14}" y2="${Hc - Pc.b}" class="livemark" stroke-dasharray="2 3"/><text x="${cx(li) + (li > days.length / 2 ? -6 : 6)}" y="${Pc.t - 18}" text-anchor="${li > days.length / 2 ? "end" : "start"}">Qwen live</text>`;
   const idx = [...new Set([0, Math.floor((days.length - 1) / 2), days.length - 1])];
   const ticks = idx.map((i) => `<text x="${cx(i)}" y="${Hc - 8}" text-anchor="${i === 0 ? "start" : i === days.length - 1 ? "end" : "middle"}" dx="${i === 0 ? -step / 2 + 2 : i === days.length - 1 ? step / 2 - 2 : 0}">${esc(days[i].slice(5))}</text>`).join("");
   const lg = jobs.map((j) => `<span><i style="background:${jc(j)}"></i>${esc(JOB_NAMES[j] || j)}</span>`).join("")
-    + `<span><i class="sw-line"></i>Dollars per triage run</span>` + (b == null ? "" : `<span><i class="sw-dash"></i>Pre-Qwen average $${b}</span>`);
+    + `<span><i class="sw-line"></i>Dollars per triage run</span>` + (b == null ? "" : `<span><i class="sw-dash"></i>Haiku cap average $${b}</span>`);
   return `<p class="legend cluster">${lg}</p>` + `<svg viewBox="0 0 ${W} ${Hc}" role="img" aria-label="Calls per day by job, and dollars per triage run, ${days.length} days">${grid + titles + bars + base + live + (path ? `<path d="${path}" fill="none" class="dollar-line"/>` : "") + dots + ticks}</svg>`
     + `<p class="note">Bars: calls per day, left axis, stacked by job. Line: dollars per triage run, right axis (a separate scale). A day with no calls is an empty slot; a day with no triage run breaks the line.</p>` + itNote;
 }
@@ -283,7 +283,7 @@ function truthBars(jobs) {
 }
 
 // Counts only, no because-clause.
-const truthLine = (j) => { const s = truthSegments(j); return `${TRUTH_NAMES[j.job] || j.job}: ${runsOf(j.n)}, ${j.n - j.work_unknown} with ground truth, ${s.missed} missed, ${s.unexplained} unexplained, ${s.found} found, ${s.quiet} quiet, ${s.unknown} unknown.`; };
+const truthLine = (j) => { const s = truthSegments(j); return `${TRUTH_NAMES[j.job] || j.job}: ${s.found} found, ${runsOf(j.n)}, ${j.n - j.work_unknown} with ground truth, ${s.missed} missed, ${s.unexplained} unexplained, ${s.quiet} quiet, ${s.unknown} unknown.`; };
 
 function truthRaw(jobs) {
   const cells = [["Work existed, not found (miss)", "missed"], ["Transcript says idle, job quiet, unexplained (under review)", "unexplained"], ["Work existed, found", "found_work"], ["No work, found", "false_alarm"], ["No work, quiet", "quiet"], ["Work unknown, found", "work_unknown_found"],
@@ -315,7 +315,7 @@ ${section("calls", "Calls by day", "How many calls each job made per day since i
 ${section("history", "History and savings", "Runs per day for wrap, PR sweeps, session cleanup and cron triage, every run counted whether it found work or not, by model, with the last 7 days of spend against the 7 before.", historyCharts(data.history, data.skill_cost))}
 ${section("truth", "Was there work, and did the run find it", "Per job, how many runs missed work, found it, stayed quiet, or have no ground truth yet. Misses first.", truthCharts(data.truth))}
 ${section("fallbacks", "Fallback reasons", "Why Qwen's answer was thrown out and Claude did the item instead.", horizontal(data.fallback_reasons, "Fallbacks by reason", C.fell_back))}
-${section("cost", "Cost per run", "Calls per day by job, and dollars per triage run, against the average before Qwen.", costChart())}
+${section("cost", "Cost per run", "Calls per day by job, and dollars per triage run, against the Haiku cap average, the period before Qwen.", costChart())}
 ${section("latency", "Latency", "How long Qwen takes per item, next to Haiku.", latency())}
 ${section("accuracy", "Accuracy", "Whether the free model holds up. Live measures fill in as the checks land.", accuracy())}
 ${section("breakdowns", "Breakdowns", "The same counts cut three ways.",
