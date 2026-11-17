@@ -9,7 +9,7 @@ const root = new URL("../", import.meta.url);
 const css = (p) => readFileSync(new URL(p, root), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 const decls = (text) => [...text.matchAll(/([a-z-]+)\s*:\s*([^;{}]+)[;}]/gi)].map((m) => [m[1].toLowerCase(), m[2].trim()]);
 
-const FRAMED = ["src/style.css", "content/qwen/page.css"];
+const FRAMED = ["src/style.css", "content/qwen/page.css", "content/design-systems/page.css"];
 const LEGACY = ["src/pedal-design.css", "content/marketing-101/page.css", "content/archive/page.css"];
 const WIDTHS = /^(width|min-width|max-width|inline-size|min-inline-size|max-inline-size|grid-template-columns)$/;
 

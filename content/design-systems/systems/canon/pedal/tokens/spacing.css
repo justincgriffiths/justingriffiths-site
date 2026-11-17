@@ -1,0 +1,98 @@
+/* ============================================================
+   Pedal — Spacing, radii, borders, shadows, motion
+   ============================================================ */
+:root {
+  /* ---- Spacing scale (4px base) ---- */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ---- Radii ---- (squared, Gumroad-ish — corners stay tight) */
+  --radius-none: 0;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* ---- Borders ---- the signature: 2px solid ink ---- */
+  --border-width: 2px;
+  --border-width-thick: 3px;
+  --border: var(--border-width) solid var(--border-default);   /* night since 2026-10-22 */
+  --border-strong-style: var(--border-width) solid var(--border-strong);
+
+  /* ---- Poster scale (added 2026-08-04) ----
+     For large-format surfaces only — a 1920x1080 deck stage, a full-bleed
+     hero. At that size the 2px signature border optically disappears; 4px is
+     the same border, held at the same apparent weight. This is a SCALE, not a
+     second style: do not use it on web UI, where it reads as a heavier design
+     rather than the same one bigger. There is deliberately no poster radius —
+     20px at 1920 is 13px at 1280, which --radius-lg already covers. */
+  --border-width-poster: 4px;
+  --border-poster: var(--border-width-poster) solid var(--border-strong);
+  --border-poster-on-night: var(--border-width-poster) solid var(--paper);
+
+  /* ---- Hard offset shadows (brand signature) ---- */
+  --shadow-hard-sm: 2px 2px 0 var(--night-800);  /* was ink-800; deck motif 2026-10-23 */
+  --shadow-hard:    4px 4px 0 var(--night-800);  /* was ink-800; deck motif 2026-10-23 */
+  --shadow-hard-lg: 6px 6px 0 var(--night-800);  /* was ink-800; deck motif 2026-10-23 */
+  --shadow-hard-accent: 4px 4px 0 var(--teal-500);
+
+  /* ---- Hard offset shadows, night lane ----
+     Offset into the void (--night-900), never into ink: the shadow has to be
+     darker than the surface it lifts off, and ink is both warmer and lighter
+     than the night ground, so an ink offset reads as a smudge instead of a
+     lift. Same three steps as the light lane, plus a poster step. */
+  --shadow-hard-night-sm: 2px 2px 0 var(--night-900);
+  --shadow-hard-night:    4px 4px 0 var(--night-900);
+  --shadow-hard-night-lg: 6px 6px 0 var(--night-900);
+  --shadow-hard-night-poster: 8px 8px 0 var(--night-900);
+  --shadow-hard-night-accent: 4px 4px 0 var(--teal-500);
+
+  /* ---- Sticker-chip scale (Cosmin's partner-update deck, adopted 2026-08-04) ----
+     Rounder corners and a chunkier offset than the web defaults, so a panel reads as a
+     die-cut sticker rather than a card. Deck surfaces only — the light-lane --radius-*
+     and --shadow-hard-* defaults are unchanged, because repointing those re-themes every
+     existing rounded element in the portal. */
+  --radius-sticker-sm: 8px;
+  --radius-sticker-md: 14px;
+  --shadow-sticker-sm: 3px 3px 0 var(--night-800);
+  --shadow-sticker:    5px 5px 0 var(--night-800);
+  --shadow-sticker-accent: 5px 5px 0 var(--teal-500);
+
+  /* ---- Night ground texture ----
+     A 64px lattice of paper lines at 5%, the only texture in the system. It
+     exists because a large flat night ground reads as a void rather than a
+     surface; at 5% it is felt and not seen. Applied as a pointer-events:none
+     ::before layer, never as a background on the content element. */
+  --night-grid-line: rgba(248, 247, 244, 0.05);
+  --night-grid-size: 64px;
+
+  /* ---- Soft elevation shadows (subtle UI depth) ---- */
+  --shadow-sm: 0 1px 2px rgba(42,33,31,0.08);
+  --shadow-md: 0 4px 12px rgba(42,33,31,0.10);
+  --shadow-lg: 0 12px 32px rgba(42,33,31,0.12);
+
+  /* ---- Motion ---- (snappy, slightly springy) */
+  --ease-standard: cubic-bezier(0.32, 0.72, 0.28, 1); /* @kind other */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* @kind other */
+  --dur-fast: 120ms; /* @kind other */
+  --dur-base: 200ms; /* @kind other */
+  --dur-slow: 320ms; /* @kind other */
+
+  /* ---- Layout ---- */
+  --container-max: 1200px;
+  --container-wide: 1440px;
+}

@@ -1,0 +1,15 @@
+/* /design-systems/ (the ◐SHALLAN gallery on the site chrome). Loaded after /site.css; tokens only, frame primitives for layout. */
+.ds { --center-max: 72rem; --stack-gap: var(--space-8); padding-block: var(--space-10) var(--space-16); }
+.ds h1 { font-size: clamp(var(--text-h1), 6vw, var(--text-display)); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); font-weight: var(--weight-bold); }
+.ds .lede { font-size: var(--text-body-lg); max-width: var(--measure); }
+.ds h2 { font-size: var(--text-h3); line-height: var(--leading-snug); font-weight: var(--weight-bold); }
+.ds section { --stack-gap: var(--space-4); }
+.ds-grid { --grid-min: 18rem; --grid-fit: auto-fill; list-style: none; padding: 0; }
+.ds-card { --stack-gap: var(--space-2); border-top: var(--border-width) solid var(--site-line); padding-top: var(--space-4); }
+.ds-shot { display: block; border: 1px solid var(--site-hairline); border-radius: var(--radius-sm); overflow: hidden; }
+.ds-shot img { display: block; width: 100%; height: auto; }
+.ds-card h3 { font-size: var(--text-h4); font-weight: var(--weight-bold); }
+.ds-card h3 a { color: var(--site-text); text-decoration: none; }
+.ds-card h3 a:hover { color: var(--site-link); text-decoration: underline; }
+.ds-traits { padding-left: var(--space-5); color: var(--site-text-soft); font-size: var(--text-body-sm); }
+.ds-src { color: var(--site-text-soft); font-size: var(--text-caption); overflow-wrap: anywhere; }

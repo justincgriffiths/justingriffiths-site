@@ -1,0 +1,134 @@
+[
+  {
+    "slug": "pedal",
+    "name": "Pedal (current canon)",
+    "kind": "baseline",
+    "summary": "Today's Pedal system, rendered from canon so every option is judged against it.",
+    "traits": [
+      "Google Sans at 400/500/700, one typeface for display and body",
+      "Teal #5DA490 accent with night #1A1A2E text, borders and dark sections",
+      "Signature 2px night border and hard offset shadow on cards",
+      "Tight radii (6px controls, 10px cards) on a 4px spacing base",
+      "Status --warning #F8AB41 is used as text on --warning-surface; it reads low-contrast in the sample"
+    ],
+    "source": "pearmill/pedal origin/main creative/Pedal-Design-System @ 1f84682 2026-11-13"
+  },
+  {
+    "slug": "atlassian",
+    "name": "Atlassian Design System",
+    "kind": "reference",
+    "summary": "Atlassian's system for Jira and Confluence; calm, collaborative product UI.",
+    "traits": [
+      "Atlassian Sans first in the stack (not openly hosted, so the sample falls back to the system font); 653-weight headings, 14px body",
+      "Blue #1868DB brand fill and links on white, with a #F8F8F8 sunken ground",
+      "1px translucent borders and a two-layer raised shadow on cards",
+      "Radii of 6px on controls, 8px on cards and 12px on large panels"
+    ],
+    "source": "@atlaskit/tokens 20.12.0 (npm): atlassian-light, atlassian-shape, atlassian-spacing, atlassian-typography"
+  },
+  {
+    "slug": "carbon",
+    "name": "Carbon (IBM)",
+    "kind": "reference",
+    "summary": "IBM's enterprise system; square, flat and grid-strict, built for data-heavy work.",
+    "traits": [
+      "IBM Plex Sans and Plex Mono; headings at regular (400) weight with 14px body",
+      "Blue #0F62FE primary and links on white, with #F4F4F4 grey layers",
+      "Square corners, no card shadows, 1px #C6C6C6 subtle borders",
+      "Status --support-warning #F1C21B is used as text on its notification background; it reads low-contrast in the sample"
+    ],
+    "source": "@carbon/themes 11.85.0 white theme (+ buttonTokens, notificationTokens), @carbon/type 11.71.0, @carbon/layout 11.63.0 (npm)"
+  },
+  {
+    "slug": "material3",
+    "name": "Material 3 (Google)",
+    "kind": "reference",
+    "summary": "Google's system; tonal colour roles generated from one seed, soft and rounded.",
+    "traits": [
+      "Roboto throughout, headlines at regular (400) weight",
+      "Purple primary #65558F with lavender tonal containers on a tinted near-white surface",
+      "No card borders by default; level-1 elevation is a two-layer soft shadow",
+      "Radii of 8px (small), 12px (medium) and 16px (large)"
+    ],
+    "source": "@material/material-color-utilities 0.4.0 (SchemeTonalSpot, seed #6750A4) + @material/web 2.5.0 tokens v0_192"
+  },
+  {
+    "slug": "polaris",
+    "name": "Polaris (Shopify)",
+    "kind": "reference",
+    "summary": "Shopify's admin system; compact merchant UI with a near-black brand fill.",
+    "traits": [
+      "Inter, with a 13px base size and slightly tightened heading tracking",
+      "Near-black #303030 primary fill and blue links on a light grey ground",
+      "1px light borders plus soft bevel shadows on cards",
+      "Radii of 8px on controls and 12px on cards and panels"
+    ],
+    "source": "@shopify/polaris-tokens 9.4.2 (npm), light theme"
+  },
+  {
+    "slug": "primer",
+    "name": "Primer (GitHub)",
+    "kind": "reference",
+    "summary": "GitHub's system; dense, neutral product UI built for code and data.",
+    "traits": [
+      "System font stack, no brand typeface",
+      "Green primary button, blue links and accents on near-white grounds",
+      "1px grey borders and very soft shadows",
+      "Radii of 6px (small/medium) and 12px (large)"
+    ],
+    "source": "@primer/primitives 11.10.0 (npm), light theme"
+  },
+  {
+    "slug": "radix",
+    "name": "Radix Themes",
+    "kind": "reference",
+    "summary": "Radix's themeable component system; accessible 12-step colour scales and neutral defaults.",
+    "traits": [
+      "System font stack (no brand typeface), bold headings with no added tracking",
+      "Indigo accent on a white ground with 12-step gray and status scales",
+      "1px translucent gray borders; the default surface card has no shadow",
+      "Radii of 6px on controls and 8px on cards at the medium radius setting"
+    ],
+    "source": "@radix-ui/themes 3.3.0 (npm), light, indigo accent, gray, medium radius, 100% scaling"
+  },
+  {
+    "slug": "gen-ledger",
+    "name": "Ledger (generated \u00b7 calm editorial)",
+    "kind": "generated",
+    "summary": "Quiet, print-like system; a serif display over a clean sans for reports and long reads.",
+    "traits": [
+      "Newsreader serif headings, Inter body, JetBrains Mono code",
+      "Forest green #24433A primary on warm paper #F7F5F0",
+      "1px warm-grey hairlines, near-flat shadow",
+      "Small radii (4px controls, 6px cards, 10px panels)"
+    ],
+    "source": "Shallan, 2026-11-16; original direction, all text pairs checked at WCAG AA"
+  },
+  {
+    "slug": "gen-orchard",
+    "name": "Orchard (generated \u00b7 warm playful)",
+    "kind": "generated",
+    "summary": "Friendly, rounded system with a warm tangerine accent and soft lifted cards.",
+    "traits": [
+      "Bricolage Grotesque headings, DM Sans body, JetBrains Mono code",
+      "Tangerine #C8441C primary on cream #FFF8F1",
+      "1px peach borders with a soft warm drop shadow",
+      "Generous radii (10px controls, 16px cards, 24px panels)",
+      "Primary tangerine and danger red sit close in hue: Save and Pause read alike"
+    ],
+    "source": "Shallan, 2026-11-16; original direction, all text pairs checked at WCAG AA"
+  },
+  {
+    "slug": "gen-signal",
+    "name": "Signal (generated \u00b7 bold graphic)",
+    "kind": "generated",
+    "summary": "High-contrast, sharp-cornered system with one electric colour doing all the work.",
+    "traits": [
+      "Space Grotesk headings, Inter body, JetBrains Mono code",
+      "Electric indigo #3D2BFF primary on pure white and black",
+      "1px black rules, no shadows",
+      "Square corners everywhere (0px radius)"
+    ],
+    "source": "Shallan, 2026-11-16; original direction, all text pairs checked at WCAG AA"
+  }
+]
