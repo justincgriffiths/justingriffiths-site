@@ -37,6 +37,7 @@ export const PAGES = [
   { id: "resume", path: "/resume/" },
   { id: "marketing-101", path: "/marketing-101/" },
   { id: "archive", path: "/archive/" },
+  { id: "design-systems", path: "/design-systems/", framed: true },
   { id: "archive-research", path: "/archive/research/", nav: false, report: "a stripped Tailwind snapshot of justingriffiths.info: no site chrome, no skip link, small taps; re-take it onto the site chrome (bin/archive-snap.mjs)" },
   { id: "pedal-design", path: "/pedal-design/", report: "the Pedal DS hub, out of bounds for #62: its own CSS (src/pedal-design.css) sets the faults listed" },
 ];
