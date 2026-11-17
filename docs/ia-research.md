@@ -59,7 +59,7 @@ not obvious).
 | 31 | `/fleet/flows/` | (flow list) | List of Mermaid flow diagrams | sign-in, noindex | Lab ▸ Flows | 2026-11-07 |
 | 32 | `/fleet/flows/card-to-merge/` | How a card moves from Justin's ask to merge | One flow, drawn | sign-in, noindex | via `/fleet/flows/` | 2026-11-07 |
 | 33 | `/fleet/meta/` | Meta rollout | Per-client built / verified / live / first-hour delivery; clients anonymized | sign-in plus Justin-only allowlist, noindex, unlinked | none | 2026-11-08 |
-| 34 | `/design-systems/` (PR #136, open) | Design systems · Justin Griffiths | Ten design systems (Pedal baseline, six public references, three original directions), each drawing the same campaign dashboard | public once merged; today the live URL 301s to `/archive/design-systems/` | none in the diff (PR body says "under Lab"; `NAV` and `bio.json` are not changed by the PR) | 2026-11-16 (branch `feat/design-systems`) |
+| 34 | `/design-systems/` (PR #136, open) | Design systems · Justin Griffiths | Ten design systems (Pedal baseline, six public references, three original directions), each drawing the same campaign dashboard | public once merged; today the live URL 301s to `/archive/design-systems/` | Lab dropdown, "Design systems" (PR #136 adds it to `NAV` in `src/chrome.mjs`; corrected 2026-11-16, an earlier draft said the diff had no nav entry) | 2026-11-16 (branch `feat/design-systems`) |
 | 35 | `/construction` | (construction page) | Under-construction page, shown for every path only when `CONSTRUCTION = true` in `src/worker.js` (now `false`) | dormant | none | 2026-11-08 |
 
 **Counts**
