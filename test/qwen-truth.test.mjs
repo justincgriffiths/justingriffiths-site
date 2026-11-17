@@ -160,7 +160,7 @@ test("segments: every mapping cell lands in exactly one segment and the segments
   // work_unknown_quiet (1) and identified_unknown (1) are the only runs that are neither missed, found nor quiet.
   assert.deepEqual(segs, { Missed: 1, "Transcript says idle, job quiet, unexplained (under review)": 1, Found: 3, Quiet: 1, Unknown: 2 });
   assert.equal(Object.values(segs).reduce((a, b) => a + b, 0), 8);
-  assert.match(page, /Session finish: 8 runs, 6 with ground truth, 1 missed, 1 unexplained, 3 found, 1 quiet, 2 unknown\./);
+  assert.match(page, /Session finish: 3 found, 8 runs, 6 with ground truth, 1 missed, 1 unexplained, 1 quiet, 2 unknown\./);
   // The exporter's own fixtures: every job's four segments sum to n.
   const page2 = renderData(data);
   for (const j of data.truth.jobs) {
@@ -174,8 +174,8 @@ test("page: one bar per job, one counts-only line per job, the raw cells in a cl
   const page = renderData(data), sec = page.slice(page.indexOf('id="truth"'), page.indexOf('id="fallbacks"'));
   assert.equal((sec.match(/<svg/g) || []).length, 1);
   assert.equal((sec.match(/class="note truth-line"/g) || []).length, 4);
-  assert.match(sec, /Session finish: 7 runs, 6 with ground truth, 1 missed, 1 unexplained, 3 found, 1 quiet, 1 unknown\./);
-  assert.match(sec, /PR sweeps: 2 runs, 0 with ground truth, 0 missed, 0 unexplained, 1 found, 0 quiet, 1 unknown\./);
+  assert.match(sec, /Session finish: 3 found, 7 runs, 6 with ground truth, 1 missed, 1 unexplained, 1 quiet, 1 unknown\./);
+  assert.match(sec, /PR sweeps: 1 found, 2 runs, 0 with ground truth, 0 missed, 0 unexplained, 0 quiet, 1 unknown\./);
   assert.match(sec, /Session finish: 1 missed, 1 transcript says idle, job quiet, unexplained/);   // the aria label carries the counts
   const rects = [...sec.matchAll(/Session finish (Missed|Transcript says idle, job quiet, unexplained \(under review\)|Found|Quiet|Unknown): (\d+) of 7/g)].map((m) => [m[1], +m[2]]);
   assert.deepEqual(rects, [["Missed", 1], ["Transcript says idle, job quiet, unexplained (under review)", 1], ["Found", 3], ["Quiet", 1], ["Unknown", 1]]);   // misses left-most, in order

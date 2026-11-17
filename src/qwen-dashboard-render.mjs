@@ -103,7 +103,7 @@ export function renderDashboard(d, t, writeups) {
   const kpis = [
     kpi("Triage agreement with Haiku", pctText(ag), `Same label on shadow pairs. ${t.triage_shadow ? `${t.triage_shadow.agree} of ${t.triage_shadow.total} in the latest audit rows.` : ""}`),
     kpi("Classify time, Qwen p50", ms(q.p50), `Haiku p50: ${ms(h && h.p50)}. Qwen p90: ${ms(q.p90)}.`),
-    kpi("Triage cost per run", usd(d.cost_per_run.triage_qwen_era_usd_per_run), `Before Qwen: ${usd(d.cost_per_run.triage_baseline_usd_per_run)}.`),
+    kpi("Triage cost per run", usd(d.cost_per_run.triage_qwen_era_usd_per_run), `Haiku cap: ${usd(d.cost_per_run.triage_baseline_usd_per_run)}.`),
     kpi("Fell back to Haiku", `${num(fell)} of ${num(answered + fell)}`, `Qwen calls recorded as errors: ${fb}.`),
   ].join("");
 
@@ -120,7 +120,7 @@ export function renderDashboard(d, t, writeups) {
   ], { fmt: ms });
 
   const tri = d.cost_per_run.triage_by_day;
-  const cost = columns(tri.map((r) => ({ label: day(r.day), value: r.usd_per_run, cls: r.qwen_era ? "c-main" : "c-alt" })), { fmt: (v) => usd(v), line: { value: d.cost_per_run.triage_baseline_usd_per_run, label: "before Qwen" } });
+  const cost = columns(tri.map((r) => ({ label: day(r.day), value: r.usd_per_run, cls: r.qwen_era ? "c-main" : "c-alt" })), { fmt: (v) => usd(v), line: { value: d.cost_per_run.triage_baseline_usd_per_run, label: "Haiku cap" } });
 
   const byDay = {};
   for (const r of d.calls_by_day) { const x = byDay[r.day] || (byDay[r.day] = { label: day(r.day), qwen: 0, fallback: 0, capped: 0, shadow: 0 }); x.qwen += r.qwen; x.fallback += r.haiku_fallback; x.capped += r.haiku_capped; x.shadow += r.haiku_shadow; }
